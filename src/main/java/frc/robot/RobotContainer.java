@@ -13,21 +13,23 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 
 public class RobotContainer {
-  private final VisionSubsystem m_visionSubsystem = new VisionSubsystem();
-  private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem(m_visionSubsystem);
-  private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
+    private final VisionSubsystem m_visionSubsystem = new VisionSubsystem();
+    private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem(m_visionSubsystem);
+    private final ClimberSubsystem m_climberSubsystem = new ClimberSubsystem();
 
-  public RobotContainer() {
-    configureBindings();
-  }
+    public RobotContainer() {
+        configureBindings();
+    }
 
-  private final CommandPS5Controller m_driverController = new CommandPS5Controller(
-      OperatorConstants.kDriverControllerPort);
+    private final CommandPS5Controller m_driverController = new CommandPS5Controller(
+            OperatorConstants.kDriverControllerPort);
 
-  private void configureBindings() {
-  }
+    private void configureBindings() {
+        m_driverController.povUp().whileTrue(m_climberSubsystem.cExtend());
+        m_driverController.povDown().whileTrue(m_climberSubsystem.cRetract());
+    }
 
-  public Command getAutonomousCommand() {
-    return Commands.none();
-  }
+    public Command getAutonomousCommand() {
+        return Commands.none();
+    }
 }
