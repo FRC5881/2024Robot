@@ -8,8 +8,6 @@ public final class Constants {
     public static class CANConstants {
         public static final int kClimberId = 10;
         public static final int kIntakeId = 20;
-        public static final int kShooterFlywheelId = 21;
-        public static final int kShooterIntakeId = 22;
 
     }
 

@@ -11,38 +11,31 @@ public class IntakeSubsystem extends SubsystemBase {
 
     private final CANSparkMax intakeMotor;
 
+    /**
+     * sets the can IDs
+     */
     public IntakeSubsystem() {
         this.intakeMotor = new CANSparkMax(Constants.CANConstants.kIntakeId, MotorType.kBrushless);
     }
 
+    /**
+     * makes the intake suck in a note
+     */
     public void suck() {
         intakeMotor.set(Constants.Intake.kIntakePower);
     }
 
+    /**
+     * stops the motor
+     */
     public void stop() {
         intakeMotor.stopMotor();
     }
 
-    public boolean isFull() {
-        return false;
-    }
-
-    public boolean isEmpty() {
-        return !isFull();
-    }
-
     /**
-     * sucks while isFull is false
-     * 
-     * @return
+     * sucks in a note
      */
     public Command cRun() {
-        return this.runEnd(() -> {
-            if (isEmpty()) {
-                this.suck();
-            } else {
-                this.stop();
-            }
-        }, this::stop);
+        return this.runEnd(this::suck, this::stop);
     }
 }
