@@ -21,21 +21,21 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
-     * sets speed of shooter
+     * sets speed of shooter (percent)
      */
     public void setSpeed(double percentSpeed) {
         shooterMotor.set(TalonSRXControlMode.PercentOutput, percentSpeed);
     }
 
     /**
-     * makes the intake send the ball up into the shooter
+     * makes the intake send the ball up into the shooter (percent)
      */
     public void up() {
         intakeMotor.set(TalonSRXControlMode.PercentOutput, Constants.Shooter.kUpPower);
     }
 
     /**
-     * makes the intake send the ball down from the shooter
+     * makes the intake send the ball down from the shooter (percent)
      */
     public void down() {
         intakeMotor.set(TalonSRXControlMode.PercentOutput, -Constants.Shooter.kDownPower);
@@ -50,7 +50,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
-     * creats a new command that sets the shooter motor speed and then finishes
+     * creats a new command that sets the shooter motor speed (percent) and then
+     * finishes
      */
     private Command cSetSpeed(double percentage) {
         return this.runOnce(() -> {
@@ -59,7 +60,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
-     * makes the shooter shoot high into the speaker
+     * makes the shooter shoot (percent) high into the speaker (seconds)
      */
     public Command cShootHigh() {
         return this.cSetSpeed(Constants.Shooter.kShootHighSpeed)
@@ -69,7 +70,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
-     * makes the shooter shoot low into the amp
+     * makes the shooter shoot (percent) low into the amp (seconds)
      */
     public Command cShootLow() {
         return this.cSetSpeed(Constants.Shooter.kShootLowSpeed)
@@ -79,9 +80,9 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
-     * makes the shooter intake a note from the human player
+     * makes the shooter intake (percent) a note from the human player (seconds)
      */
-    public Command cShootIntake() {
+    public Command cSourceIntake() {
         return this.cSetSpeed(Constants.Shooter.kDownPower)
                 .andThen(Commands.waitSeconds(Constants.Shooter.shootIntakeTime))
                 .andThen(this.runOnce(this::down))
