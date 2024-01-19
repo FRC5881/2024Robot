@@ -80,11 +80,10 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
-     * makes the shooter intake (percent) a note from the human player (seconds)
+     * makes the shooter intake (percent) a note from the human player
      */
     public Command cSourceIntake() {
         return this.cSetSpeed(Constants.Shooter.kDownPower)
-                .andThen(Commands.waitSeconds(Constants.Shooter.shootIntakeTime))
                 .andThen(this.runOnce(this::down))
                 .finallyDo(this::stop);
     }
