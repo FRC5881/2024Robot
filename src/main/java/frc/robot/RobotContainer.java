@@ -27,8 +27,11 @@ public class RobotContainer {
             OperatorConstants.kDriverControllerPort);
 
     private void configureBindings() {
+        // extends the climber
         m_driverController.povUp().whileTrue(m_climberSubsystem.cExtend());
+        // retracts the climber
         m_driverController.povDown().whileTrue(m_climberSubsystem.cRetract());
+        // activates the ground intake
         m_driverController.cross().whileTrue(m_intakeSubsystem.cRun());
     }
 
