@@ -17,7 +17,7 @@ public class ShooterSubsystem extends SubsystemBase {
      */
     public ShooterSubsystem() {
         this.shooterMotor = new TalonSRX(Constants.CANConstants.kShooterId);
-        this.intakeMotor = new TalonSRX(Constants.CANConstants.kIntakeId);
+        this.intakeMotor = new TalonSRX(Constants.CANConstants.kShooterIntakeId);
     }
 
     /**
