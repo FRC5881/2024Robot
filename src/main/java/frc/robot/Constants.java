@@ -1,5 +1,7 @@
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
+
 public final class Constants {
     public static class OperatorConstants {
         public static final int kDriverControllerPort = 0;
@@ -77,7 +79,7 @@ public final class Constants {
         /**
          * Maximum forward velocity of the drive train (mps).
          */
-        public static final double MAX_SPEED = 12;
+        public static final double MAX_SPEED = Units.feetToMeters(6);
 
         /**
          * Maximum rotational velocity of the drive train (radians per second).

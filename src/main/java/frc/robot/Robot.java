@@ -19,18 +19,20 @@ public class Robot extends TimedRobot {
     public enum Bot {
         /**
          * Our Competion bot
+         * 
+         * LOW - LOW
          */
         COMP,
         /**
-         * 2023 Robot usings as a test bed this year
+         * 2023 Robot as a test bed this year
          * 
-         * With swerve base
+         * HIGH - LOW
          */
         M1C2,
         /**
          * Andymark KOP chassis
          * 
-         * With differential drive
+         * LOW - HIGH
          */
         DOUGHNUT,
     }
@@ -44,16 +46,12 @@ public class Robot extends TimedRobot {
 
         if (!a0 && !a1) {
             return Bot.COMP;
-        }
-
-        if (a0 && !a1) {
+        } else if (a0 && !a1) {
             return Bot.M1C2;
-        }
-
-        if (!a0 && a1) {
+        } else if (!a0 && a1) {
             return Bot.DOUGHNUT;
         } else {
-            return null;
+            return Bot.COMP;
         }
     }
 
@@ -65,7 +63,8 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         // Instantiate our RobotContainer. This will perform all our button bindings,
         // and put our autonomous chooser on the dashboard.
-        m_robotContainer = new RobotContainer(detectChassis());
+        // m_robotContainer = new RobotContainer(detectChassis());
+        m_robotContainer = new RobotContainer(Bot.DOUGHNUT);
     }
 
     /**

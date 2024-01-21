@@ -49,12 +49,11 @@ public class RobotContainer {
     }
 
     private void configureM1C2() {
-        m_vision = new VisionSubsystem();
-        m_swerveDrive = new SwerveSubsystem(m_vision);
     }
 
     private void configureDoughnut() {
-        m_differentialDrive = new DifferentialDriveSubsystem();
+        setupDifferentialDrive();
+        setupShooter();
     }
 
     private void setupShooter() {
@@ -82,7 +81,9 @@ public class RobotContainer {
     private void setupDifferentialDrive() {
         m_differentialDrive = new DifferentialDriveSubsystem();
 
-        Command teleopDriveCommand = new DifferentialDriveCommand(m_differentialDrive, m_driverController::getLeftY,
+        Command teleopDriveCommand = new DifferentialDriveCommand(m_differentialDrive, () -> {
+            return -m_driverController.getLeftY();
+        },
                 m_driverController::getRightX);
 
         m_differentialDrive.setDefaultCommand(teleopDriveCommand);

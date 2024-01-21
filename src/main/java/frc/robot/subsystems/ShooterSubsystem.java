@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -10,21 +12,28 @@ import frc.robot.Constants;
 
 public class ShooterSubsystem extends SubsystemBase {
     private final TalonSRX intakeMotor;
-    private final TalonSRX shooterMotor;
+    // private final TalonSRX shooterMotor;
+    private final CANSparkMax shooterMotor;
 
     /**
      * adds can id to motors
      */
     public ShooterSubsystem() {
-        this.shooterMotor = new TalonSRX(Constants.CANConstants.kShooterId);
-        this.intakeMotor = new TalonSRX(Constants.CANConstants.kShooterIntakeId);
+        intakeMotor = new TalonSRX(Constants.CANConstants.kShooterIntakeId);
+        intakeMotor.configPeakCurrentLimit(20);
+        intakeMotor.enableCurrentLimit(true);
+
+        // shooterMotor = new TalonSRX(Constants.CANConstants.kShooterId);
+        shooterMotor = new CANSparkMax(Constants.CANConstants.kShooterId, MotorType.kBrushless);
+        shooterMotor.setSmartCurrentLimit(40);
     }
 
     /**
      * sets speed of shooter (percent)
      */
     public void setSpeed(double percentSpeed) {
-        shooterMotor.set(TalonSRXControlMode.PercentOutput, percentSpeed);
+        // shooterMotor.set(TalonSRXControlMode.PercentOutput, percentSpeed);
+        shooterMotor.set(percentSpeed);
     }
 
     /**
@@ -45,7 +54,8 @@ public class ShooterSubsystem extends SubsystemBase {
      * turns off all motors
      */
     public void stop() {
-        shooterMotor.set(TalonSRXControlMode.PercentOutput, 0);
+        // shooterMotor.set(TalonSRXControlMode.PercentOutput, 0);
+        shooterMotor.stopMotor();
         intakeMotor.set(TalonSRXControlMode.PercentOutput, 0);
     }
 
