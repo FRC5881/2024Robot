@@ -71,6 +71,17 @@ public final class Constants {
          * What how long to wait till it is at speed to shoot high with (seconds)
          */
         public static final double shootIntakeTime = 3;
+    }
 
+    public static class DriveConstants {
+        /**
+         * Maximum forward velocity of the drive train (mps).
+         */
+        public static final double MAX_SPEED = 12;
+
+        /**
+         * Maximum rotational velocity of the drive train (radians per second).
+         */
+        public static final double MAX_OMEGA = 2 * Math.PI * 4;
     }
 }
