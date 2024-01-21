@@ -8,7 +8,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 
-public class DifferentialSubsystem extends SubsystemBase {
+public class DifferentialDriveSubsystem extends SubsystemBase {
     private final DifferentialDriveKinematics kinematics;
 
     private final TalonSRX leftMain = new TalonSRX(1);
@@ -17,7 +17,7 @@ public class DifferentialSubsystem extends SubsystemBase {
     private final TalonSRX rightMain = new TalonSRX(3);
     private final TalonSRX rightSecond = new TalonSRX(4);
 
-    public DifferentialSubsystem() {
+    public DifferentialDriveSubsystem() {
         leftMain.setInverted(true);
         leftSecond.setInverted(true);
 
@@ -38,4 +38,5 @@ public class DifferentialSubsystem extends SubsystemBase {
         leftMain.set(TalonSRXControlMode.PercentOutput, left);
         rightMain.set(TalonSRXControlMode.PercentOutput, right);
     }
+
 }
