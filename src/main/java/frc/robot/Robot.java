@@ -38,9 +38,6 @@ public class Robot extends TimedRobot {
     private AnalogInput A0 = new AnalogInput(0);
     private AnalogInput A1 = new AnalogInput(1);
 
-    private double vA0 = A0.getVoltage();
-    private double vA1 = A1.getVoltage();
-
     public Bot detectChassis() {
         boolean a0 = A0.getVoltage() >= 2.5;
         boolean a1 = A1.getVoltage() >= 2.5;
@@ -49,15 +46,11 @@ public class Robot extends TimedRobot {
             return Bot.COMP;
         }
 
-        if (vA0 + vA1 < 2.5) {
-            return Bot.COMP;
-        }
-
-        if (vA0 + vA1 >= 2.5 && vA0 < 2.5) {
+        if (a0 && !a1) {
             return Bot.M1C2;
         }
 
-        if (vA0 + vA1 >= 2.5 && vA1 < 2.5) {
+        if (!a0 && a1) {
             return Bot.DOUGHNUT;
         } else {
             return null;
