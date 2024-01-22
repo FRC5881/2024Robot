@@ -33,7 +33,19 @@ public class SwerveSubsystem extends SubsystemBase {
     public SwerveSubsystem(Optional<VisionSubsystem> visionSubsystem, RobotFrame bot) throws IOException {
         m_visionSubsystem = visionSubsystem;
 
-        SwerveParser parser = new SwerveParser(new File(Filesystem.getDeployDirectory(), "swerve"));
+        String swerveDir;
+        switch (bot) {
+            case COMP:
+                swerveDir = "compbot";
+                break;
+            case M1C2:
+                swerveDir = "m1c2";
+                break;
+            default:
+                throw new IOException("SwerveSubsystem is only configured for COMP and M1C2");
+        }
+
+        SwerveParser parser = new SwerveParser(new File(Filesystem.getDeployDirectory(), swerveDir));
 
         // https://www.swervedrivespecialties.com/products/mk4-swerve-module
         // L1 free speed is allegedly 12.5 ft/s
@@ -107,8 +119,4 @@ public class SwerveSubsystem extends SubsystemBase {
     public void resetPose(Pose2d pose) {
         m_swerveDrive.resetOdometry(pose);
     }
-
-    /**
-     * This is a generic command that minimizes an
-     */
 }
