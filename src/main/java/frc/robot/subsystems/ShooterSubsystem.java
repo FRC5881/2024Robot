@@ -96,6 +96,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public Command cSourceIntake() {
         return this.cSetSpeed(Constants.Shooter.kDownPower)
                 .andThen(this.runOnce(this::down))
+                .andThen(Commands.waitUntil(() -> false))
                 .finallyDo(this::stop);
     }
 }
