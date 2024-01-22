@@ -8,7 +8,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.DifferentialDriveConstants;
 import frc.robot.Constants.CANConstants;
 
 public class DifferentialDriveSubsystem extends SubsystemBase {
@@ -45,10 +45,10 @@ public class DifferentialDriveSubsystem extends SubsystemBase {
 
     public void drive(ChassisSpeeds speeds) {
         var wheelSpeeds = kinematics.toWheelSpeeds(speeds);
-        wheelSpeeds.desaturate(DriveConstants.MAX_SPEED);
+        wheelSpeeds.desaturate(DifferentialDriveConstants.MAX_SPEED);
 
-        double left = wheelSpeeds.leftMetersPerSecond / DriveConstants.MAX_SPEED;
-        double right = wheelSpeeds.rightMetersPerSecond / DriveConstants.MAX_SPEED;
+        double left = wheelSpeeds.leftMetersPerSecond / DifferentialDriveConstants.MAX_SPEED;
+        double right = wheelSpeeds.rightMetersPerSecond / DifferentialDriveConstants.MAX_SPEED;
 
         SmartDashboard.putNumber("left", left);
         SmartDashboard.putNumber("right", right);

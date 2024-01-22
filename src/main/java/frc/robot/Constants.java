@@ -95,19 +95,26 @@ public final class Constants {
         public static final double shootIntakeTime = 3;
     }
 
-    public static class DriveConstants {
+    public static class DifferentialDriveConstants {
         /**
          * Maximum forward velocity of the drive train (mps).
-         * 
+         * <p>
          * Free speed: 5310 rpm
+         * <p>
+         * Effective gear ratio: 8.45:1
+         * <p>
          * Wheel diameter: 6 inches
-         * 
-         * diameter * pi * rpm / 60
+         * <p>
+         * Efficency: 0.75
+         * <p>
+         * speed = diameter * pi * gear ratio * efficency * rpm / 60
          */
-        public static final double MAX_SPEED = Units.inchesToMeters(6 * Math.PI * 5310 / 60);
+        public static final double MAX_SPEED = Units.inchesToMeters(6 * Math.PI * (1 / 8.45) * 0.75 * 5310 / 60);
 
         /**
          * Track width of the robot (meters).
+         * <p>
+         * TODO: Measure effective track width with sys-id
          */
         public static final double TRACK_WIDTH = Units.inchesToMeters(25);
 
