@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
@@ -11,57 +9,57 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class ShooterSubsystem extends SubsystemBase {
-    private final TalonSRX intakeMotor;
-    // private final TalonSRX shooterMotor;
+    private final CANSparkMax intakeMotor;
     private final CANSparkMax shooterMotor;
 
     /**
      * adds can id to motors
      */
     public ShooterSubsystem() {
-        intakeMotor = new TalonSRX(Constants.CANConstants.kShooterIntakeId);
-        intakeMotor.configPeakCurrentLimit(20);
-        intakeMotor.enableCurrentLimit(true);
+        intakeMotor = new CANSparkMax(Constants.CANConstants.kShooterIntakeId, MotorType.kBrushed);
+        intakeMotor.restoreFactoryDefaults();
+        intakeMotor.setSmartCurrentLimit(20);
+        intakeMotor.setInverted(true);
+        intakeMotor.burnFlash();
 
-        // shooterMotor = new TalonSRX(Constants.CANConstants.kShooterId);
         shooterMotor = new CANSparkMax(Constants.CANConstants.kShooterId, MotorType.kBrushless);
+        shooterMotor.restoreFactoryDefaults();
         shooterMotor.setSmartCurrentLimit(40);
+        shooterMotor.setInverted(true);
+        shooterMotor.burnFlash();
     }
 
     /**
-     * sets speed of shooter (percent)
+     * Sets speed of the shooter (percent)
      */
     public void setSpeed(double percentSpeed) {
-        // shooterMotor.set(TalonSRXControlMode.PercentOutput, percentSpeed);
         shooterMotor.set(percentSpeed);
     }
 
     /**
-     * makes the intake send the ball up into the shooter (percent)
+     * Commands the intake send the NOTE up into the shooter
      */
     public void up() {
-        intakeMotor.set(TalonSRXControlMode.PercentOutput, Constants.Shooter.kUpPower);
+        intakeMotor.set(Constants.Shooter.kUpPower);
     }
 
     /**
-     * makes the intake send the ball down from the shooter (percent)
+     * Commands the intake to take in a NOTE from the shooter
      */
     public void down() {
-        intakeMotor.set(TalonSRXControlMode.PercentOutput, -Constants.Shooter.kDownPower);
+        intakeMotor.set(Constants.Shooter.kDownPower);
     }
 
     /**
-     * turns off all motors
+     * Stops the shooter and intake
      */
     public void stop() {
-        // shooterMotor.set(TalonSRXControlMode.PercentOutput, 0);
+        intakeMotor.stopMotor();
         shooterMotor.stopMotor();
-        intakeMotor.set(TalonSRXControlMode.PercentOutput, 0);
     }
 
     /**
-     * creats a new command that sets the shooter motor speed (percent) and then
-     * finishes
+     * cSetSpeed is a helper command that sets the speed of the shooter
      */
     private Command cSetSpeed(double percentage) {
         return this.runOnce(() -> {
@@ -70,27 +68,30 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
-     * makes the shooter shoot (percent) high into the speaker (seconds)
+     * Spins the shooter up to high speed and then moves the NOTE up into the
+     * shooter
      */
     public Command cShootHigh() {
         return this.cSetSpeed(Constants.Shooter.kShootHighSpeed)
                 .andThen(Commands.waitSeconds(Constants.Shooter.shootHighTime))
                 .andThen(this.runOnce(this::up))
+                .andThen(Commands.waitUntil(() -> false))
                 .finallyDo(this::stop);
     }
 
     /**
-     * makes the shooter shoot (percent) low into the amp (seconds)
+     * Spins the shooter up to low speed and then moves the NOTE up into the shooter
      */
     public Command cShootLow() {
         return this.cSetSpeed(Constants.Shooter.kShootLowSpeed)
                 .andThen(Commands.waitSeconds(Constants.Shooter.shootLowTime))
                 .andThen(this.runOnce(this::up))
+                .andThen(Commands.waitUntil(() -> false))
                 .finallyDo(this::stop);
     }
 
     /**
-     * makes the shooter intake (percent) a note from the human player
+     * Spins the shooter and the intake in reverse to bring a NOTE into position
      */
     public Command cSourceIntake() {
         return this.cSetSpeed(Constants.Shooter.kDownPower)

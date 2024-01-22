@@ -8,8 +8,28 @@ public final class Constants {
     }
 
     public static class CANConstants {
+        public static final int kLeftMainId = 1;
+        public static final int kLeftSecondId = 2;
+        public static final int kRightMainId = 3;
+        public static final int kRightSecondId = 4;
+
+        public static final int kFrontLeftDriveId = 1;
+        public static final int kFrontLeftAngleId = 5;
+        public static final int kFrontRightDriveId = 2;
+        public static final int kFrontRightAngleId = 6;
+        public static final int kBackLeftDriveId = 3;
+        public static final int kBackLeftAngleId = 7;
+        public static final int kBackRightDriveId = 4;
+        public static final int kBackRightAngleId = 8;
+
+        public static final int kFrontLeftAzimuthEncoderId = 1;
+        public static final int kFrontRightAzimuthEncoderId = 2;
+        public static final int kBackLeftAzimuthEncoderId = 3;
+        public static final int kBackRightAzimuthEncoderId = 4;
+
         public static final int kClimberId = 10;
-        public static final int kIntakeId = 20;
+        public static final int kGroundIntakeId = 11;
+
         public static final int kShooterId = 21;
         public static final int kShooterIntakeId = 22;
     }
@@ -78,12 +98,22 @@ public final class Constants {
     public static class DriveConstants {
         /**
          * Maximum forward velocity of the drive train (mps).
+         * 
+         * Free speed: 5310 rpm
+         * Wheel diameter: 6 inches
+         * 
+         * diameter * pi * rpm / 60
          */
-        public static final double MAX_SPEED = Units.feetToMeters(6);
+        public static final double MAX_SPEED = Units.inchesToMeters(6 * Math.PI * 5310 / 60);
 
         /**
-         * Maximum rotational velocity of the drive train (radians per second).
+         * Track width of the robot (meters).
          */
-        public static final double MAX_OMEGA = 2 * Math.PI * 4;
+        public static final double TRACK_WIDTH = Units.inchesToMeters(25);
+
+        /**
+         * Maximum angular velocity of the drive train (rad/s)
+         */
+        public static final double MAX_OMEGA = 2 * MAX_SPEED / TRACK_WIDTH;
     }
 }

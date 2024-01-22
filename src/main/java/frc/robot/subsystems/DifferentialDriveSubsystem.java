@@ -1,7 +1,7 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
@@ -9,25 +9,35 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.CANConstants;
 
 public class DifferentialDriveSubsystem extends SubsystemBase {
     private final DifferentialDriveKinematics kinematics;
 
-    private final TalonSRX leftMain = new TalonSRX(1);
-    private final TalonSRX leftSecond = new TalonSRX(2);
+    private final CANSparkMax leftMain = new CANSparkMax(CANConstants.kLeftMainId, MotorType.kBrushed);
+    private final CANSparkMax leftSecond = new CANSparkMax(CANConstants.kLeftSecondId, MotorType.kBrushed);
 
-    private final TalonSRX rightMain = new TalonSRX(3);
-    private final TalonSRX rightSecond = new TalonSRX(4);
+    private final CANSparkMax rightMain = new CANSparkMax(CANConstants.kRightMainId, MotorType.kBrushed);
+    private final CANSparkMax rightSecond = new CANSparkMax(CANConstants.kRightSecondId, MotorType.kBrushed);
 
     public DifferentialDriveSubsystem() {
-        leftMain.setInverted(false);
-        leftSecond.setInverted(false);
+        leftMain.restoreFactoryDefaults();
+        leftMain.setSmartCurrentLimit(40);
+        leftMain.setInverted(true);
+        leftMain.burnFlash();
 
-        rightMain.setInverted(true);
-        rightSecond.setInverted(true);
-
+        leftSecond.restoreFactoryDefaults();
         leftSecond.follow(leftMain);
+        leftSecond.burnFlash();
+
+        rightMain.restoreFactoryDefaults();
+        rightMain.setSmartCurrentLimit(40);
+        rightMain.setInverted(true);
+        rightMain.burnFlash();
+
+        rightSecond.restoreFactoryDefaults();
         rightSecond.follow(rightMain);
+        rightSecond.burnFlash();
 
         // TODO: Measure track width
         kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(25));
@@ -43,7 +53,7 @@ public class DifferentialDriveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("left", left);
         SmartDashboard.putNumber("right", right);
 
-        leftMain.set(TalonSRXControlMode.PercentOutput, left);
-        rightMain.set(TalonSRXControlMode.PercentOutput, right);
+        leftMain.set(left);
+        rightMain.set(right);
     }
 }
