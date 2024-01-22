@@ -63,6 +63,8 @@ public class RobotContainer {
 
     private void setupVision() {
         var subsystem = new VisionSubsystem();
+
+        m_vision = Optional.of(subsystem);
     }
 
     private void setupSwerveDrive(Optional<VisionSubsystem> visionSubsystem, RobotFrame bot) {
@@ -126,5 +128,7 @@ public class RobotContainer {
 
         // sets the shooter to intake from a human player
         m_driverController.L1().whileTrue(subsystem.cSourceIntake());
+
+        m_shooter = Optional.of(subsystem);
     }
 }
