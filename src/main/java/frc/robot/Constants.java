@@ -34,14 +34,14 @@ public final class Constants {
         public static final int kShooterIntakeId = 22;
     }
 
-    public static class Intake {
+    public static class IntakeConstants {
         /**
          * What power to spin the intake motor with (percentage)
          */
         public static final double kIntakePower = 1.0;
     }
 
-    public static class Climber {
+    public static class ClimberConstants {
         /**
          * What power to extend the climber motor with (percentage)
          */
@@ -58,41 +58,31 @@ public final class Constants {
         public static final float kForwardLimit = 100.0f;
     }
 
-    public static class Shooter {
+    public static class ShooterConstants {
         /**
-         * What power to load the shooter with (percentage)
+         * The power to drive the intake motor towards the shooter (percentage)
          */
-        public static final double kUpPower = 1.0;
+        public static final double kIntakeUpPower = 1.0;
 
         /**
-         * What power to intake the note with (percentage)
+         * The power to drive the intake motor away from the shooter (percentage)
          */
-        public static final double kDownPower = 1.0;
+        public static final double kIntakeDownPower = 1.0;
 
         /**
          * What power to shoot high with (percentage)
          */
-        public static final double kShootHighSpeed = 1.0;
+        public static final double kShooterHighSpeed = 1.0;
 
         /**
          * What power to shoot low with (percentage)
          */
-        public static final double kShootLowSpeed = 0.5;
+        public static final double kShooterLowSpeed = 0.5;
 
         /**
-         * What how long to wait till it is at speed to shoot high with (seconds)
+         * What power to intake a NOTE with (percentage)
          */
-        public static final double shootHighTime = 3;
-
-        /**
-         * What how long to wait till it is at speed to shoot high with (seconds)
-         */
-        public static final double shootLowTime = 1.5;
-
-        /**
-         * What how long to wait till it is at speed to shoot high with (seconds)
-         */
-        public static final double shootIntakeTime = 3;
+        public static final double kShooterIntakePower = 0.25;
     }
 
     public static class DifferentialDriveConstants {

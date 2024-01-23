@@ -21,7 +21,7 @@ public class ClimberSubsystem extends SubsystemBase {
         this.climberMotor = new CANSparkMax(Constants.CANConstants.kClimberId, MotorType.kBrushless);
         climberMotor.setSoftLimit(SoftLimitDirection.kReverse, 0);
         climberMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
-        climberMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.Climber.kForwardLimit);
+        climberMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.ClimberConstants.kForwardLimit);
         climberMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
     }
 
@@ -44,11 +44,11 @@ public class ClimberSubsystem extends SubsystemBase {
     }
 
     private void extend() {
-        climberMotor.set(Constants.Climber.kExtendPower);
+        climberMotor.set(Constants.ClimberConstants.kExtendPower);
     }
 
     private void retract() {
-        climberMotor.set(-Constants.Climber.kRetractPower);
+        climberMotor.set(-Constants.ClimberConstants.kRetractPower);
     }
 
     private void stop() {

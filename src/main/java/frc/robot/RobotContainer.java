@@ -5,8 +5,8 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.DifferentialDriveCommand;
 import frc.robot.commands.RobotMode;
+import frc.robot.commands.DifferentialDrive.ArcadeDrive;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.Robot.RobotFrame;
@@ -16,6 +16,7 @@ import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -82,10 +83,9 @@ public class RobotContainer {
     private void setupDifferentialDrive() {
         var subsystem = new DifferentialDriveSubsystem();
 
-        Command teleopDriveCommand = new DifferentialDriveCommand(subsystem, () -> {
-            return -m_driverController.getLeftY();
-        },
-                m_driverController::getRightX);
+        Command teleopDriveCommand = new ArcadeDrive(subsystem,
+                signedSquare(deadzone(negate(m_driverController::getLeftY), 0.05)),
+                signedSquare(deadzone(negate(m_driverController::getRightX), 0.05)));
 
         subsystem.setDefaultCommand(teleopDriveCommand);
 
@@ -130,5 +130,28 @@ public class RobotContainer {
         m_driverController.L1().whileTrue(subsystem.cSourceIntake());
 
         m_shooter = Optional.of(subsystem);
+    }
+
+    private static DoubleSupplier deadzone(DoubleSupplier supplier, double deadzone) {
+        return () -> {
+            double value = supplier.getAsDouble();
+            if (Math.abs(value) < deadzone) {
+                return 0.0;
+            }
+            return value;
+        };
+    }
+
+    private static DoubleSupplier negate(DoubleSupplier supplier) {
+        return () -> {
+            return -supplier.getAsDouble();
+        };
+    }
+
+    private static DoubleSupplier signedSquare(DoubleSupplier supplier) {
+        return () -> {
+            double x = supplier.getAsDouble();
+            return x < 0 ? -x * x : x * x;
+        };
     }
 }

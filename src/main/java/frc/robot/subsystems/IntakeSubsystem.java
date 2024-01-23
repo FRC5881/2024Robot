@@ -21,7 +21,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * makes the intake suck in a note
      */
     public void suck() {
-        intakeMotor.set(Constants.Intake.kIntakePower);
+        intakeMotor.set(Constants.IntakeConstants.kIntakePower);
     }
 
     /**

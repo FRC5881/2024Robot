@@ -5,8 +5,6 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DifferentialDriveConstants;
 import frc.robot.Constants.CANConstants;
@@ -24,23 +22,18 @@ public class DifferentialDriveSubsystem extends SubsystemBase {
         leftMain.restoreFactoryDefaults();
         leftMain.setSmartCurrentLimit(40);
         leftMain.setInverted(true);
-        leftMain.burnFlash();
 
         leftSecond.restoreFactoryDefaults();
         leftSecond.follow(leftMain);
-        leftSecond.burnFlash();
 
         rightMain.restoreFactoryDefaults();
         rightMain.setSmartCurrentLimit(40);
-        rightMain.setInverted(true);
-        rightMain.burnFlash();
+        rightMain.setInverted(false);
 
         rightSecond.restoreFactoryDefaults();
         rightSecond.follow(rightMain);
-        rightSecond.burnFlash();
 
-        // TODO: Measure track width
-        kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(25));
+        kinematics = new DifferentialDriveKinematics(DifferentialDriveConstants.TRACK_WIDTH);
     }
 
     public void drive(ChassisSpeeds speeds) {
@@ -49,9 +42,6 @@ public class DifferentialDriveSubsystem extends SubsystemBase {
 
         double left = wheelSpeeds.leftMetersPerSecond / DifferentialDriveConstants.MAX_SPEED;
         double right = wheelSpeeds.rightMetersPerSecond / DifferentialDriveConstants.MAX_SPEED;
-
-        SmartDashboard.putNumber("left", left);
-        SmartDashboard.putNumber("right", right);
 
         leftMain.set(left);
         rightMain.set(right);
