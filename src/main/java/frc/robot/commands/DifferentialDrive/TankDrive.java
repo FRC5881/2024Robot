@@ -1,0 +1,31 @@
+package frc.robot.commands.DifferentialDrive;
+
+import java.util.function.DoubleSupplier;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.DifferentialDriveSubsystem;
+
+/**
+ * Tank drive command for differential drive robots.
+ */
+public class TankDrive extends Command {
+    // TODO: Implement this
+    private final DifferentialDriveSubsystem drive;
+    private final DoubleSupplier leftSupplier, rightSupplier;
+
+    /**
+     * Creates a new TankDrive.
+     *
+     * @param drive The drive subsystem this command will run on
+     * @param left  The left value (forward/backward) as a percentage of max speed
+     * @param right The right value (forward/backward) as a percentage of max speed
+     */
+    public TankDrive(DifferentialDriveSubsystem drive, DoubleSupplier left, DoubleSupplier right) {
+        this.drive = drive;
+        this.leftSupplier = left;
+        this.rightSupplier = right;
+        this.addRequirements(drive);
+    }
+
+    // TODO: Implement this
+}
