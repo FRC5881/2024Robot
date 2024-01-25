@@ -36,6 +36,11 @@ public class DifferentialDriveSubsystem extends SubsystemBase {
         kinematics = new DifferentialDriveKinematics(DifferentialDriveConstants.TRACK_WIDTH);
     }
 
+    /**
+     * Drive the robot using a ChassisSpeeds object.
+     * 
+     * @param speeds
+     */
     public void drive(ChassisSpeeds speeds) {
         var wheelSpeeds = kinematics.toWheelSpeeds(speeds);
         wheelSpeeds.desaturate(DifferentialDriveConstants.MAX_SPEED);
@@ -45,5 +50,16 @@ public class DifferentialDriveSubsystem extends SubsystemBase {
 
         leftMain.set(left);
         rightMain.set(right);
+    }
+
+    /**
+     * Drive the robot using left and right values.
+     * 
+     * @param left  speed of left side in meters per second
+     * @param right speed of right side in meters per second
+     */
+    public void drive(double left, double right) {
+        leftMain.set(left / DifferentialDriveConstants.MAX_SPEED);
+        rightMain.set(right / DifferentialDriveConstants.MAX_SPEED);
     }
 }

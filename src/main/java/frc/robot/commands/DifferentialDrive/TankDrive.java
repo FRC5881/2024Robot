@@ -3,13 +3,15 @@ package frc.robot.commands.DifferentialDrive;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DifferentialDriveConstants;
 import frc.robot.subsystems.DifferentialDriveSubsystem;
 
 /**
  * Tank drive command for differential drive robots.
+ * <p>
+ * Tank drive controls the left and right sides of the robot independently.
  */
 public class TankDrive extends Command {
-    // TODO: Implement this
     private final DifferentialDriveSubsystem drive;
     private final DoubleSupplier leftSupplier, rightSupplier;
 
@@ -27,5 +29,10 @@ public class TankDrive extends Command {
         this.addRequirements(drive);
     }
 
-    // TODO: Implement this
+    @Override
+    public void execute() {
+        double left = leftSupplier.getAsDouble() * DifferentialDriveConstants.MAX_SPEED;
+        double right = rightSupplier.getAsDouble() * DifferentialDriveConstants.MAX_SPEED;
+        drive.drive(left, right);
+    }
 }

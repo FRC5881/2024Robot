@@ -9,6 +9,8 @@ import frc.robot.subsystems.DifferentialDriveSubsystem;
 
 /**
  * Arcade drive command for differential drive robots.
+ * <p>
+ * Arcade drive control the speed and rotation rate of a robot
  */
 public class ArcadeDrive extends Command {
     private final DifferentialDriveSubsystem drive;

@@ -1,0 +1,55 @@
+package frc.robot.commands.DifferentialDrive;
+
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.DifferentialDriveSubsystem;
+
+/**
+ * Curvature drive command for differential drive robots.
+ */
+public class CurvatureDrive extends Command {
+    private final DifferentialDriveSubsystem drive;
+    private final DoubleSupplier throttleSupplier, curvatureSupplier;
+    private final BooleanSupplier quickTurnSupplier;
+
+    /**
+     * Creates a new CurvatureDrive.
+     *
+     * @param drive     The drive subsystem this command will run on
+     * @param throttle  The throttle value (forward/backward) as a percentage of max
+     *                  speed
+     * @param curve     The curvature value (turn) as a percentage of max rotation
+     * @param quickTurn If true, the robot may turn in place
+     */
+    public CurvatureDrive(DifferentialDriveSubsystem drive, DoubleSupplier throttle, DoubleSupplier curve,
+            BooleanSupplier quickTurn) {
+        this.drive = drive;
+        this.throttleSupplier = throttle;
+        this.curvatureSupplier = curve;
+        this.quickTurnSupplier = quickTurn;
+        this.addRequirements(drive);
+    }
+
+    @Override
+    public void execute() {
+        double throttle = throttleSupplier.getAsDouble();
+
+        double turn;
+        if (quickTurnSupplier.getAsBoolean()) {
+            turn = curvatureSupplier.getAsDouble();
+        } else {
+            turn = curvatureSupplier.getAsDouble() * throttle;
+        }
+
+        ChassisSpeeds speed = new ChassisSpeeds(throttle, 0, turn);
+        drive.drive(speed);
+    }
+
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
+}
