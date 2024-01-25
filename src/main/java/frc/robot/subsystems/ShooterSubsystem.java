@@ -38,6 +38,7 @@ public class ShooterSubsystem extends SubsystemBase {
      */
     public void setSpeed(double percentSpeed) {
         shooterMotor.set(percentSpeed);
+        intakeMotor.set(percentSpeed);
     }
 
     /**
@@ -102,5 +103,15 @@ public class ShooterSubsystem extends SubsystemBase {
                 .andThen(this.runOnce(this::down))
                 .andThen(Commands.idle())
                 .finallyDo(this::stop);
+    }
+
+    /**
+     * Runs both the shooter and the intake at full speed
+     */
+    public Command cRunBoth() {
+        return this.run(() -> {
+            shooterMotor.set(1);
+            intakeMotor.set(1);
+        }).finallyDo(this::stop);
     }
 }

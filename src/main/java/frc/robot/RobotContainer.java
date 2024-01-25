@@ -14,9 +14,9 @@ import frc.robot.subsystems.DifferentialDriveSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.utils.DoubleTransformer;
 
 import java.util.Optional;
-import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -84,8 +84,14 @@ public class RobotContainer {
         var subsystem = new DifferentialDriveSubsystem();
 
         Command teleopDriveCommand = new ArcadeDrive(subsystem,
-                signedSquare(deadzone(negate(m_driverController::getLeftY), 0.05)),
-                signedSquare(deadzone(negate(m_driverController::getRightX), 0.05)));
+                DoubleTransformer.of(m_driverController::getLeftY)
+                        .negate()
+                        .deadzone(0.05)
+                        .signedSquare(),
+                DoubleTransformer.of(m_driverController::getRightX)
+                        .negate()
+                        .deadzone(0.05)
+                        .signedSquare());
 
         subsystem.setDefaultCommand(teleopDriveCommand);
 
@@ -126,32 +132,12 @@ public class RobotContainer {
         // Sets the shooter to speaker mode
         m_driverController.triangle().onTrue(mode.cSetSpeakerMode());
 
-        // sets the shooter to intake from a human player
+        // Sets the shooter to intake from a human player
         m_driverController.L1().whileTrue(subsystem.cSourceIntake());
 
+        // Sets the shooter to run both motors at full speed, for testing purposes
+        m_driverController.cross().whileTrue(subsystem.cRunBoth());
+
         m_shooter = Optional.of(subsystem);
-    }
-
-    private static DoubleSupplier deadzone(DoubleSupplier supplier, double deadzone) {
-        return () -> {
-            double value = supplier.getAsDouble();
-            if (Math.abs(value) < deadzone) {
-                return 0.0;
-            }
-            return value;
-        };
-    }
-
-    private static DoubleSupplier negate(DoubleSupplier supplier) {
-        return () -> {
-            return -supplier.getAsDouble();
-        };
-    }
-
-    private static DoubleSupplier signedSquare(DoubleSupplier supplier) {
-        return () -> {
-            double x = supplier.getAsDouble();
-            return x < 0 ? -x * x : x * x;
-        };
     }
 }
