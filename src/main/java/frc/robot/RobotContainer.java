@@ -7,6 +7,8 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.RobotMode;
 import frc.robot.commands.DifferentialDrive.ArcadeDrive;
+import frc.robot.commands.DifferentialDrive.CurvatureDrive;
+import frc.robot.commands.DifferentialDrive.TankDrive;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.Robot.RobotFrame;
@@ -15,10 +17,12 @@ import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.utils.PickerCommandFactory;
 import frc.robot.utils.DoubleTransformer;
 
 import java.util.Optional;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
@@ -85,12 +89,12 @@ public class RobotContainer {
                         mode::isAmpMode);
 
                 // Shoot!
-                m_driverController.R1().whileTrue(shoot);
+                m_driverController.R2().whileTrue(shoot);
 
                 Command sourceIntake = shooter.cSourceIntake().andThen(indexer.cPositionNote());
 
                 // Intake from source
-                m_driverController.L1().whileTrue(sourceIntake);
+                m_driverController.L2().whileTrue(sourceIntake);
 
             } else {
                 Command shoot = Commands.either(shooter.cShootLow(),
@@ -98,12 +102,12 @@ public class RobotContainer {
                         mode::isAmpMode);
 
                 // Shoot!
-                m_driverController.R1().whileTrue(shoot);
+                m_driverController.R2().whileTrue(shoot);
 
                 Command sourceIntake = shooter.cSourceIntake();
 
                 // Intake from source
-                m_driverController.L1().whileTrue(sourceIntake);
+                m_driverController.L2().whileTrue(sourceIntake);
 
             }
         }
@@ -116,12 +120,12 @@ public class RobotContainer {
                 Command groundIntake = intake.cRun().andThen(indexer.cPositionNote());
 
                 // Intake from source
-                m_driverController.L1().whileTrue(groundIntake);
+                m_driverController.R1().whileTrue(groundIntake);
             } else {
                 Command groundIntake = intake.cRun();
 
                 // Intake from source
-                m_driverController.L1().whileTrue(groundIntake);
+                m_driverController.R1().whileTrue(groundIntake);
             }
 
         }
@@ -147,22 +151,40 @@ public class RobotContainer {
             e.printStackTrace();
             System.exit(1);
         }
+
+        // Construct with just a list of commands
+
+        // Uses <T>.getClass().getSimpleName() to name commands
+        // Puts the names of the commands up on the smartdashboard as a drop down
     }
 
     private void setupDifferentialDrive() {
         var subsystem = new DifferentialDriveSubsystem();
 
-        Command teleopDriveCommand = new ArcadeDrive(subsystem,
-                DoubleTransformer.of(m_driverController::getLeftY)
-                        .negate()
-                        .deadzone(0.05)
-                        .signedSquare(),
-                DoubleTransformer.of(m_driverController::getRightX)
-                        .negate()
-                        .deadzone(0.05)
-                        .signedSquare());
+        SmartDashboard.putNumber("drive sensitivity", 1.0);
+        SmartDashboard.putNumber("turn sensitivity", 1.0);
 
-        subsystem.setDefaultCommand(teleopDriveCommand);
+        var leftY = DoubleTransformer.of(m_driverController::getLeftY)
+                .negate()
+                .deadzone(0.03);
+        // .signedSquare();
+
+        var rightY = DoubleTransformer.of(m_driverController::getRightY)
+                .negate()
+                .deadzone(0.03);
+        // .signedSquare();
+
+        var rightX = DoubleTransformer.of(m_driverController::getRightX)
+                .negate()
+                .deadzone(0.03);
+        // .signedSquare();
+
+        Command arcade = new ArcadeDrive(subsystem, leftY, rightX);
+        Command curvature = new CurvatureDrive(subsystem, leftY, rightX, m_driverController.L1());
+        Command tank = new TankDrive(subsystem, leftY, rightY);
+
+        PickerCommandFactory chooser = new PickerCommandFactory("Differential Drive Command", arcade, curvature, tank);
+        subsystem.setDefaultCommand(chooser.build());
 
         m_differentialDrive = Optional.of(subsystem);
     }
@@ -185,9 +207,6 @@ public class RobotContainer {
 
     private void setupShooter() {
         var subsystem = new ShooterSubsystem();
-
-        // Sets the shooter to intake from a human player
-        m_driverController.L1().whileTrue(subsystem.cSourceIntake());
 
         m_shooter = Optional.of(subsystem);
     }

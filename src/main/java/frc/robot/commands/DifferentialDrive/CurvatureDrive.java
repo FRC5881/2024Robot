@@ -4,7 +4,9 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DifferentialDriveConstants;
 import frc.robot.subsystems.DifferentialDriveSubsystem;
 
 /**
@@ -35,6 +37,9 @@ public class CurvatureDrive extends Command {
 
     @Override
     public void execute() {
+        double drive_sensitivity = SmartDashboard.getNumber("drive sensitivity", 1.0);
+        double angle_sensitivity = SmartDashboard.getNumber("angle sensitivity", 1.0);
+
         double throttle = throttleSupplier.getAsDouble();
 
         double turn;
@@ -44,7 +49,8 @@ public class CurvatureDrive extends Command {
             turn = curvatureSupplier.getAsDouble() * throttle;
         }
 
-        ChassisSpeeds speed = new ChassisSpeeds(throttle, 0, turn);
+        ChassisSpeeds speed = new ChassisSpeeds(drive_sensitivity * throttle * DifferentialDriveConstants.MAX_SPEED, 0,
+                angle_sensitivity * turn * DifferentialDriveConstants.MAX_OMEGA);
         drive.drive(speed);
     }
 

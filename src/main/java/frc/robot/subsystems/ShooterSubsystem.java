@@ -18,10 +18,9 @@ public class ShooterSubsystem extends SubsystemBase {
      * adds can id to motors
      */
     public ShooterSubsystem() {
-        secondaryShooterMotor = new CANSparkMax(Constants.CANConstants.kShooterIntakeId, MotorType.kBrushed);
+        secondaryShooterMotor = new CANSparkMax(Constants.CANConstants.kShooterIntakeId, MotorType.kBrushless);
         secondaryShooterMotor.restoreFactoryDefaults();
         secondaryShooterMotor.setSmartCurrentLimit(40);
-        secondaryShooterMotor.setInverted(true);
 
         mainShooterMotor = new CANSparkMax(Constants.CANConstants.kShooterId, MotorType.kBrushless);
         mainShooterMotor.restoreFactoryDefaults();
