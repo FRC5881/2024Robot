@@ -11,6 +11,7 @@ import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.Robot.RobotFrame;
 import frc.robot.subsystems.DifferentialDriveSubsystem;
+import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -29,12 +30,23 @@ public class RobotContainer {
     private Optional<DifferentialDriveSubsystem> m_differentialDrive = Optional.empty();
     private Optional<ClimberSubsystem> m_climber = Optional.empty();
     private Optional<IntakeSubsystem> m_intake = Optional.empty();
+
+    private Optional<IndexerSubsystem> m_indexer = Optional.empty();
     private Optional<ShooterSubsystem> m_shooter = Optional.empty();
+
+    private RobotMode mode = new RobotMode();
 
     private final CommandPS5Controller m_driverController = new CommandPS5Controller(
             OperatorConstants.kDriverControllerPort);
 
     public RobotContainer(RobotFrame bot) {
+
+        // Sets the shooter to amp mode
+        m_driverController.square().onTrue(mode.cSetAmpMode());
+
+        // Sets the shooter to speaker mode
+        m_driverController.triangle().onTrue(mode.cSetSpeakerMode());
+
         // Each bot has a different set of subsystems
         switch (bot) {
             case COMP:
@@ -56,6 +68,33 @@ public class RobotContainer {
         }
 
         // Some commands might require multiple subsystems
+        if (m_shooter.isPresent()) {
+            ShooterSubsystem shooter = m_shooter.get();
+
+            if (m_indexer.isPresent()) {
+                IndexerSubsystem indexer = m_indexer.get();
+
+                Command shootHigh = shooter.cShootLow().andThen(shooter.cWaitForSetPoint())
+                        .andThen(indexer.cSendShooter());
+                Command shootLow = shooter.cShootHigh().andThen(shooter.cWaitForSetPoint())
+                        .andThen(indexer.cSendShooter());
+
+                Command shoot = Commands.either(
+                        shootLow,
+                        shootHigh,
+                        mode::isAmpMode);
+
+                // Shoot!
+                m_driverController.R1().whileTrue(shoot);
+            } else {
+                Command shoot = Commands.either(shooter.cShootLow(),
+                        shooter.cShootHigh(),
+                        mode::isAmpMode);
+
+                // Shoot!
+                m_driverController.R1().whileTrue(shoot);
+            }
+        }
     }
 
     public Command getAutonomousCommand() {
@@ -117,27 +156,17 @@ public class RobotContainer {
     private void setupShooter() {
         var subsystem = new ShooterSubsystem();
 
-        // Sets the mode of the shooter
-        RobotMode mode = new RobotMode();
-        Command shoot = Commands.either(subsystem.cShootLow(),
-                subsystem.cShootHigh(),
-                mode::isAmpMode);
-
-        // Shoot!
-        m_driverController.R1().whileTrue(shoot);
-
-        // Sets the shooter to amp mode
-        m_driverController.square().onTrue(mode.cSetAmpMode());
-
-        // Sets the shooter to speaker mode
-        m_driverController.triangle().onTrue(mode.cSetSpeakerMode());
-
         // Sets the shooter to intake from a human player
         m_driverController.L1().whileTrue(subsystem.cSourceIntake());
 
-        // Sets the shooter to run both motors at full speed, for testing purposes
-        m_driverController.cross().whileTrue(subsystem.cRunBoth());
-
         m_shooter = Optional.of(subsystem);
+    }
+
+    private void setupIndexer() {
+        var subsystem = new IndexerSubsystem();
+
+        // Setup default command
+
+        m_indexer = Optional.of(subsystem);
     }
 }

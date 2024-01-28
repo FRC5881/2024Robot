@@ -11,56 +11,47 @@ import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 
 public class ShooterSubsystem extends SubsystemBase {
-    private final CANSparkMax intakeMotor;
-    private final CANSparkMax shooterMotor;
+    private final CANSparkMax secondaryShooterMotor;
+    private final CANSparkMax mainShooterMotor;
 
     /**
      * adds can id to motors
      */
     public ShooterSubsystem() {
-        intakeMotor = new CANSparkMax(Constants.CANConstants.kShooterIntakeId, MotorType.kBrushed);
-        intakeMotor.restoreFactoryDefaults();
-        intakeMotor.setSmartCurrentLimit(40);
-        intakeMotor.setInverted(true);
+        secondaryShooterMotor = new CANSparkMax(Constants.CANConstants.kShooterIntakeId, MotorType.kBrushed);
+        secondaryShooterMotor.restoreFactoryDefaults();
+        secondaryShooterMotor.setSmartCurrentLimit(40);
+        secondaryShooterMotor.setInverted(true);
 
-        shooterMotor = new CANSparkMax(Constants.CANConstants.kShooterId, MotorType.kBrushless);
-        shooterMotor.restoreFactoryDefaults();
-        shooterMotor.setSmartCurrentLimit(40);
+        mainShooterMotor = new CANSparkMax(Constants.CANConstants.kShooterId, MotorType.kBrushless);
+        mainShooterMotor.restoreFactoryDefaults();
+        mainShooterMotor.setSmartCurrentLimit(40);
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("shooterRPM", shooterMotor.getEncoder().getVelocity());
+        SmartDashboard.putNumber("shooterRPM", mainShooterMotor.getEncoder().getVelocity());
     }
 
     /**
      * Sets speed of the shooter (percent)
      */
     public void setSpeed(double percentSpeed) {
-        shooterMotor.set(percentSpeed);
-        intakeMotor.set(percentSpeed);
+        mainShooterMotor.set(percentSpeed);
+        secondaryShooterMotor.set(percentSpeed);
     }
 
-    /**
-     * Commands the intake send the NOTE up into the shooter
-     */
-    public void up() {
-        intakeMotor.set(ShooterConstants.kIntakeUpPower);
-    }
-
-    /**
-     * Commands the intake to take in a NOTE from the shooter
-     */
-    public void down() {
-        intakeMotor.set(-ShooterConstants.kIntakeDownPower);
+    public boolean isAtSetPoint() {
+        // TODO:
+        return true;
     }
 
     /**
      * Stops the shooter and intake
      */
     public void stop() {
-        intakeMotor.stopMotor();
-        shooterMotor.stopMotor();
+        secondaryShooterMotor.stopMotor();
+        mainShooterMotor.stopMotor();
     }
 
     /**
@@ -78,8 +69,6 @@ public class ShooterSubsystem extends SubsystemBase {
      */
     public Command cShootHigh() {
         return this.cSetSpeed(ShooterConstants.kShooterHighSpeed)
-                .andThen(Commands.waitSeconds(0.75))
-                .andThen(this.runOnce(this::up))
                 .andThen(Commands.idle())
                 .finallyDo(this::stop);
     }
@@ -89,10 +78,17 @@ public class ShooterSubsystem extends SubsystemBase {
      */
     public Command cShootLow() {
         return this.cSetSpeed(ShooterConstants.kShooterLowSpeed)
-                .andThen(Commands.waitSeconds(0.5))
-                .andThen(this.runOnce(this::up))
                 .andThen(Commands.idle())
                 .finallyDo(this::stop);
+    }
+
+    /**
+     * Command that ends when the shooter is at it's setpoint
+     * 
+     * @return the command
+     */
+    public Command cWaitForSetPoint() {
+        return Commands.waitUntil(this::isAtSetPoint);
     }
 
     /**
@@ -100,18 +96,7 @@ public class ShooterSubsystem extends SubsystemBase {
      */
     public Command cSourceIntake() {
         return this.cSetSpeed(-ShooterConstants.kShooterIntakePower)
-                .andThen(this.runOnce(this::down))
                 .andThen(Commands.idle())
                 .finallyDo(this::stop);
-    }
-
-    /**
-     * Runs both the shooter and the intake at full speed
-     */
-    public Command cRunBoth() {
-        return this.run(() -> {
-            shooterMotor.set(1);
-            intakeMotor.set(1);
-        }).finallyDo(this::stop);
     }
 }
