@@ -30,8 +30,7 @@ public final class Constants {
         public static final int kClimberId = 10;
         public static final int kGroundIntakeId = 11;
 
-        public static final int kIntakeMotor = 15;
-        public static final int kOutputMotor = 16;
+        public static final int kIndexerShooterMotor = 15;
 
         public static final int kShooterId = 21;
         public static final int kShooterIntakeId = 22;
@@ -92,17 +91,12 @@ public final class Constants {
         /**
          * The power to drive the intake motor towards the shooter (percentage)
          */
-        public static final double kIntakeGroundPower = 1.0;
+        public static final double kIndexerGroundPower = 1.0;
 
         /**
          * The power to drive the intake motor away from the shooter (percentage)
          */
-        public static final double kIntakeShooterPower = 1.0;
-
-        /**
-         * What power to shoot high with (percentage)
-         */
-        public static final double kOutputShooterPower = 1.0;
+        public static final double kIndexerShooterPower = 1.0;
     }
 
     public static class DifferentialDriveConstants {

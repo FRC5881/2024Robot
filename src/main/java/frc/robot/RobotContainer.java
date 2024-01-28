@@ -86,6 +86,12 @@ public class RobotContainer {
 
                 // Shoot!
                 m_driverController.R1().whileTrue(shoot);
+
+                Command sourceIntake = shooter.cSourceIntake().andThen(indexer.cPositionNote());
+
+                // Intake from source
+                m_driverController.L1().whileTrue(sourceIntake);
+
             } else {
                 Command shoot = Commands.either(shooter.cShootLow(),
                         shooter.cShootHigh(),
@@ -93,7 +99,31 @@ public class RobotContainer {
 
                 // Shoot!
                 m_driverController.R1().whileTrue(shoot);
+
+                Command sourceIntake = shooter.cSourceIntake();
+
+                // Intake from source
+                m_driverController.L1().whileTrue(sourceIntake);
+
             }
+        }
+
+        if (m_intake.isPresent()) {
+            IntakeSubsystem intake = m_intake.get();
+
+            if (m_indexer.isPresent()) {
+                IndexerSubsystem indexer = m_indexer.get();
+                Command groundIntake = intake.cRun().andThen(indexer.cPositionNote());
+
+                // Intake from source
+                m_driverController.L1().whileTrue(groundIntake);
+            } else {
+                Command groundIntake = intake.cRun();
+
+                // Intake from source
+                m_driverController.L1().whileTrue(groundIntake);
+            }
+
         }
     }
 
