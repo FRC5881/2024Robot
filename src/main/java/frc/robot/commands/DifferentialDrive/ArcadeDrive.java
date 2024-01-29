@@ -34,10 +34,10 @@ public class ArcadeDrive extends Command {
     @Override
     public void execute() {
         double drive_sensitivity = SmartDashboard.getNumber("drive sensitivity", 1.0);
-        double angle_sensitivity = SmartDashboard.getNumber("angle sensitivity", 1.0);
+        double turn_sensitivity = SmartDashboard.getNumber("turn sensitivity", 1.0);
 
         double vx = drive_sensitivity * vxSupplier.getAsDouble() * DifferentialDriveConstants.MAX_SPEED;
-        double omega = angle_sensitivity * omegaSupplier.getAsDouble() * DifferentialDriveConstants.MAX_OMEGA;
+        double omega = turn_sensitivity * omegaSupplier.getAsDouble() * DifferentialDriveConstants.MAX_OMEGA;
 
         ChassisSpeeds speed = new ChassisSpeeds(vx, 0, omega);
         drive.drive(speed);
