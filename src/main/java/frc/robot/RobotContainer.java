@@ -17,8 +17,8 @@ import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.utils.PickerCommandFactory;
 import frc.robot.utils.DoubleTransformer;
+import frc.robot.utils.SendableChooserCommand;
 
 import java.util.Optional;
 
@@ -44,11 +44,9 @@ public class RobotContainer {
             OperatorConstants.kDriverControllerPort);
 
     public RobotContainer(RobotFrame bot) {
-
-        // Sets the shooter to amp mode
+        // Sets the robot to AmpMode
         m_driverController.square().onTrue(mode.cSetAmpMode());
-
-        // Sets the shooter to speaker mode
+        // Sets the robot to SpeakerMode
         m_driverController.triangle().onTrue(mode.cSetSpeakerMode());
 
         // Each bot has a different set of subsystems
@@ -71,63 +69,32 @@ public class RobotContainer {
             throw new RuntimeException("Cannot have both swerve and differential drive subsystems");
         }
 
-        // Some commands might require multiple subsystems
+        // "Shoot" commands behave differently if the indexer is present
+        //
+        // Namely, if we have an indexer it needs to send the NOTE up to the shooter.
+        //
+        // Without an indexer, the shooter should just run and wait for a human it
+        // insert the note
         if (m_shooter.isPresent()) {
             ShooterSubsystem shooter = m_shooter.get();
 
+            Command shoot;
             if (m_indexer.isPresent()) {
                 IndexerSubsystem indexer = m_indexer.get();
 
-                Command shootHigh = shooter.cShootLow().andThen(shooter.cWaitForSetPoint())
+                Command shootHigh = shooter.cShootLow()
+                        .andThen(shooter.cWaitForSetPoint())
                         .andThen(indexer.cSendShooter());
-                Command shootLow = shooter.cShootHigh().andThen(shooter.cWaitForSetPoint())
+                Command shootLow = shooter.cShootHigh()
+                        .andThen(shooter.cWaitForSetPoint())
                         .andThen(indexer.cSendShooter());
 
-                Command shoot = Commands.either(
-                        shootLow,
-                        shootHigh,
-                        mode::isAmpMode);
-
-                // Shoot!
-                m_driverController.R2().whileTrue(shoot);
-
-                Command sourceIntake = shooter.cSourceIntake().andThen(indexer.cPositionNote());
-
-                // Intake from source
-                m_driverController.L2().whileTrue(sourceIntake);
-
+                shoot = Commands.either(shootLow, shootHigh, mode::isAmpMode);
             } else {
-                Command shoot = Commands.either(shooter.cShootLow(),
-                        shooter.cShootHigh(),
-                        mode::isAmpMode);
-
-                // Shoot!
-                m_driverController.R2().whileTrue(shoot);
-
-                Command sourceIntake = shooter.cSourceIntake();
-
-                // Intake from source
-                m_driverController.L2().whileTrue(sourceIntake);
-
-            }
-        }
-
-        if (m_intake.isPresent()) {
-            IntakeSubsystem intake = m_intake.get();
-
-            if (m_indexer.isPresent()) {
-                IndexerSubsystem indexer = m_indexer.get();
-                Command groundIntake = intake.cRun().andThen(indexer.cPositionNote());
-
-                // Intake from source
-                m_driverController.R1().whileTrue(groundIntake);
-            } else {
-                Command groundIntake = intake.cRun();
-
-                // Intake from source
-                m_driverController.R1().whileTrue(groundIntake);
+                shoot = Commands.either(shooter.cShootLow(), shooter.cShootHigh(), mode::isAmpMode);
             }
 
+            m_driverController.R2().whileTrue(shoot);
         }
     }
 
@@ -136,86 +103,75 @@ public class RobotContainer {
     }
 
     private void setupVision() {
-        var subsystem = new VisionSubsystem();
+        var vision = new VisionSubsystem();
 
-        m_vision = Optional.of(subsystem);
+        m_vision = Optional.of(vision);
     }
 
     private void setupSwerveDrive(Optional<VisionSubsystem> visionSubsystem, RobotFrame bot) {
         try {
-            var subsystem = new SwerveSubsystem(visionSubsystem, bot);
-            m_swerveDrive = Optional.of(subsystem);
+            var drive = new SwerveSubsystem(visionSubsystem, bot);
+
+            // TODO: Add commands
+
+            m_swerveDrive = Optional.of(drive);
         } catch (Exception e) {
             // End the robot program if we can't initialize the swerve drive.
             System.err.println("Failed to initialize swerve drive");
             e.printStackTrace();
             System.exit(1);
         }
-
-        // Construct with just a list of commands
-
-        // Uses <T>.getClass().getSimpleName() to name commands
-        // Puts the names of the commands up on the smartdashboard as a drop down
     }
 
     private void setupDifferentialDrive() {
-        var subsystem = new DifferentialDriveSubsystem();
+        var drive = new DifferentialDriveSubsystem();
 
         SmartDashboard.putNumber("drive sensitivity", 1.0);
         SmartDashboard.putNumber("turn sensitivity", 1.0);
 
-        var leftY = DoubleTransformer.of(m_driverController::getLeftY)
-                .negate()
-                .deadzone(0.03);
-        // .signedSquare();
+        var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone(0.03);
+        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
+        var rightX = DoubleTransformer.of(m_driverController::getRightX).negate().deadzone(0.03);
 
-        var rightY = DoubleTransformer.of(m_driverController::getRightY)
-                .negate()
-                .deadzone(0.03);
-        // .signedSquare();
+        Command arcade = new ArcadeDrive(drive, leftY, rightX);
+        Command curvature = new CurvatureDrive(drive, leftY, rightX, m_driverController.L1());
+        Command tank = new TankDrive(drive, leftY, rightY);
 
-        var rightX = DoubleTransformer.of(m_driverController::getRightX)
-                .negate()
-                .deadzone(0.03);
-        // .signedSquare();
-
-        Command arcade = new ArcadeDrive(subsystem, leftY, rightX);
-        Command curvature = new CurvatureDrive(subsystem, leftY, rightX, m_driverController.L1());
-        Command tank = new TankDrive(subsystem, leftY, rightY);
-
-        PickerCommandFactory chooser = new PickerCommandFactory("Differential Drive Command", arcade, curvature, tank);
-        subsystem.setDefaultCommand(chooser.build());
-
-        m_differentialDrive = Optional.of(subsystem);
+        drive.setDefaultCommand(new SendableChooserCommand("Differential Drive", arcade, curvature, tank));
+        m_differentialDrive = Optional.of(drive);
     }
 
     private void setupClimber() {
-        var subsystem = new ClimberSubsystem();
+        var climber = new ClimberSubsystem();
 
         // TODO: Add climber commands
 
-        m_climber = Optional.of(subsystem);
+        m_climber = Optional.of(climber);
     }
 
     private void setupIntake() {
-        var subsystem = new IntakeSubsystem();
+        var intake = new IntakeSubsystem();
 
-        // TODO: Add intake commands
+        // Intake a note from the ground
+        m_driverController.R1().whileTrue(intake.cRun());
 
-        m_intake = Optional.of(subsystem);
+        m_intake = Optional.of(intake);
     }
 
     private void setupShooter() {
-        var subsystem = new ShooterSubsystem();
+        var shooter = new ShooterSubsystem();
 
-        m_shooter = Optional.of(subsystem);
+        m_driverController.L2().whileTrue(shooter.cSourceIntake());
+
+        m_shooter = Optional.of(shooter);
     }
 
     private void setupIndexer() {
-        var subsystem = new IndexerSubsystem();
+        var indexer = new IndexerSubsystem();
 
-        // Setup default command
+        // The indexer automatically positions NOTES as they are received
+        indexer.setDefaultCommand(indexer.cPositionNote());
 
-        m_indexer = Optional.of(subsystem);
+        m_indexer = Optional.of(indexer);
     }
 }
