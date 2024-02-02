@@ -127,4 +127,36 @@ public final class Constants {
          */
         public static final double MAX_OMEGA = 2 * MAX_SPEED / TRACK_WIDTH;
     }
+
+    public static class SwerveDriveConstants {
+        /**
+         * Maximum translational velocity of the drive train (mps).
+         * <p>
+         * Free speed: 5676 rpm
+         * <p>
+         * Effective gear ratio: 8.14: 1
+         * <p>
+         * Wheel diameter: 4 inches
+         * <p>
+         * Efficency: 0.75
+         * <p>
+         * speed = diameter * pi * gear ratio * efficency * rpm / 60
+         */
+        public static final double MAX_SPEED = Units.inchesToMeters(4 * Math.PI * (1 / 8.14) * 0.75 * 5676 / 60);
+
+        public static final double RADIUS_M1C2 = Math.hypot(0.2921, 0.2921);
+
+        // TODO
+        public static final double RADIUS_COMP = Math.hypot(0.2921, 0.2921);
+
+        /**
+         * Maximum angular velocity of the drive train (rad/s)
+         */
+        public static final double MAX_OMEGA_M1C1 = Math.atan(MAX_SPEED / RADIUS_M1C2);
+
+        /**
+         * Maximum angular velocity of the drive train (rad/s)
+         */
+        public static final double MAX_OMEGA_COMP = Math.atan(MAX_SPEED / RADIUS_COMP);
+    }
 }

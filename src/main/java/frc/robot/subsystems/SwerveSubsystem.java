@@ -119,4 +119,11 @@ public class SwerveSubsystem extends SubsystemBase {
     public void resetPose(Pose2d pose) {
         m_swerveDrive.resetOdometry(pose);
     }
+
+    /**
+     * Stops the swerve drive
+     */
+    public void stop() {
+        m_swerveDrive.drive(new ChassisSpeeds());
+    }
 }

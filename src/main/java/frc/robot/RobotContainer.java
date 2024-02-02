@@ -9,6 +9,8 @@ import frc.robot.commands.RobotMode;
 import frc.robot.commands.DifferentialDrive.ArcadeDrive;
 import frc.robot.commands.DifferentialDrive.CurvatureDrive;
 import frc.robot.commands.DifferentialDrive.TankDrive;
+import frc.robot.commands.SwerveDrive.FieldRelativeAbsoluteAngleDrive;
+import frc.robot.commands.SwerveDrive.FieldRelativeRotationRateDrive;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.Robot.RobotFrame;
@@ -21,7 +23,11 @@ import frc.robot.utils.DoubleTransformer;
 import frc.robot.utils.SendableChooserCommand;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
+import org.apache.commons.collections4.Get;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -112,8 +118,25 @@ public class RobotContainer {
         try {
             var drive = new SwerveSubsystem(visionSubsystem, bot);
 
-            // TODO: Add commands
+            SmartDashboard.putNumber("drive sensitivity", 1.0);
+            SmartDashboard.putNumber("turn sensitivity", 1.0);
 
+            var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone();
+            var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
+            var leftX = DoubleTransformer.of(m_driverController::getLeftX).negate();
+            var rightX = DoubleTransformer.of(m_driverController::getRightX).negate();
+
+            Supplier<Rotation2d> angle = () -> {
+                return new Rotation2d(
+                        rightX.deadzone(0.75).getAsDouble(),
+                        rightY.deadzone(0.75).getAsDouble());
+            };
+
+            Command absoluteAngle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX, angle,
+                    Rotation2d.fromDegrees(1));
+            Command rotationRate = new FieldRelativeRotationRateDrive(drive, leftY, leftX, rightX.deadzone(0.03));
+
+            drive.setDefaultCommand(new SendableChooserCommand("swerve drive", absoluteAngle, rotationRate));
             m_swerveDrive = Optional.of(drive);
         } catch (Exception e) {
             // End the robot program if we can't initialize the swerve drive.
