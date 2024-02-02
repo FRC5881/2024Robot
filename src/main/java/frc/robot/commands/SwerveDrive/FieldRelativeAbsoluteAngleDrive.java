@@ -35,7 +35,7 @@ public class FieldRelativeAbsoluteAngleDrive extends Command {
      * @param angleTolerance The tolerance of the angle
      */
     public FieldRelativeAbsoluteAngleDrive(SwerveSubsystem drive, DoubleSupplier vx, DoubleSupplier vy,
-            Supplier<Rotation2d> angle, Rotation2d angleTolerance) {
+            Supplier<Rotation2d> angle) {
         this.drive = drive;
         this.vxSupplier = vx;
         this.vySupplier = vy;
@@ -44,6 +44,14 @@ public class FieldRelativeAbsoluteAngleDrive extends Command {
 
         this.angleController = new PIDController(0.2, 0, 0);
         this.angleController.enableContinuousInput(0, 1);
+    }
+
+    public FieldRelativeAbsoluteAngleDrive(SwerveSubsystem drive, DoubleSupplier vx, DoubleSupplier vy,
+            Rotation2d angle) {
+        this(drive, vx, vy, () -> {
+            return angle;
+        });
+
     }
 
     @Override

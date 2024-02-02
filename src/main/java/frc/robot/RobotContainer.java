@@ -25,8 +25,6 @@ import frc.robot.utils.SendableChooserCommand;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.apache.commons.collections4.Get;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -132,12 +130,24 @@ public class RobotContainer {
                         rightY.deadzone(0.75).getAsDouble());
             };
 
-            Command absoluteAngle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX, angle,
-                    Rotation2d.fromDegrees(1));
+            Command absoluteAngle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX, angle);
             Command rotationRate = new FieldRelativeRotationRateDrive(drive, leftY, leftX, rightX.deadzone(0.03));
+            Command absoluteAngleTriangle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                    Rotation2d.fromDegrees(0));
+            Command absoluteAngleCircle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                    Rotation2d.fromDegrees(90));
+            Command absoluteAngleCross = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                    Rotation2d.fromDegrees(270));
+            Command absoluteAngleSquare = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                    Rotation2d.fromDegrees(180));
 
+            m_driverController.triangle().whileTrue(absoluteAngleTriangle);
+            m_driverController.circle().whileTrue(absoluteAngleCircle);
+            m_driverController.cross().whileTrue(absoluteAngleCross);
+            m_driverController.square().whileTrue(absoluteAngleSquare);
             drive.setDefaultCommand(new SendableChooserCommand("swerve drive", absoluteAngle, rotationRate));
             m_swerveDrive = Optional.of(drive);
+
         } catch (Exception e) {
             // End the robot program if we can't initialize the swerve drive.
             System.err.println("Failed to initialize swerve drive");
