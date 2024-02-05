@@ -2,6 +2,7 @@ package frc.robot.commands.DifferentialDrive;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DifferentialDriveConstants;
 import frc.robot.subsystems.DifferentialDriveSubsystem;
@@ -31,8 +32,9 @@ public class TankDrive extends Command {
 
     @Override
     public void execute() {
-        double left = leftSupplier.getAsDouble() * DifferentialDriveConstants.MAX_SPEED;
-        double right = rightSupplier.getAsDouble() * DifferentialDriveConstants.MAX_SPEED;
+        double drive_sensitivity = SmartDashboard.getNumber("drive sensitivity", 1.0);
+        double left = drive_sensitivity * leftSupplier.getAsDouble() * DifferentialDriveConstants.MAX_SPEED;
+        double right = drive_sensitivity * rightSupplier.getAsDouble() * DifferentialDriveConstants.MAX_SPEED;
         drive.drive(left, right);
     }
 }

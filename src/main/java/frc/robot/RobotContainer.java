@@ -7,6 +7,10 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.RobotMode;
 import frc.robot.commands.DifferentialDrive.ArcadeDrive;
+import frc.robot.commands.DifferentialDrive.CurvatureDrive;
+import frc.robot.commands.DifferentialDrive.TankDrive;
+import frc.robot.commands.SwerveDrive.FieldRelativeAbsoluteAngleDrive;
+import frc.robot.commands.SwerveDrive.FieldRelativeRotationRateDrive;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.Robot.RobotFrame;
@@ -16,9 +20,13 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.utils.DoubleTransformer;
+import frc.robot.utils.SendableChooserCommand;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
@@ -40,11 +48,9 @@ public class RobotContainer {
             OperatorConstants.kDriverControllerPort);
 
     public RobotContainer(RobotFrame bot) {
-
-        // Sets the shooter to amp mode
+        // Sets the robot to AmpMode
         m_driverController.square().onTrue(mode.cSetAmpMode());
-
-        // Sets the shooter to speaker mode
+        // Sets the robot to SpeakerMode
         m_driverController.triangle().onTrue(mode.cSetSpeakerMode());
 
         // Each bot has a different set of subsystems
@@ -67,33 +73,32 @@ public class RobotContainer {
             throw new RuntimeException("Cannot have both swerve and differential drive subsystems");
         }
 
-        // Some commands might require multiple subsystems
+        // "Shoot" commands behave differently if the indexer is present
+        //
+        // Namely, if we have an indexer it needs to send the NOTE up to the shooter.
+        //
+        // Without an indexer, the shooter should just run and wait for a human it
+        // insert the note
         if (m_shooter.isPresent()) {
             ShooterSubsystem shooter = m_shooter.get();
 
+            Command shoot;
             if (m_indexer.isPresent()) {
                 IndexerSubsystem indexer = m_indexer.get();
 
-                Command shootHigh = shooter.cShootLow().andThen(shooter.cWaitForSetPoint())
+                Command shootHigh = shooter.cShootLow()
+                        .andThen(shooter.cWaitForSetPoint())
                         .andThen(indexer.cSendShooter());
-                Command shootLow = shooter.cShootHigh().andThen(shooter.cWaitForSetPoint())
+                Command shootLow = shooter.cShootHigh()
+                        .andThen(shooter.cWaitForSetPoint())
                         .andThen(indexer.cSendShooter());
 
-                Command shoot = Commands.either(
-                        shootLow,
-                        shootHigh,
-                        mode::isAmpMode);
-
-                // Shoot!
-                m_driverController.R1().whileTrue(shoot);
+                shoot = Commands.either(shootLow, shootHigh, mode::isAmpMode);
             } else {
-                Command shoot = Commands.either(shooter.cShootLow(),
-                        shooter.cShootHigh(),
-                        mode::isAmpMode);
-
-                // Shoot!
-                m_driverController.R1().whileTrue(shoot);
+                shoot = Commands.either(shooter.cShootLow(), shooter.cShootHigh(), mode::isAmpMode);
             }
+
+            m_driverController.R2().whileTrue(shoot);
         }
     }
 
@@ -102,15 +107,47 @@ public class RobotContainer {
     }
 
     private void setupVision() {
-        var subsystem = new VisionSubsystem();
+        var vision = new VisionSubsystem();
 
-        m_vision = Optional.of(subsystem);
+        m_vision = Optional.of(vision);
     }
 
     private void setupSwerveDrive(Optional<VisionSubsystem> visionSubsystem, RobotFrame bot) {
         try {
-            var subsystem = new SwerveSubsystem(visionSubsystem, bot);
-            m_swerveDrive = Optional.of(subsystem);
+            var drive = new SwerveSubsystem(visionSubsystem, bot);
+
+            SmartDashboard.putNumber("drive sensitivity", 1.0);
+            SmartDashboard.putNumber("turn sensitivity", 1.0);
+
+            var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone();
+            var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
+            var leftX = DoubleTransformer.of(m_driverController::getLeftX).negate();
+            var rightX = DoubleTransformer.of(m_driverController::getRightX).negate();
+
+            Supplier<Rotation2d> angle = () -> {
+                return new Rotation2d(
+                        rightX.deadzone(0.75).getAsDouble(),
+                        rightY.deadzone(0.75).getAsDouble());
+            };
+
+            Command absoluteAngle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX, angle);
+            Command rotationRate = new FieldRelativeRotationRateDrive(drive, leftY, leftX, rightX.deadzone(0.03));
+            Command absoluteAngleTriangle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                    Rotation2d.fromDegrees(0));
+            Command absoluteAngleCircle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                    Rotation2d.fromDegrees(90));
+            Command absoluteAngleCross = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                    Rotation2d.fromDegrees(270));
+            Command absoluteAngleSquare = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                    Rotation2d.fromDegrees(180));
+
+            m_driverController.triangle().whileTrue(absoluteAngleTriangle);
+            m_driverController.circle().whileTrue(absoluteAngleCircle);
+            m_driverController.cross().whileTrue(absoluteAngleCross);
+            m_driverController.square().whileTrue(absoluteAngleSquare);
+            drive.setDefaultCommand(new SendableChooserCommand("swerve drive", absoluteAngle, rotationRate));
+            m_swerveDrive = Optional.of(drive);
+
         } catch (Exception e) {
             // End the robot program if we can't initialize the swerve drive.
             System.err.println("Failed to initialize swerve drive");
@@ -120,53 +157,54 @@ public class RobotContainer {
     }
 
     private void setupDifferentialDrive() {
-        var subsystem = new DifferentialDriveSubsystem();
+        var drive = new DifferentialDriveSubsystem();
 
-        Command teleopDriveCommand = new ArcadeDrive(subsystem,
-                DoubleTransformer.of(m_driverController::getLeftY)
-                        .negate()
-                        .deadzone(0.05)
-                        .signedSquare(),
-                DoubleTransformer.of(m_driverController::getRightX)
-                        .negate()
-                        .deadzone(0.05)
-                        .signedSquare());
+        SmartDashboard.putNumber("drive sensitivity", 1.0);
+        SmartDashboard.putNumber("turn sensitivity", 1.0);
 
-        subsystem.setDefaultCommand(teleopDriveCommand);
+        var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone(0.03);
+        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
+        var rightX = DoubleTransformer.of(m_driverController::getRightX).negate().deadzone(0.03);
 
-        m_differentialDrive = Optional.of(subsystem);
+        Command arcade = new ArcadeDrive(drive, leftY, rightX);
+        Command curvature = new CurvatureDrive(drive, leftY, rightX, m_driverController.L1());
+        Command tank = new TankDrive(drive, leftY, rightY);
+
+        drive.setDefaultCommand(new SendableChooserCommand("Differential Drive", arcade, curvature, tank));
+        m_differentialDrive = Optional.of(drive);
     }
 
     private void setupClimber() {
-        var subsystem = new ClimberSubsystem();
+        var climber = new ClimberSubsystem();
 
         // TODO: Add climber commands
 
-        m_climber = Optional.of(subsystem);
+        m_climber = Optional.of(climber);
     }
 
     private void setupIntake() {
-        var subsystem = new IntakeSubsystem();
+        var intake = new IntakeSubsystem();
 
-        // TODO: Add intake commands
+        // Intake a note from the ground
+        m_driverController.R1().whileTrue(intake.cRun());
 
-        m_intake = Optional.of(subsystem);
+        m_intake = Optional.of(intake);
     }
 
     private void setupShooter() {
-        var subsystem = new ShooterSubsystem();
+        var shooter = new ShooterSubsystem();
 
-        // Sets the shooter to intake from a human player
-        m_driverController.L1().whileTrue(subsystem.cSourceIntake());
+        m_driverController.L2().whileTrue(shooter.cSourceIntake());
 
-        m_shooter = Optional.of(subsystem);
+        m_shooter = Optional.of(shooter);
     }
 
     private void setupIndexer() {
-        var subsystem = new IndexerSubsystem();
+        var indexer = new IndexerSubsystem();
 
-        // Setup default command
+        // The indexer automatically positions NOTES as they are received
+        indexer.setDefaultCommand(indexer.cPositionNote());
 
-        m_indexer = Optional.of(subsystem);
+        m_indexer = Optional.of(indexer);
     }
 }

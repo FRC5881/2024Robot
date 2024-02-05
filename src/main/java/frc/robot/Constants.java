@@ -30,8 +30,7 @@ public final class Constants {
         public static final int kClimberId = 10;
         public static final int kGroundIntakeId = 11;
 
-        public static final int kIntakeMotor = 15;
-        public static final int kOutputMotor = 16;
+        public static final int kIndexerShooterMotor = 15;
 
         public static final int kShooterId = 21;
         public static final int kShooterIntakeId = 22;
@@ -92,17 +91,12 @@ public final class Constants {
         /**
          * The power to drive the intake motor towards the shooter (percentage)
          */
-        public static final double kIntakeGroundPower = 1.0;
+        public static final double kIndexerGroundPower = 1.0;
 
         /**
          * The power to drive the intake motor away from the shooter (percentage)
          */
-        public static final double kIntakeShooterPower = 1.0;
-
-        /**
-         * What power to shoot high with (percentage)
-         */
-        public static final double kOutputShooterPower = 1.0;
+        public static final double kIndexerShooterPower = 1.0;
     }
 
     public static class DifferentialDriveConstants {
@@ -132,5 +126,37 @@ public final class Constants {
          * Maximum angular velocity of the drive train (rad/s)
          */
         public static final double MAX_OMEGA = 2 * MAX_SPEED / TRACK_WIDTH;
+    }
+
+    public static class SwerveDriveConstants {
+        /**
+         * Maximum translational velocity of the drive train (mps).
+         * <p>
+         * Free speed: 5676 rpm
+         * <p>
+         * Effective gear ratio: 8.14: 1
+         * <p>
+         * Wheel diameter: 4 inches
+         * <p>
+         * Efficency: 0.75
+         * <p>
+         * speed = diameter * pi * gear ratio * efficency * rpm / 60
+         */
+        public static final double MAX_SPEED = Units.inchesToMeters(4 * Math.PI * (1 / 8.14) * 0.75 * 5676 / 60);
+
+        public static final double RADIUS_M1C2 = Math.hypot(0.2921, 0.2921);
+
+        // TODO
+        public static final double RADIUS_COMP = Math.hypot(0.2921, 0.2921);
+
+        /**
+         * Maximum angular velocity of the drive train (rad/s)
+         */
+        public static final double MAX_OMEGA_M1C1 = Math.atan(MAX_SPEED / RADIUS_M1C2);
+
+        /**
+         * Maximum angular velocity of the drive train (rad/s)
+         */
+        public static final double MAX_OMEGA_COMP = Math.atan(MAX_SPEED / RADIUS_COMP);
     }
 }

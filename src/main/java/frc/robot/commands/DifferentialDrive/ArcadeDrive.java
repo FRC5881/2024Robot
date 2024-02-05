@@ -3,6 +3,7 @@ package frc.robot.commands.DifferentialDrive;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DifferentialDriveConstants;
 import frc.robot.subsystems.DifferentialDriveSubsystem;
@@ -32,8 +33,11 @@ public class ArcadeDrive extends Command {
 
     @Override
     public void execute() {
-        double vx = vxSupplier.getAsDouble() * DifferentialDriveConstants.MAX_SPEED;
-        double omega = omegaSupplier.getAsDouble() * DifferentialDriveConstants.MAX_OMEGA;
+        double drive_sensitivity = SmartDashboard.getNumber("drive sensitivity", 1.0);
+        double turn_sensitivity = SmartDashboard.getNumber("turn sensitivity", 1.0);
+
+        double vx = drive_sensitivity * vxSupplier.getAsDouble() * DifferentialDriveConstants.MAX_SPEED;
+        double omega = turn_sensitivity * omegaSupplier.getAsDouble() * DifferentialDriveConstants.MAX_OMEGA;
 
         ChassisSpeeds speed = new ChassisSpeeds(vx, 0, omega);
         drive.drive(speed);
