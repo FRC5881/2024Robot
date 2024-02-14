@@ -1,64 +1,102 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.AddressableLED;
-import edu.wpi.first.wpilibj.PWM;
+import java.util.Optional;
 
+import edu.wpi.first.wpilibj.AnalogOutput;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+
+// Voltages are all private information
 public class Lights {
+    private static Lights instance = null;
 
-    AddressableLED led;
-
-    public enum color {
-
-        /*
-         * sets lights to FF0000
-         * used for red alliance
-         */
-        red,
-
-        /*
-         * sets lights to 00FF00
-         * used for testing + show
-         */
-
-        green,
-
-        /*
-         * sets lights to 0000FF
-         * used for blue alliance
-         */
-        blue,
+    private Lights() {
     }
 
-    public enum pattern {
+    public static Lights getInstance() {
+        if (Lights.instance == null) {
+            Lights.instance = new Lights();
+        }
+        return instance;
+    }
 
-        /*
-         * this command activates LEDs in a breathing strobe pattern
-         * sets LEDs to color based on alliance
-         */
-        auto,
+    AnalogOutput analogOutput = new AnalogOutput(0);
 
-        /*
-         * This command activates LEDs in a solid pattern
-         * sets LEDs to color based on alliance
-         */
-        teleop,
+    public enum Pattern {
+        RED_STROBE(0),
+        RED_SOLID(1),
+        RED_FLASH(2),
+        RED_CHASE(3),
+        RED_REPEATED_FLASH(4),
+        GREEN_STROBE(5),
+        GREEN_SOLID(6),
+        GREEN_FLASH(7),
+        GREEN_CHASE(8),
+        GREEN_REPEATED_FLASH(9),
+        BLUE_STROBE(10),
+        BLUE_SOLID(11),
+        BLUE_FLASH(12),
+        BLUE_CHASE(13),
+        BLUE_REPEATED_FLASH(14);
 
-        /*
-         * This command activates LEDs in a flashing pattern at 2 hz
-         * sets LEDs to color based on alliance
-         */
-        test,
+        private final int value;
 
-        /*
-         * This command activates LEDs in a chaser pattern
-         * sets LEDs to color based on alliance
-         */
-        shoot,
+        Pattern(int value) {
+            this.value = value;
+        }
 
-        /*
-         * This command flashes LEDs off for acertain amout of time until command ends
-         */
-        override,
+        public int getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return this.name().replace('_', ' ').toLowerCase();
+        }
+    }
+
+    private static double patternToVoltage(Pattern pattern) {
+        return 5.0 / 15.0 * (pattern.value + 0.5);
+    }
+
+    private void setPattern() {
+        if (overridePattern == null) {
+            analogOutput.setVoltage(patternToVoltage(defaultPattern));
+        } else {
+            analogOutput.setVoltage(patternToVoltage(overridePattern));
+        }
+
+    }
+
+    private Pattern defaultPattern = Pattern.GREEN_SOLID;
+
+    public void setDefault() {
+        Optional<Alliance> ally = DriverStation.getAlliance();
+
+        if (ally.isPresent()) {
+            if (ally.get() == Alliance.Red) {
+                this.defaultPattern = Pattern.RED_SOLID;
+            } else {
+                this.defaultPattern = Pattern.BLUE_SOLID;
+            }
+        } else {
+            this.defaultPattern = Pattern.GREEN_SOLID;
+        }
+        setPattern();
+    }
+
+    private Pattern overridePattern = null;
+
+    public void startOverride(Pattern pattern) {
+        overridePattern = pattern;
+        setPattern();
+    }
+
+    public void endOverride(Pattern pattern) {
+        if (pattern == overridePattern) {
+            overridePattern = null;
+        }
+        setPattern();
     }
 
 }
