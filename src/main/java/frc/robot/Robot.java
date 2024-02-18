@@ -5,12 +5,21 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.AnalogOutput;
+import edu.wpi.first.wpilibj.DigitalOutput;
+import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Lights;
+import frc.robot.subsystems.Lights.Pattern;
 
 public class Robot extends TimedRobot {
+    // DigitalOutput pwm = new DigitalOutput(0);
+    // Spark spark = new Spark(0);
+    PWM pwm = new PWM(0);
+    DigitalOutput dio = new DigitalOutput(0);
     private Command m_autonomousCommand;
     private RobotContainer m_robotContainer;
 
@@ -18,6 +27,7 @@ public class Robot extends TimedRobot {
     private AnalogInput A1 = new AnalogInput(1);
     private AnalogInput A2 = new AnalogInput(2);
     private AnalogInput A3 = new AnalogInput(3);
+    private AnalogOutput LEDOut = new AnalogOutput(0);
 
     /**
      * Our code is designed to work with multiple robots. This enum is used to
@@ -69,6 +79,12 @@ public class Robot extends TimedRobot {
         // and put our autonomous chooser on the dashboard.
         // m_robotContainer = new RobotContainer(detectChassis());
         m_robotContainer = new RobotContainer(RobotFrame.DOUGHNUT);
+
+        // when inital duty cycle = 1, pin reads 0s
+        // when initial duty cycle = 0, read 677 every 6 seconds
+        // pwm.enablePWM(0.25);
+        // pwm.setPWMRate(0.5);
+
     }
 
     /**
@@ -80,15 +96,48 @@ public class Robot extends TimedRobot {
      * This runs after the mode specific periodic functions, but before LiveWindow
      * and SmartDashboard integrated updating.
      */
+    public int state = 0;
+
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+
+        // spark.set(1);
 
         // Put analog input values on the dashboard
         SmartDashboard.putNumber("A0", A0.getValue());
         SmartDashboard.putNumber("A1", A1.getValue());
         SmartDashboard.putNumber("A2", A2.getValue());
         SmartDashboard.putNumber("A3", A3.getValue());
+
+        Lights lights = Lights.getInstance();
+
+        lights.setDefault();
+        lights.startOverride(Pattern.BLUE_FLASH);
+        if (state == 0) {
+            lights.startOverride(Pattern.BLUE_FLASH);
+        }
+        if (state == 5) {
+            lights.endOverride(Pattern.BLUE_FLASH);
+        }
+        if (state == 10) {
+            lights.startOverride(Pattern.RED_STROBE);
+        }
+
+        if (state == 15) {
+            lights.startOverride(Pattern.RED_FLASH);
+        }
+
+        if (state == 20) {
+            lights.endOverride(Pattern.RED_STROBE);
+        }
+
+        if (state == 25) {
+            lights.endOverride(Pattern.RED_FLASH);
+            state = -1;
+        }
+        state++;
+
     }
 
     /** This function is called once each time the robot enters Disabled mode. */

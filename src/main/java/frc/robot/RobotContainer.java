@@ -26,6 +26,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DigitalOutput;
+import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -47,6 +49,8 @@ public class RobotContainer {
     private final CommandPS5Controller m_driverController = new CommandPS5Controller(
             OperatorConstants.kDriverControllerPort);
 
+    DigitalOutput digitalOutput = new DigitalOutput(3);
+
     public RobotContainer(RobotFrame bot) {
         // Sets the robot to AmpMode
         m_driverController.square().onTrue(mode.cSetAmpMode());
@@ -60,11 +64,11 @@ public class RobotContainer {
                 break;
             case M1C2:
                 // TODO: Vision?
-                setupSwerveDrive(m_vision, bot);
+                // setupSwerveDrive(m_vision, bot);
                 break;
             case DOUGHNUT:
-                setupDifferentialDrive();
-                setupShooter();
+                // setupDifferentialDrive();
+                // setupShooter();
                 break;
         }
 
@@ -157,21 +161,28 @@ public class RobotContainer {
     }
 
     private void setupDifferentialDrive() {
-        var drive = new DifferentialDriveSubsystem();
-
-        SmartDashboard.putNumber("drive sensitivity", 1.0);
-        SmartDashboard.putNumber("turn sensitivity", 1.0);
-
-        var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone(0.03);
-        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
-        var rightX = DoubleTransformer.of(m_driverController::getRightX).negate().deadzone(0.03);
-
-        Command arcade = new ArcadeDrive(drive, leftY, rightX);
-        Command curvature = new CurvatureDrive(drive, leftY, rightX, m_driverController.L1());
-        Command tank = new TankDrive(drive, leftY, rightY);
-
-        drive.setDefaultCommand(new SendableChooserCommand("Differential Drive", arcade, curvature, tank));
-        m_differentialDrive = Optional.of(drive);
+        /*
+         * var drive = new DifferentialDriveSubsystem();
+         * 
+         * SmartDashboard.putNumber("drive sensitivity", 1.0);
+         * SmartDashboard.putNumber("turn sensitivity", 1.0);
+         * 
+         * var leftY =
+         * DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone(0.03);
+         * var rightY =
+         * DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
+         * var rightX =
+         * DoubleTransformer.of(m_driverController::getRightX).negate().deadzone(0.03);
+         * 
+         * Command arcade = new ArcadeDrive(drive, leftY, rightX);
+         * Command curvature = new CurvatureDrive(drive, leftY, rightX,
+         * m_driverController.L1());
+         * Command tank = new TankDrive(drive, leftY, rightY);
+         * 
+         * drive.setDefaultCommand(new SendableChooserCommand("Differential Drive",
+         * arcade, curvature, tank));
+         * m_differentialDrive = Optional.of(drive);
+         */
     }
 
     private void setupClimber() {
