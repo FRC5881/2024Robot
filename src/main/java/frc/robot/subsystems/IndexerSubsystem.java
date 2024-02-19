@@ -3,25 +3,20 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class IndexerSubsystem extends SubsystemBase {
+
+    // DigitalInput lowerInput = new DigitalInput(0);
+    DigitalInput upperInput = new DigitalInput(1);
+
     private final CANSparkMax indexerMotor;
 
     public IndexerSubsystem() {
         this.indexerMotor = new CANSparkMax(Constants.CANConstants.kIndexerMotor, MotorType.kBrushless);
-    }
-
-    // TODO: Use RightSight
-    private boolean hasNoteBottom() {
-        return false;
-    }
-
-    // TODO: Use RightSight
-    private boolean hasNoteTop() {
-        return false;
     }
 
     /**
@@ -43,16 +38,14 @@ public class IndexerSubsystem extends SubsystemBase {
     }
 
     /**
-     * When a note enters the Indexer, it is moved up to the top sensor
+     * When a note enters the Indexer it will position it into the indexer
      */
     public Command cPositionNote() {
         return this.run(() -> {
-            if (hasNoteBottom() && !hasNoteTop()) {
-                up();
-            } else if (!hasNoteBottom() && hasNoteTop()) {
-                down();
+            if (upperInput.get()) {
+                this.down();
             } else {
-                stop();
+                this.stop();
             }
         });
     }
