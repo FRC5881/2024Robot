@@ -180,7 +180,8 @@ public class RobotContainer {
     private void setupClimber() {
         var climber = new ClimberSubsystem();
 
-        // TODO: Add climber commands
+        m_driverController.L1().whileTrue(climber.cExtend());
+        m_driverController.R1().whileTrue(climber.cRetract());
 
         m_climber = Optional.of(climber);
     }
