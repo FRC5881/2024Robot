@@ -5,14 +5,20 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
     public static class OperatorConstants {
         public static final int kDriverControllerPort = 0;
+
+        // SmartDashboard keys
+        public static final String kDriveSensitivity = "Drive sensitivity";
+        public static final String kTurnSensitivity = "Turn sensitivity";
     }
 
     public static class CANConstants {
+        // Differential Drive
         public static final int kLeftMainId = 1;
         public static final int kLeftSecondId = 2;
         public static final int kRightMainId = 3;
         public static final int kRightSecondId = 4;
 
+        // Swerve Drive
         public static final int kFrontLeftDriveId = 1;
         public static final int kFrontLeftAngleId = 5;
         public static final int kFrontRightDriveId = 2;
@@ -27,13 +33,21 @@ public final class Constants {
         public static final int kBackLeftAzimuthEncoderId = 3;
         public static final int kBackRightAzimuthEncoderId = 4;
 
+        // Climber
         public static final int kClimberId = 10;
+
+        // Ground Intake
         public static final int kGroundIntakeId = 11;
 
-        public static final int kIndexerShooterMotor = 15;
+        // Indexer
+        public static final int kIndexerMotor = 15;
 
+        // Shooter
         public static final int kShooterId = 21;
         public static final int kShooterIntakeId = 22;
+
+        // Amp Guide
+        public static final int kAmpGuide = 30;
     }
 
     public static class IntakeConstants {
@@ -129,34 +143,5 @@ public final class Constants {
     }
 
     public static class SwerveDriveConstants {
-        /**
-         * Maximum translational velocity of the drive train (mps).
-         * <p>
-         * Free speed: 5676 rpm
-         * <p>
-         * Effective gear ratio: 8.14: 1
-         * <p>
-         * Wheel diameter: 4 inches
-         * <p>
-         * Efficency: 0.75
-         * <p>
-         * speed = diameter * pi * gear ratio * efficency * rpm / 60
-         */
-        public static final double MAX_SPEED = Units.inchesToMeters(4 * Math.PI * (1 / 8.14) * 0.75 * 5676 / 60);
-
-        public static final double RADIUS_M1C2 = Math.hypot(0.2921, 0.2921);
-
-        // TODO
-        public static final double RADIUS_COMP = Math.hypot(0.2921, 0.2921);
-
-        /**
-         * Maximum angular velocity of the drive train (rad/s)
-         */
-        public static final double MAX_OMEGA_M1C1 = Math.atan(MAX_SPEED / RADIUS_M1C2);
-
-        /**
-         * Maximum angular velocity of the drive train (rad/s)
-         */
-        public static final double MAX_OMEGA_COMP = Math.atan(MAX_SPEED / RADIUS_COMP);
     }
 }

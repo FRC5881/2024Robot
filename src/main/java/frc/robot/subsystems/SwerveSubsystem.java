@@ -9,13 +9,20 @@ import org.photonvision.EstimatedRobotPose;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot.RobotFrame;
 import swervelib.SwerveDrive;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveParser;
+
+import static edu.wpi.first.math.util.Units.feetToMeters;
+import static edu.wpi.first.math.util.Units.inchesToMeters;
 
 public class SwerveSubsystem extends SubsystemBase {
     private final Optional<VisionSubsystem> m_visionSubsystem;
@@ -49,12 +56,11 @@ public class SwerveSubsystem extends SubsystemBase {
 
         // https://www.swervedrivespecialties.com/products/mk4-swerve-module
         // L1 free speed is allegedly 12.5 ft/s
-        double maxSpeed = Units.feetToMeters(12.5);
+        double maxSpeed = feetToMeters(12.5);
         // Steering gear ratio of the MK4 is 12.8:1
-        double angleMotorConversionFactor = SwerveMath.calculateDegreesPerSteeringRotation(12.8, 1);
+        double angleMotorConversionFactor = SwerveMath.calculateDegreesPerSteeringRotation(12.8);
         // Drive gear ratio for the L1 is 8.14:1
-        double driveMotorConversion = SwerveMath.calculateMetersPerRotation(Units.inchesToMeters(4), 8.14, 1);
-
+        double driveMotorConversion = SwerveMath.calculateMetersPerRotation(inchesToMeters(4), 8.14);
         m_swerveDrive = parser.createSwerveDrive(maxSpeed, angleMotorConversionFactor, driveMotorConversion);
     }
 
@@ -84,6 +90,24 @@ public class SwerveSubsystem extends SubsystemBase {
                 m_swerveDrive.addVisionMeasurement(pose, timestamp);
             }
         }
+    }
+
+    /**
+     * Returns the maximum velocity of the swerve drive.
+     * 
+     * @reture A measure of the maximum velocity of the swerve drive.
+     */
+    public Measure<Velocity<Distance>> getMaximumVelocity() {
+        return Units.MetersPerSecond.of(m_swerveDrive.getMaximumVelocity());
+    }
+
+    /**
+     * Returns the maximum angular velocity of the swerve drive.
+     * 
+     * @return A measure of the maximum angular velocity of the swerve drive.
+     */
+    public Measure<Velocity<Angle>> getMaximumAngularVelocity() {
+        return Units.RadiansPerSecond.of(m_swerveDrive.getMaximumAngularVelocity());
     }
 
     /**

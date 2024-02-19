@@ -26,8 +26,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DigitalOutput;
-import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -49,8 +47,6 @@ public class RobotContainer {
     private final CommandPS5Controller m_driverController = new CommandPS5Controller(
             OperatorConstants.kDriverControllerPort);
 
-    DigitalOutput digitalOutput = new DigitalOutput(3);
-
     public RobotContainer(RobotFrame bot) {
         // Sets the robot to AmpMode
         m_driverController.square().onTrue(mode.cSetAmpMode());
@@ -61,6 +57,7 @@ public class RobotContainer {
         switch (bot) {
             case COMP:
                 // TODO: Build the COMP bot
+                setupSwerveDrive(m_vision, bot);
                 break;
             case M1C2:
                 // TODO: Vision?
@@ -117,72 +114,67 @@ public class RobotContainer {
     }
 
     private void setupSwerveDrive(Optional<VisionSubsystem> visionSubsystem, RobotFrame bot) {
+        SwerveSubsystem drive = null;
+
         try {
-            var drive = new SwerveSubsystem(visionSubsystem, bot);
-
-            SmartDashboard.putNumber("drive sensitivity", 1.0);
-            SmartDashboard.putNumber("turn sensitivity", 1.0);
-
-            var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone();
-            var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
-            var leftX = DoubleTransformer.of(m_driverController::getLeftX).negate();
-            var rightX = DoubleTransformer.of(m_driverController::getRightX).negate();
-
-            Supplier<Rotation2d> angle = () -> {
-                return new Rotation2d(
-                        rightX.deadzone(0.75).getAsDouble(),
-                        rightY.deadzone(0.75).getAsDouble());
-            };
-
-            Command absoluteAngle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX, angle);
-            Command rotationRate = new FieldRelativeRotationRateDrive(drive, leftY, leftX, rightX.deadzone(0.03));
-            Command absoluteAngleTriangle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
-                    Rotation2d.fromDegrees(0));
-            Command absoluteAngleCircle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
-                    Rotation2d.fromDegrees(90));
-            Command absoluteAngleCross = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
-                    Rotation2d.fromDegrees(270));
-            Command absoluteAngleSquare = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
-                    Rotation2d.fromDegrees(180));
-
-            m_driverController.triangle().whileTrue(absoluteAngleTriangle);
-            m_driverController.circle().whileTrue(absoluteAngleCircle);
-            m_driverController.cross().whileTrue(absoluteAngleCross);
-            m_driverController.square().whileTrue(absoluteAngleSquare);
-            drive.setDefaultCommand(new SendableChooserCommand("swerve drive", absoluteAngle, rotationRate));
-            m_swerveDrive = Optional.of(drive);
-
+            drive = new SwerveSubsystem(visionSubsystem, bot);
         } catch (Exception e) {
             // End the robot program if we can't initialize the swerve drive.
             System.err.println("Failed to initialize swerve drive");
             e.printStackTrace();
             System.exit(1);
         }
+
+        SmartDashboard.putNumber(OperatorConstants.kDriveSensitivity, 1.0);
+        SmartDashboard.putNumber(OperatorConstants.kTurnSensitivity, 1.0);
+
+        var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone();
+        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
+        var leftX = DoubleTransformer.of(m_driverController::getLeftX).negate();
+        var rightX = DoubleTransformer.of(m_driverController::getRightX).negate();
+
+        Supplier<Rotation2d> angle = () -> {
+            return new Rotation2d(
+                    rightX.deadzone(0.75).getAsDouble(),
+                    rightY.deadzone(0.75).getAsDouble());
+        };
+
+        Command absoluteAngle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX, angle);
+        Command rotationRate = new FieldRelativeRotationRateDrive(drive, leftY, leftX, rightX.deadzone(0.03));
+        Command absoluteAngleTriangle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                Rotation2d.fromDegrees(0));
+        Command absoluteAngleCircle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                Rotation2d.fromDegrees(90));
+        Command absoluteAngleSquare = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                Rotation2d.fromDegrees(180));
+        Command absoluteAngleCross = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+                Rotation2d.fromDegrees(270));
+
+        m_driverController.triangle().whileTrue(absoluteAngleTriangle);
+        m_driverController.circle().whileTrue(absoluteAngleCircle);
+        m_driverController.square().whileTrue(absoluteAngleSquare);
+        m_driverController.cross().whileTrue(absoluteAngleCross);
+
+        drive.setDefaultCommand(new SendableChooserCommand("Swerve Drive Command", absoluteAngle, rotationRate));
+        m_swerveDrive = Optional.of(drive);
     }
 
     private void setupDifferentialDrive() {
-        /*
-         * var drive = new DifferentialDriveSubsystem();
-         * 
-         * SmartDashboard.putNumber("drive sensitivity", 1.0);
-         * SmartDashboard.putNumber("turn sensitivity", 1.0);
-         * 
-         * var leftY =
-         * DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone(0.03);
-         * var rightY =
-         * DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
-         * var rightX =
-         * DoubleTransformer.of(m_driverController::getRightX).negate().deadzone(0.03);
-         * 
-         * Command arcade = new ArcadeDrive(drive, leftY, rightX);
-         * Command curvature = new CurvatureDrive(drive, leftY, rightX,
-         * m_driverController.L1());
-         * Command tank = new TankDrive(drive, leftY, rightY);
-         * 
-         * drive.setDefaultCommand(new SendableChooserCommand("Differential Drive",
-         * arcade, curvature, tank));
-         * m_differentialDrive = Optional.of(drive);
-         */
+        var drive = new DifferentialDriveSubsystem();
+
+        SmartDashboard.putNumber(OperatorConstants.kDriveSensitivity, 1.0);
+        SmartDashboard.putNumber(OperatorConstants.kTurnSensitivity, 1.0);
+
+        var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone(0.03);
+        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
+        var rightX = DoubleTransformer.of(m_driverController::getRightX).negate().deadzone(0.03);
+
+        Command arcade = new ArcadeDrive(drive, leftY, rightX);
+        Command curvature = new CurvatureDrive(drive, leftY, rightX, m_driverController.L1());
+        Command tank = new TankDrive(drive, leftY, rightY);
+
+        drive.setDefaultCommand(new SendableChooserCommand("Differential Drive Command", arcade, curvature, tank));
+        m_differentialDrive = Optional.of(drive);
     }
 
     private void setupClimber() {

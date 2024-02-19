@@ -6,9 +6,13 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.SwerveDriveConstants;
+import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.SwerveSubsystem;
 
 /**
@@ -19,9 +23,10 @@ import frc.robot.subsystems.SwerveSubsystem;
  */
 public class FieldRelativeAbsoluteAngleDrive extends Command {
     private final SwerveSubsystem drive;
+    private final Measure<Velocity<Distance>> MAX_SPEED;
+    private final Measure<Velocity<Angle>> MAX_OMEGA;
     private final DoubleSupplier vxSupplier, vySupplier;
     private final Supplier<Rotation2d> angleSupplier;
-
     private final PIDController angleController;
 
     /**
@@ -40,10 +45,11 @@ public class FieldRelativeAbsoluteAngleDrive extends Command {
         this.vxSupplier = vx;
         this.vySupplier = vy;
         this.angleSupplier = angle;
-        this.addRequirements(drive);
-
+        this.MAX_SPEED = drive.getMaximumVelocity();
+        this.MAX_OMEGA = drive.getMaximumAngularVelocity();
         this.angleController = new PIDController(0.2, 0, 0);
         this.angleController.enableContinuousInput(0, 1);
+        this.addRequirements(drive);
     }
 
     public FieldRelativeAbsoluteAngleDrive(SwerveSubsystem drive, DoubleSupplier vx, DoubleSupplier vy,
@@ -60,16 +66,17 @@ public class FieldRelativeAbsoluteAngleDrive extends Command {
 
     @Override
     public void execute() {
-        // Handle Rotation
-        Rotation2d currentAngle = drive.getHeading();
-        double anglePower = angleController.calculate(currentAngle.getRotations(), angleSupplier.get().getRotations());
-        // TODO: RobotFrame
-        double omega = anglePower * SwerveDriveConstants.MAX_OMEGA_M1C1;
+        double drive_sensitivity = SmartDashboard.getNumber(OperatorConstants.kDriveSensitivity, 1.0);
+        double turn_sensitivity = SmartDashboard.getNumber(OperatorConstants.kTurnSensitivity, 1.0);
 
         // Handle translation
-        double drive_sensitivity = SmartDashboard.getNumber("drive sensitivity", 1.0);
-        double vx = drive_sensitivity * vxSupplier.getAsDouble() * SwerveDriveConstants.MAX_SPEED;
-        double vy = drive_sensitivity * vySupplier.getAsDouble() * SwerveDriveConstants.MAX_SPEED;
+        var vx = MAX_SPEED.times(vxSupplier.getAsDouble() * drive_sensitivity);
+        var vy = MAX_SPEED.times(vySupplier.getAsDouble() * drive_sensitivity);
+
+        // Handle Rotation
+        Rotation2d currentAngle = drive.getHeading();
+        double pidOutput = angleController.calculate(currentAngle.getRotations(), angleSupplier.get().getRotations());
+        var omega = MAX_OMEGA.times(pidOutput * turn_sensitivity);
 
         // Drive!
         ChassisSpeeds speeds = new ChassisSpeeds(vx, vy, omega);

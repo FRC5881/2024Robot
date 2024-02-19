@@ -8,22 +8,18 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class IndexerSubsystem extends SubsystemBase {
+    private final CANSparkMax indexerMotor;
 
-    private final CANSparkMax indexerShooterMotor;
-
-    /**
-     * sets the can IDs
-     */
     public IndexerSubsystem() {
-        this.indexerShooterMotor = new CANSparkMax(Constants.CANConstants.kIndexerShooterMotor, MotorType.kBrushless);
+        this.indexerMotor = new CANSparkMax(Constants.CANConstants.kIndexerMotor, MotorType.kBrushless);
     }
 
-    // 2 analog sensors to detect the NOTE
-
+    // TODO: Use RightSight
     private boolean hasNoteBottom() {
         return false;
     }
 
+    // TODO: Use RightSight
     private boolean hasNoteTop() {
         return false;
     }
@@ -32,18 +28,18 @@ public class IndexerSubsystem extends SubsystemBase {
      * Moves a note higher through the mechanism
      */
     private void up() {
-        indexerShooterMotor.set(Constants.IndexerConstants.kIndexerShooterPower);
+        indexerMotor.set(Constants.IndexerConstants.kIndexerShooterPower);
     }
 
     private void down() {
-        indexerShooterMotor.set(-Constants.IndexerConstants.kIndexerShooterPower);
+        indexerMotor.set(-Constants.IndexerConstants.kIndexerShooterPower);
     }
 
     /**
      * Stops the indexer
      */
     private void stop() {
-        indexerShooterMotor.set(0);
+        indexerMotor.set(0);
     }
 
     /**

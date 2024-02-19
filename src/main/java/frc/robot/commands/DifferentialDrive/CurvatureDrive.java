@@ -7,6 +7,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DifferentialDriveConstants;
+import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.DifferentialDriveSubsystem;
 
 /**
@@ -37,8 +38,8 @@ public class CurvatureDrive extends Command {
 
     @Override
     public void execute() {
-        double drive_sensitivity = SmartDashboard.getNumber("drive sensitivity", 1.0);
-        double turn_sensitivity = SmartDashboard.getNumber("turn sensitivity", 1.0);
+        double drive_sensitivity = SmartDashboard.getNumber(OperatorConstants.kDriveSensitivity, 1.0);
+        double turn_sensitivity = SmartDashboard.getNumber(OperatorConstants.kTurnSensitivity, 1.0);
 
         double throttle = throttleSupplier.getAsDouble();
 
