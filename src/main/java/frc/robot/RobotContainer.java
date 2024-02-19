@@ -155,7 +155,7 @@ public class RobotContainer {
         m_driverController.square().whileTrue(absoluteAngleSquare);
         m_driverController.cross().whileTrue(absoluteAngleCross);
 
-        drive.setDefaultCommand(new SendableChooserCommand("Swerve Drive Command", absoluteAngle, rotationRate));
+        drive.setDefaultCommand(new SendableChooserCommand("Swerve Drive Command", rotationRate, absoluteAngle));
         m_swerveDrive = Optional.of(drive);
     }
 
