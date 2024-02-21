@@ -2,9 +2,6 @@ package frc.robot.subsystems;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
-
-import org.photonvision.EstimatedRobotPose;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,7 +14,6 @@ import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot.RobotFrame;
 import swervelib.SwerveDrive;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveParser;
@@ -28,11 +24,7 @@ import static edu.wpi.first.math.util.Units.feetToMeters;
 import static edu.wpi.first.math.util.Units.inchesToMeters;
 
 public class SwerveSubsystem extends SubsystemBase {
-    private final Optional<VisionSubsystem> m_visionSubsystem;
     private final SwerveDrive m_swerveDrive;
-
-    // Tracks the last time we received a vision measurement.
-    private double m_lastVisionMeasurementTime = 0;
 
     /**
      * Creates a new SwerveSubsystem.
@@ -40,26 +32,10 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param visionSubsystem The vision subsystem to use for pose estimation.
      * @throws IOException If the swerve module configuration file cannot be read.
      */
-    public SwerveSubsystem(Optional<VisionSubsystem> visionSubsystem, RobotFrame bot) throws IOException {
-        m_visionSubsystem = visionSubsystem;
-
+    public SwerveSubsystem() throws IOException {
         SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
 
-        String swerveDir;
-        switch (bot) {
-            case COMP:
-                swerveDir = "compbot";
-                break;
-            case M1C2:
-                swerveDir = "m1c2";
-                break;
-            case T_7718:
-                swerveDir = "7718";
-                break;
-            default:
-                throw new IOException("SwerveSubsystem is only configured for COMP and M1C2");
-        }
-
+        String swerveDir = "7718";
         SwerveParser parser = new SwerveParser(new File(Filesystem.getDeployDirectory(), swerveDir));
 
         // https://www.swervedrivespecialties.com/products/mk4-swerve-module
@@ -74,30 +50,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (m_visionSubsystem.isPresent()) {
-            updateVision();
-        }
-    }
-
-    /**
-     * Updates the swerve drive with the latest vision measurement.
-     * 
-     * <p>
-     * 
-     * **NOTE:** This method assumes that the vision subsystem is present.
-     */
-    private void updateVision() {
-        Optional<EstimatedRobotPose> position = m_visionSubsystem.get().getRobotPose();
-        if (position.isPresent()) {
-            Pose2d pose = position.get().estimatedPose.toPose2d();
-            double timestamp = position.get().timestampSeconds;
-
-            // If this is a new measurement, then add it to the pose history.
-            if (timestamp > m_lastVisionMeasurementTime) {
-                m_lastVisionMeasurementTime = timestamp;
-                m_swerveDrive.addVisionMeasurement(pose, timestamp);
-            }
-        }
     }
 
     /**
