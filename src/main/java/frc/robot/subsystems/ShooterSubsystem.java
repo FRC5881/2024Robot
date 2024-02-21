@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -18,13 +19,18 @@ public class ShooterSubsystem extends SubsystemBase {
      * adds can id to motors
      */
     public ShooterSubsystem() {
-        secondaryShooterMotor = new CANSparkMax(Constants.CANConstants.kShooterIntakeId, MotorType.kBrushless);
-        secondaryShooterMotor.restoreFactoryDefaults();
-        secondaryShooterMotor.setSmartCurrentLimit(40);
-
         mainShooterMotor = new CANSparkMax(Constants.CANConstants.kShooterId, MotorType.kBrushless);
         mainShooterMotor.restoreFactoryDefaults();
         mainShooterMotor.setSmartCurrentLimit(40);
+        mainShooterMotor.setIdleMode(IdleMode.kBrake);
+
+        secondaryShooterMotor = new CANSparkMax(Constants.CANConstants.kShooterIntakeId, MotorType.kBrushless);
+        secondaryShooterMotor.restoreFactoryDefaults();
+        secondaryShooterMotor.setSmartCurrentLimit(40);
+        secondaryShooterMotor.setIdleMode(IdleMode.kBrake);
+
+        mainShooterMotor.set(0);
+        secondaryShooterMotor.set(0);
     }
 
     @Override
@@ -63,22 +69,24 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
-     * Spins the shooter up to high speed and then moves the NOTE up into the
-     * shooter
+     * Spins the shooter up to low speed and then moves the NOTE up into the shooter
      */
-    public Command cShootHigh() {
-        return this.cSetSpeed(ShooterConstants.kShooterHighSpeed)
-                .andThen(Commands.idle())
-                .finallyDo(this::stop);
+    public Command cReadyLow() {
+        return this.cSetSpeed(ShooterConstants.kShooterLowSpeed)
+                .andThen(this.cWaitForSetPoint());
     }
 
     /**
-     * Spins the shooter up to low speed and then moves the NOTE up into the shooter
+     * Spins the shooter up to high speed and then moves the NOTE up into the
+     * shooter
      */
-    public Command cShootLow() {
-        return this.cSetSpeed(ShooterConstants.kShooterLowSpeed)
-                .andThen(Commands.idle())
-                .finallyDo(this::stop);
+    public Command cReadyHigh() {
+        return this.cSetSpeed(ShooterConstants.kShooterHighSpeed)
+                .andThen(this.cWaitForSetPoint());
+    }
+
+    public Command cStop() {
+        return this.runOnce(this::stop);
     }
 
     /**
@@ -87,7 +95,8 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return the command
      */
     public Command cWaitForSetPoint() {
-        return Commands.waitUntil(this::isAtSetPoint);
+        // return Commands.waitUntil(this::isAtSetPoint);
+        return Commands.waitSeconds(1);
     }
 
     /**

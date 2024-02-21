@@ -1,7 +1,9 @@
 package frc.robot.commands.SwerveDrive;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
@@ -20,7 +22,8 @@ public class FieldRelativeRotationRateDrive extends Command {
     private final SwerveSubsystem drive;
     private final Measure<Velocity<Distance>> MAX_SPEED;
     private final Measure<Velocity<Angle>> MAX_OMEGA;
-    private final DoubleSupplier vxSupplier, vySupplier, omegaSupplier;
+    private final DoubleSupplier omegaSupplier;
+    private final Supplier<Translation2d> translationSupplier;
 
     /**
      * Creates a new FieldRelativeRotationRateDrive.
@@ -30,11 +33,10 @@ public class FieldRelativeRotationRateDrive extends Command {
      * @param vy    The vy value (left/right) as a percentage of max speed
      * @param omega The omega value (rotate) as a percentage of max rotation rate
      */
-    public FieldRelativeRotationRateDrive(SwerveSubsystem drive, DoubleSupplier vx, DoubleSupplier vy,
+    public FieldRelativeRotationRateDrive(SwerveSubsystem drive, Supplier<Translation2d> translationSupplier,
             DoubleSupplier omega) {
         this.drive = drive;
-        this.vxSupplier = vx;
-        this.vySupplier = vy;
+        this.translationSupplier = translationSupplier;
         this.omegaSupplier = omega;
 
         MAX_SPEED = drive.getMaximumVelocity();
@@ -51,8 +53,9 @@ public class FieldRelativeRotationRateDrive extends Command {
         double drive_sensitivity = SmartDashboard.getNumber(OperatorConstants.kDriveSensitivity, 1.0);
         double turn_sensitivity = SmartDashboard.getNumber(OperatorConstants.kTurnSensitivity, 1.0);
 
-        var vx = MAX_SPEED.times(vxSupplier.getAsDouble() * drive_sensitivity);
-        var vy = MAX_SPEED.times(vySupplier.getAsDouble() * drive_sensitivity);
+        Translation2d translation = translationSupplier.get();
+        var vx = MAX_SPEED.times(translation.getX() * drive_sensitivity);
+        var vy = MAX_SPEED.times(translation.getY() * drive_sensitivity);
         var omega = MAX_OMEGA.times(omegaSupplier.getAsDouble() * turn_sensitivity);
 
         ChassisSpeeds speeds = new ChassisSpeeds(vx, vy, omega);

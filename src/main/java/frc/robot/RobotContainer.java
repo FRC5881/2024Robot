@@ -5,7 +5,6 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.RobotMode;
 import frc.robot.commands.DifferentialDrive.ArcadeDrive;
 import frc.robot.commands.DifferentialDrive.CurvatureDrive;
 import frc.robot.commands.DifferentialDrive.TankDrive;
@@ -26,6 +25,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -42,25 +42,19 @@ public class RobotContainer {
     private Optional<IndexerSubsystem> m_indexer = Optional.empty();
     private Optional<ShooterSubsystem> m_shooter = Optional.empty();
 
-    private RobotMode mode = new RobotMode();
-
     private final CommandPS5Controller m_driverController = new CommandPS5Controller(
             OperatorConstants.kDriverControllerPort);
 
     public RobotContainer(RobotFrame bot) {
-        // Sets the robot to AmpMode
-        m_driverController.square().onTrue(mode.cSetAmpMode());
-        // Sets the robot to SpeakerMode
-        m_driverController.triangle().onTrue(mode.cSetSpeakerMode());
-
         // Each bot has a different set of subsystems
         switch (bot) {
             case COMP:
-                // TODO: Build the COMP bot
                 setupSwerveDrive(m_vision, bot);
+                // setupClimber();
+                setupShooter();
+                setupIndexer();
                 break;
             case M1C2:
-                // TODO: Vision?
                 // setupSwerveDrive(m_vision, bot);
                 break;
             case DOUGHNUT:
@@ -83,23 +77,26 @@ public class RobotContainer {
         if (m_shooter.isPresent()) {
             ShooterSubsystem shooter = m_shooter.get();
 
-            Command shoot;
             if (m_indexer.isPresent()) {
                 IndexerSubsystem indexer = m_indexer.get();
 
-                Command shootHigh = shooter.cShootLow()
-                        .andThen(shooter.cWaitForSetPoint())
-                        .andThen(indexer.cSendShooter());
-                Command shootLow = shooter.cShootHigh()
-                        .andThen(shooter.cWaitForSetPoint())
-                        .andThen(indexer.cSendShooter());
+                Command shootHigh = shooter.cReadyHigh()
+                        .andThen(indexer.cSendShooter())
+                        .finallyDo(shooter::stop);
 
-                shoot = Commands.either(shootLow, shootHigh, mode::isAmpMode);
+                Command shootLow = shooter.cReadyLow()
+                        .andThen(indexer.cSendShooter())
+                        .finallyDo(shooter::stop);
+
+                m_driverController.R1().whileTrue(shootLow);
+                m_driverController.R2().whileTrue(shootHigh);
             } else {
-                shoot = Commands.either(shooter.cShootLow(), shooter.cShootHigh(), mode::isAmpMode);
-            }
+                Command shootHigh = shooter.cReadyHigh()
+                        .andThen(Commands.idle())
+                        .finallyDo(shooter::stop);
 
-            m_driverController.R2().whileTrue(shoot);
+                m_driverController.R2().whileTrue(shootHigh);
+            }
         }
     }
 
@@ -128,10 +125,9 @@ public class RobotContainer {
         SmartDashboard.putNumber(OperatorConstants.kDriveSensitivity, 1.0);
         SmartDashboard.putNumber(OperatorConstants.kTurnSensitivity, 1.0);
 
-        var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone();
-        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
-        var leftX = DoubleTransformer.of(m_driverController::getLeftX).negate();
+        // Absolute drive commands
         var rightX = DoubleTransformer.of(m_driverController::getRightX).negate();
+        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate();
 
         Supplier<Rotation2d> angle = () -> {
             return new Rotation2d(
@@ -139,21 +135,33 @@ public class RobotContainer {
                     rightY.deadzone(0.75).getAsDouble());
         };
 
-        Command absoluteAngle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX, angle);
-        Command rotationRate = new FieldRelativeRotationRateDrive(drive, leftY, leftX, rightX.deadzone(0.03));
-        Command absoluteAngleTriangle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+        var leftX = DoubleTransformer.of(m_driverController::getLeftX).deadzone();
+        var leftY = DoubleTransformer.of(m_driverController::getLeftY).deadzone();
+
+        Supplier<Translation2d> translation = () -> {
+            return new Translation2d(leftY.getAsDouble(), leftX.getAsDouble());
+        };
+
+        Command absoluteAngle = new FieldRelativeAbsoluteAngleDrive(drive, translation, angle);
+        Command absoluteAngleTriangle = new FieldRelativeAbsoluteAngleDrive(drive, translation,
                 Rotation2d.fromDegrees(0));
-        Command absoluteAngleCircle = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+        Command absoluteAngleCircle = new FieldRelativeAbsoluteAngleDrive(drive, translation,
                 Rotation2d.fromDegrees(90));
-        Command absoluteAngleSquare = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+        Command absoluteAngleSquare = new FieldRelativeAbsoluteAngleDrive(drive, translation,
                 Rotation2d.fromDegrees(180));
-        Command absoluteAngleCross = new FieldRelativeAbsoluteAngleDrive(drive, leftY, leftX,
+        Command absoluteAngleCross = new FieldRelativeAbsoluteAngleDrive(drive, translation,
                 Rotation2d.fromDegrees(270));
 
         m_driverController.triangle().whileTrue(absoluteAngleTriangle);
         m_driverController.circle().whileTrue(absoluteAngleCircle);
         m_driverController.square().whileTrue(absoluteAngleSquare);
         m_driverController.cross().whileTrue(absoluteAngleCross);
+
+        // Relative Drive commands
+        Command rotationRate = new FieldRelativeRotationRateDrive(drive, translation, rightX);
+
+        // Reset gyro
+        m_driverController.touchpad().onTrue(drive.cZeroGyro());
 
         drive.setDefaultCommand(new SendableChooserCommand("Swerve Drive Command", rotationRate, absoluteAngle));
         m_swerveDrive = Optional.of(drive);
@@ -180,8 +188,8 @@ public class RobotContainer {
     private void setupClimber() {
         var climber = new ClimberSubsystem();
 
-        m_driverController.L1().whileTrue(climber.cExtend());
-        m_driverController.R1().whileTrue(climber.cRetract());
+        m_driverController.povUp().whileTrue(climber.cExtend());
+        m_driverController.povDown().whileTrue(climber.cRetract());
 
         m_climber = Optional.of(climber);
     }
@@ -208,6 +216,9 @@ public class RobotContainer {
 
         // The indexer automatically positions NOTES as they are received
         indexer.setDefaultCommand(indexer.cPositionNote());
+
+        m_driverController.povLeft().whileTrue(indexer.cSendDown());
+        m_driverController.povRight().whileTrue(indexer.cSendShooter());
 
         m_indexer = Optional.of(indexer);
     }

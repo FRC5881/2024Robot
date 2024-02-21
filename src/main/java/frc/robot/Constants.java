@@ -93,7 +93,7 @@ public final class Constants {
         /**
          * What power to shoot low with (percentage)
          */
-        public static final double kShooterLowSpeed = 0.5;
+        public static final double kShooterLowSpeed = 0.25;
 
         /**
          * What power to intake a NOTE with (percentage)
@@ -105,12 +105,7 @@ public final class Constants {
         /**
          * The power to drive the intake motor towards the shooter (percentage)
          */
-        public static final double kIndexerGroundPower = 1.0;
-
-        /**
-         * The power to drive the intake motor away from the shooter (percentage)
-         */
-        public static final double kIndexerShooterPower = 1.0;
+        public static final double kIndexerPower = 0.25;
     }
 
     public static class DifferentialDriveConstants {

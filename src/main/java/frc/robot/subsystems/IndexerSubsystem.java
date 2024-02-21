@@ -23,11 +23,11 @@ public class IndexerSubsystem extends SubsystemBase {
      * Moves a note higher through the mechanism
      */
     private void up() {
-        indexerMotor.set(Constants.IndexerConstants.kIndexerShooterPower);
+        indexerMotor.set(Constants.IndexerConstants.kIndexerPower);
     }
 
     private void down() {
-        indexerMotor.set(-Constants.IndexerConstants.kIndexerShooterPower);
+        indexerMotor.set(-Constants.IndexerConstants.kIndexerPower);
     }
 
     /**
@@ -43,7 +43,8 @@ public class IndexerSubsystem extends SubsystemBase {
     public Command cPositionNote() {
         return this.run(() -> {
             if (upperInput.get()) {
-                this.down();
+                // this.down();
+                this.stop();
             } else {
                 this.stop();
             }
@@ -54,4 +55,9 @@ public class IndexerSubsystem extends SubsystemBase {
     public Command cSendShooter() {
         return this.runEnd(this::up, this::stop);
     }
+
+    public Command cSendDown() {
+        return this.runEnd(this::down, this::stop);
+    }
+
 }

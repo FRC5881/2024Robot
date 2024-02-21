@@ -15,6 +15,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot.RobotFrame;
 import swervelib.SwerveDrive;
@@ -149,5 +150,14 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public void stop() {
         m_swerveDrive.drive(new ChassisSpeeds());
+    }
+
+    /**
+     * Zeros the gyroscope
+     */
+    public Command cZeroGyro() {
+        return this.runOnce(() -> {
+            m_swerveDrive.zeroGyro();
+        });
     }
 }
