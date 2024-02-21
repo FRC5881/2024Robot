@@ -46,6 +46,8 @@ public class Robot extends TimedRobot {
          * LOW - HIGH
          */
         DOUGHNUT,
+
+        T_7718,
     }
 
     public RobotFrame detectChassis() {
@@ -72,7 +74,7 @@ public class Robot extends TimedRobot {
         // Instantiate our RobotContainer. This will perform all our button bindings,
         // and put our autonomous chooser on the dashboard.
         // m_robotContainer = new RobotContainer(detectChassis());
-        m_robotContainer = new RobotContainer(RobotFrame.COMP);
+        m_robotContainer = new RobotContainer(RobotFrame.T_7718);
     }
 
     /**

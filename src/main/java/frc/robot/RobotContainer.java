@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
     // The robot's subsystems are defined here...
@@ -42,17 +43,22 @@ public class RobotContainer {
     private Optional<IndexerSubsystem> m_indexer = Optional.empty();
     private Optional<ShooterSubsystem> m_shooter = Optional.empty();
 
-    private final CommandPS5Controller m_driverController = new CommandPS5Controller(
-            OperatorConstants.kDriverControllerPort);
+    // private final CommandPS5Controller m_driverController = new
+    // CommandPS5Controller(
+    // OperatorConstants.kDriverControllerPort);
+
+    private final CommandXboxController m_driverController = new CommandXboxController(0);
 
     public RobotContainer(RobotFrame bot) {
         // Each bot has a different set of subsystems
         switch (bot) {
-            case COMP:
+            case T_7718:
                 setupSwerveDrive(m_vision, bot);
+            case COMP:
+                // setupSwerveDrive(m_vision, bot);
                 // setupClimber();
-                setupShooter();
-                setupIndexer();
+                // setupShooter();
+                // setupIndexer();
                 break;
             case M1C2:
                 // setupSwerveDrive(m_vision, bot);
@@ -74,30 +80,30 @@ public class RobotContainer {
         //
         // Without an indexer, the shooter should just run and wait for a human it
         // insert the note
-        if (m_shooter.isPresent()) {
-            ShooterSubsystem shooter = m_shooter.get();
+        // if (m_shooter.isPresent()) {
+        // ShooterSubsystem shooter = m_shooter.get();
 
-            if (m_indexer.isPresent()) {
-                IndexerSubsystem indexer = m_indexer.get();
+        // if (m_indexer.isPresent()) {
+        // IndexerSubsystem indexer = m_indexer.get();
 
-                Command shootHigh = shooter.cReadyHigh()
-                        .andThen(indexer.cSendShooter())
-                        .finallyDo(shooter::stop);
+        // Command shootHigh = shooter.cReadyHigh()
+        // .andThen(indexer.cSendShooter())
+        // .finallyDo(shooter::stop);
 
-                Command shootLow = shooter.cReadyLow()
-                        .andThen(indexer.cSendShooter())
-                        .finallyDo(shooter::stop);
+        // Command shootLow = shooter.cReadyLow()
+        // .andThen(indexer.cSendShooter())
+        // .finallyDo(shooter::stop);
 
-                m_driverController.R1().whileTrue(shootLow);
-                m_driverController.R2().whileTrue(shootHigh);
-            } else {
-                Command shootHigh = shooter.cReadyHigh()
-                        .andThen(Commands.idle())
-                        .finallyDo(shooter::stop);
+        // m_driverController.R1().whileTrue(shootLow);
+        // m_driverController.R2().whileTrue(shootHigh);
+        // } else {
+        // Command shootHigh = shooter.cReadyHigh()
+        // .andThen(Commands.idle())
+        // .finallyDo(shooter::stop);
 
-                m_driverController.R2().whileTrue(shootHigh);
-            }
-        }
+        // m_driverController.R2().whileTrue(shootHigh);
+        // }
+        // }
     }
 
     public Command getAutonomousCommand() {
@@ -126,8 +132,8 @@ public class RobotContainer {
         SmartDashboard.putNumber(OperatorConstants.kTurnSensitivity, 1.0);
 
         // Absolute drive commands
-        var rightX = DoubleTransformer.of(m_driverController::getRightX).negate();
-        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate();
+        var rightX = DoubleTransformer.of(m_driverController::getRightX);
+        var rightY = DoubleTransformer.of(m_driverController::getRightY);
 
         Supplier<Rotation2d> angle = () -> {
             return new Rotation2d(
@@ -152,16 +158,16 @@ public class RobotContainer {
         Command absoluteAngleCross = new FieldRelativeAbsoluteAngleDrive(drive, translation,
                 Rotation2d.fromDegrees(270));
 
-        m_driverController.triangle().whileTrue(absoluteAngleTriangle);
-        m_driverController.circle().whileTrue(absoluteAngleCircle);
-        m_driverController.square().whileTrue(absoluteAngleSquare);
-        m_driverController.cross().whileTrue(absoluteAngleCross);
+        // m_driverController.triangle().whileTrue(absoluteAngleTriangle);
+        // m_driverController.circle().whileTrue(absoluteAngleCircle);
+        // m_driverController.square().whileTrue(absoluteAngleSquare);
+        // m_driverController.cross().whileTrue(absoluteAngleCross);
 
         // Relative Drive commands
         Command rotationRate = new FieldRelativeRotationRateDrive(drive, translation, rightX);
 
         // Reset gyro
-        m_driverController.touchpad().onTrue(drive.cZeroGyro());
+        m_driverController.rightStick().onTrue(drive.cZeroGyro());
 
         drive.setDefaultCommand(new SendableChooserCommand("Swerve Drive Command", rotationRate, absoluteAngle));
         m_swerveDrive = Optional.of(drive);
@@ -178,10 +184,11 @@ public class RobotContainer {
         var rightX = DoubleTransformer.of(m_driverController::getRightX).negate().deadzone(0.03);
 
         Command arcade = new ArcadeDrive(drive, leftY, rightX);
-        Command curvature = new CurvatureDrive(drive, leftY, rightX, m_driverController.L1());
+        // Command curvature = new CurvatureDrive(drive, leftY, rightX,
+        // m_driverController.L1());
         Command tank = new TankDrive(drive, leftY, rightY);
 
-        drive.setDefaultCommand(new SendableChooserCommand("Differential Drive Command", arcade, curvature, tank));
+        drive.setDefaultCommand(new SendableChooserCommand("Differential Drive Command", arcade, tank));
         m_differentialDrive = Optional.of(drive);
     }
 
@@ -198,7 +205,7 @@ public class RobotContainer {
         var intake = new IntakeSubsystem();
 
         // Intake a note from the ground
-        m_driverController.R1().whileTrue(intake.cRun());
+        // m_driverController.R1().whileTrue(intake.cRun());
 
         m_intake = Optional.of(intake);
     }
@@ -206,7 +213,7 @@ public class RobotContainer {
     private void setupShooter() {
         var shooter = new ShooterSubsystem();
 
-        m_driverController.L2().whileTrue(shooter.cSourceIntake());
+        // m_driverController.L2().whileTrue(shooter.cSourceIntake());
 
         m_shooter = Optional.of(shooter);
     }

@@ -21,6 +21,8 @@ import frc.robot.Robot.RobotFrame;
 import swervelib.SwerveDrive;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveParser;
+import swervelib.telemetry.SwerveDriveTelemetry;
+import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
 import static edu.wpi.first.math.util.Units.feetToMeters;
 import static edu.wpi.first.math.util.Units.inchesToMeters;
@@ -41,6 +43,8 @@ public class SwerveSubsystem extends SubsystemBase {
     public SwerveSubsystem(Optional<VisionSubsystem> visionSubsystem, RobotFrame bot) throws IOException {
         m_visionSubsystem = visionSubsystem;
 
+        SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
+
         String swerveDir;
         switch (bot) {
             case COMP:
@@ -48,6 +52,9 @@ public class SwerveSubsystem extends SubsystemBase {
                 break;
             case M1C2:
                 swerveDir = "m1c2";
+                break;
+            case T_7718:
+                swerveDir = "7718";
                 break;
             default:
                 throw new IOException("SwerveSubsystem is only configured for COMP and M1C2");
@@ -59,7 +66,7 @@ public class SwerveSubsystem extends SubsystemBase {
         // L1 free speed is allegedly 12.5 ft/s
         double maxSpeed = feetToMeters(12.5);
         // Steering gear ratio of the MK4 is 12.8:1
-        double angleMotorConversionFactor = SwerveMath.calculateDegreesPerSteeringRotation(12.8);
+        double angleMotorConversionFactor = SwerveMath.calculateDegreesPerSteeringRotation(21.428571429);
         // Drive gear ratio for the L1 is 8.14:1
         double driveMotorConversion = SwerveMath.calculateMetersPerRotation(inchesToMeters(4), 8.14);
         m_swerveDrive = parser.createSwerveDrive(maxSpeed, angleMotorConversionFactor, driveMotorConversion);
