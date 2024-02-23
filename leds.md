@@ -128,8 +128,25 @@ Finally, the Arduino project should be included in our main [2024Robot](https://
 
 ## Patterns
 
-| ID | Name |
-|----|------|
-| 0  | NONE |
-
-TODO: Add the rest of the patterns
+| ID | Name               |
+|----|--------------------|
+| 0  | SLOW_RAINBOW       |
+| 1  | SOILD_RED          |
+| 2  | SOLID_GREEN        |
+| 3  | SOLID_BLUE         |
+| 4  | BREATHING_RED      |
+| 5  | BREATHING_GREEN    |
+| 6  | BREATHING_BLUE     |
+| 7  | POWER_DOWN         |
+| 8  | SLOW_FLASH_GREEN   |
+| 9  | CHASING_UP_RED     |
+| 10 | CHASING_UP_GREEN   |
+| 11 | CHASING_UP_BLUE    |
+| 12 | CHASING_DOWN_RED   |
+| 13 | CHASING_DOWN_GREEN |
+| 14 | CHASING_DOWN_BLUE  |
+| 15 | FAST_FLASH_RED     |
+| 16 | FAST_FLASH_GREEN   |
+| 17 | FAST_FLASH_BLUE    |
+| 18 | SOLID_PURPLE       |
+| 19 | FAST_RAINBOW_FLASH |
