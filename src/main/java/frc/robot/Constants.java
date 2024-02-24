@@ -1,6 +1,11 @@
 package frc.robot;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Velocity;
+
+import static edu.wpi.first.units.Units.*;
 
 public final class Constants {
     public static class OperatorConstants {
@@ -76,29 +81,14 @@ public final class Constants {
 
     public static class ShooterConstants {
         /**
-         * The power to drive the intake motor towards the shooter (percentage)
+         * What velocity to shoot NOTES into the AMP with
          */
-        public static final double kIntakeUpPower = 1.0;
+        public static final Measure<Velocity<Angle>> kShooterAmpSpeed = RotationsPerSecond.of(20);
 
         /**
-         * The power to drive the intake motor away from the shooter (percentage)
+         * Tolernace for the shooter to be considered at setpoint
          */
-        public static final double kIntakeDownPower = 1.0;
-
-        /**
-         * What power to shoot high with (percentage)
-         */
-        public static final double kShooterHighSpeed = 1.0;
-
-        /**
-         * What power to shoot low with (percentage)
-         */
-        public static final double kShooterLowSpeed = 0.25;
-
-        /**
-         * What power to intake a NOTE with (percentage)
-         */
-        public static final double kShooterIntakePower = 0.25;
+        public static final Measure<Velocity<Angle>> kShooterTolerance = RotationsPerSecond.of(2);
     }
 
     public static class IndexerConstants {
