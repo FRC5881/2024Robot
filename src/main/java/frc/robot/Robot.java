@@ -4,24 +4,13 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.DigitalOutput;
-import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
-    // DigitalOutput pwm = new DigitalOutput(0);
-    // Spark spark = new Spark(0);
-    PWM pwm = new PWM(0);
-    DigitalOutput dio = new DigitalOutput(0);
     private Command m_autonomousCommand;
     private RobotContainer m_robotContainer;
-
-    private AnalogInput A0 = new AnalogInput(0);
-    private AnalogInput A1 = new AnalogInput(1);
 
     /**
      * Our code is designed to work with multiple robots. This enum is used to
@@ -48,21 +37,6 @@ public class Robot extends TimedRobot {
         DOUGHNUT,
     }
 
-    public RobotFrame detectChassis() {
-        boolean a0 = A0.getVoltage() >= 2.5;
-        boolean a1 = A1.getVoltage() >= 2.5;
-
-        if (!a0 && !a1) {
-            return RobotFrame.COMP;
-        } else if (a0 && !a1) {
-            return RobotFrame.M1C2;
-        } else if (!a0 && a1) {
-            return RobotFrame.DOUGHNUT;
-        } else {
-            throw new RuntimeException("Unknown robot configuration");
-        }
-    }
-
     /**
      * This function is run when the robot is first started up and should be used
      * for any initialization code.
@@ -87,10 +61,6 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-
-        // Put analog input values on the dashboard
-        SmartDashboard.putNumber("A0", A0.getValue());
-        SmartDashboard.putNumber("A1", A1.getValue());
     }
 
     /** This function is called once each time the robot enters Disabled mode. */

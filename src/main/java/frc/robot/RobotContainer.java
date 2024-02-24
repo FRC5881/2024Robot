@@ -5,6 +5,7 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.DifferentialDrive.ArcadeDrive;
 import frc.robot.commands.DifferentialDrive.CurvatureDrive;
 import frc.robot.commands.DifferentialDrive.TankDrive;
@@ -20,6 +21,8 @@ import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.utils.DoubleTransformer;
 import frc.robot.utils.SendableChooserCommand;
+
+import static edu.wpi.first.units.Units.Percent;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -50,7 +53,7 @@ public class RobotContainer {
         switch (bot) {
             case COMP:
                 setupSwerveDrive(m_vision, bot);
-                // setupClimber();
+                setupClimber();
                 setupShooter();
                 setupIndexer();
                 break;
@@ -59,7 +62,6 @@ public class RobotContainer {
                 break;
             case DOUGHNUT:
                 // setupDifferentialDrive();
-                // setupShooter();
                 break;
         }
 
@@ -80,21 +82,16 @@ public class RobotContainer {
             if (m_indexer.isPresent()) {
                 IndexerSubsystem indexer = m_indexer.get();
 
-                Command shootHigh = shooter.cReadyHigh()
-                        .andThen(indexer.cSendShooter())
-                        .finallyDo(shooter::stop);
-
-                Command shootLow = shooter.cReadyLow()
-                        .andThen(indexer.cSendShooter())
-                        .finallyDo(shooter::stop);
+                Command shootHigh = shooter.cRunWhenAmpReady(indexer.cSendDown());
+                Command shootLow = shooter.cRunWhenAmpReady(indexer.cSendShooter());
 
                 m_driverController.R1().whileTrue(shootLow);
                 m_driverController.R2().whileTrue(shootHigh);
             } else {
-                Command shootHigh = shooter.cReadyHigh()
-                        .andThen(Commands.idle())
-                        .finallyDo(shooter::stop);
+                Command shootHigh = shooter.cPercentOutput(Percent.of(100));
+                Command shootLow = shooter.cSetpoint(ShooterConstants.kShooterAmpSpeed);
 
+                m_driverController.R1().whileTrue(shootLow);
                 m_driverController.R2().whileTrue(shootHigh);
             }
         }
@@ -206,7 +203,7 @@ public class RobotContainer {
     private void setupShooter() {
         var shooter = new ShooterSubsystem();
 
-        m_driverController.L2().whileTrue(shooter.cSourceIntake());
+        m_driverController.L2().whileTrue(shooter.cIntake());
 
         m_shooter = Optional.of(shooter);
     }
