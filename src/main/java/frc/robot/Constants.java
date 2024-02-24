@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 
 import static edu.wpi.first.units.Units.*;
@@ -89,6 +90,11 @@ public final class Constants {
          * Tolernace for the shooter to be considered at setpoint
          */
         public static final Measure<Velocity<Angle>> kShooterTolerance = RotationsPerSecond.of(2);
+
+        /**
+         * Amount of time to wait for the shooter to reach any setpoint
+         */
+        public static final Measure<Time> kTimeout = Seconds.of(0.5);
     }
 
     public static class IndexerConstants {

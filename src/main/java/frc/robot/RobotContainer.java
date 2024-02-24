@@ -74,7 +74,7 @@ public class RobotContainer {
         //
         // Namely, if we have an indexer it needs to send the NOTE up to the shooter.
         //
-        // Without an indexer, the shooter should just run and wait for a human it
+        // Without an indexer, the shooter should just run and wait for a human to
         // insert the note
         if (m_shooter.isPresent()) {
             ShooterSubsystem shooter = m_shooter.get();
@@ -82,14 +82,14 @@ public class RobotContainer {
             if (m_indexer.isPresent()) {
                 IndexerSubsystem indexer = m_indexer.get();
 
-                Command shootHigh = shooter.cRunWhenAmpReady(indexer.cSendDown());
+                Command shootHigh = shooter.cRunWhenSpeakerReady(indexer.cSendShooter());
                 Command shootLow = shooter.cRunWhenAmpReady(indexer.cSendShooter());
 
                 m_driverController.R1().whileTrue(shootLow);
                 m_driverController.R2().whileTrue(shootHigh);
             } else {
-                Command shootHigh = shooter.cPercentOutput(Percent.of(100));
-                Command shootLow = shooter.cSetpoint(ShooterConstants.kShooterAmpSpeed);
+                Command shootHigh = shooter.cRunSpeaker();
+                Command shootLow = shooter.cRunAmp();
 
                 m_driverController.R1().whileTrue(shootLow);
                 m_driverController.R2().whileTrue(shootHigh);

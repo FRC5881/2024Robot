@@ -98,7 +98,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @param percentage the values to drive the motors at, between -1 and 1.
      * @return the command to run
      */
-    public Command cPercentOutput(Measure<Dimensionless> percentage) {
+    private Command cPercentOutput(Measure<Dimensionless> percentage) {
         return runEnd(() -> {
             mainMotor.set(percentage.in(Value));
             secondaryMotor.set(percentage.in(Value));
@@ -106,11 +106,20 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
+     * Has the shooter target the SPEAKER.
+     * 
+     * @return the command to run
+     */
+    public Command cRunSpeaker() {
+        return cPercentOutput(Percent.of(100));
+    }
+
+    /**
      * Drives the shooter motors to a given setpoint.
      * <p>
      * Uses a feedforward and PID controller to set the voltage of the motors.
      */
-    public Command cSetpoint(Measure<Velocity<Angle>> setpoint) {
+    private Command cSetpoint(Measure<Velocity<Angle>> setpoint) {
         return runEnd(() -> {
             double mainSpeed = mainMotor.getEncoder().getVelocity();
             double secondarySpeed = secondaryMotor.getEncoder().getVelocity();
@@ -119,6 +128,15 @@ public class ShooterSubsystem extends SubsystemBase {
             mainMotor.setVoltage(feedforward.calculate(rps) + pidcontroller.calculate(mainSpeed, rps));
             secondaryMotor.setVoltage(feedforward.calculate(rps) + pidcontroller.calculate(secondarySpeed, rps));
         }, this::stop);
+    }
+
+    /**
+     * Has the shooter target the AMP.
+     * 
+     * @return the command to run
+     */
+    public Command cRunAmp() {
+        return cSetpoint(ShooterConstants.kShooterAmpSpeed);
     }
 
     /**
@@ -145,9 +163,8 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return The command to run.
      */
     private Command waitForReady(Measure<Velocity<Angle>> setpoint) {
-        return Commands.race(
-                Commands.waitUntil(() -> isAtSetpoint(setpoint)),
-                Commands.waitSeconds(1));
+        // TODO: https://github.com/wpilibsuite/allwpilib/pull/6386
+        return Commands.waitUntil(() -> isAtSetpoint(setpoint)).withTimeout(ShooterConstants.kTimeout.in(Seconds));
     }
 
     /**
@@ -157,9 +174,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return The composed command.
      */
     public Command cRunWhenAmpReady(Command command) {
-        return cSetpoint(ShooterConstants.kShooterAmpSpeed)
-                .alongWith(waitForReady(ShooterConstants.kShooterAmpSpeed).andThen(command));
-
+        return cRunAmp().alongWith(waitForReady(ShooterConstants.kShooterAmpSpeed).andThen(command));
     }
 
     /**
@@ -170,7 +185,8 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return The composed command.
      */
     public Command cRunWhenSpeakerReady(Command command) {
-        return cPercentOutput(Percent.of(100)).alongWith(Commands.waitSeconds(1).andThen(command));
+        // TODO: https://github.com/wpilibsuite/allwpilib/pull/6386
+        return cRunSpeaker().alongWith(Commands.waitSeconds(ShooterConstants.kTimeout.in(Seconds)).andThen(command));
     }
 
     /**
