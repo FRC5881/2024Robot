@@ -14,8 +14,26 @@ public class PenningtonLEDs {
     }
 
     public enum RawPattern {
-        NONE(0);
-        // TODO: Add more patterns
+        SLOW_RAINBOW(0),
+        SOLID_RED(1),
+        SOLID_GREEN(2),
+        SOLID_BLUE(3),
+        BREATHING_RED(4),
+        BREATHING_GREEN(5),
+        BREATHING_BLUE(6),
+        POWER_DOWN(7),
+        SLOW_FLASH_GREEN(8),
+        CHASING_UP_RED(9),
+        CHASING_UP_GREEN(10),
+        CHASING_UP_BLUE(11),
+        CHASING_DOWN_RED(12),
+        CHASING_DOWN_GREEN(13),
+        CHASING_DOWN_BLUE(14),
+        FAST_FLASH_RED(15),
+        FAST_FLASH_GREEN(16),
+        FAST_FLASH_BLUE(17),
+        SOLID_PURPLE(18),
+        FAST_RAINBOW_FLASH(19);
 
         private final int id;
 

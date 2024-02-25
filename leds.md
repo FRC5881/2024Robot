@@ -6,7 +6,7 @@ Our LED control system utilizes a custom one-way communication protocol between 
 
 ### Pattern Enumeration
 
-Both the RoboRIO and the Arduino maintain a shared, hard-coded list of patterns, referred to as the [Patterns](#Patterns).
+Both the RoboRIO and the Arduino maintain a shared, hard-coded list of patterns, referred to as the [Patterns](#patterns).
 
 Each pattern in this list is assigned a unique integer ID ranging from 0 to `NUM_PATTERNS`, inclusive.
 
@@ -14,10 +14,10 @@ Each pattern in this list is assigned a unique integer ID ranging from 0 to `NUM
 
 1. **Desired Voltage Calculation:**
    - To select a pattern, the RoboRIO computes a desired voltage corresponding to the chosen pattern ID.
-   
+
 2. **Voltage Transmission:**
    - The RoboRIO writes the computed desired voltage to the `AnalogOutput` port.
-   
+
 3. **Pattern Determination:**
    - The Arduino reads the voltage value received from the `AnalogOutput` port.
    - Based on this voltage, the Arduino selects the pattern with the closest matching voltage.
@@ -36,13 +36,13 @@ float calculated_voltage(int id) {
 
 ### `PenningtonLEDs`
 
-The `PenningtonLEDs` class implements the [Hardware Protocol](#Hardware-Protocol), it is fairly low-level and should not be used directly. Instead, we use the `LEDSubsystem` class, which provides a higher-level interface to the LED control system.
+The `PenningtonLEDs` class implements the [Hardware Protocol](#hardware-protocol), it is fairly low-level and should not be used directly. Instead, we use the `LEDSubsystem` class, which provides a higher-level interface to the LED control system.
 
 This class has an enum `RawPattern` that contains the "shared hard-coded list of patterns".
 
 ### `LEDSubsystem`
 
-The `LEDSubsystem` class is a [Singleton](https://en.wikipedia.org/wiki/Singleton_pattern) that provides a higher-level interface to the LED control system. Commands call into this class to change the LED pattern. 
+The `LEDSubsystem` class is a [Singleton](https://en.wikipedia.org/wiki/Singleton_pattern) that provides a higher-level interface to the LED control system. Commands call into this class to change the LED pattern.
 
 If you read the list of `RawPatterns` you will see that many preform the same _motion_, but with different colors (ie `RED_CHASING`, `GREEN_CHASING`, `BLUE_CHASING`). `LEDSubsystem` abstracts over this by providing a smaller `Pattern` enum with a variant for each unique _motion_. Internally, `LEDSubsystem` will select the correct color based on the current Alliance color.
 
@@ -121,7 +121,7 @@ The `determine_pattern` function should return the pattern ID that is closest to
 
 Patterns should be enumerated as a list of `#define` statements, with each pattern ID being assigned a unique integer value.
 
-Pattern implementations can include any necessary logic to control the LEDs, including the use of loops, delays, and other control structures. Each call to a pattern implementation is expected to be blocking and is called a "cycle". Cycles should be as 
+Pattern implementations can include any necessary logic to control the LEDs, including the use of loops, delays, and other control structures. Each call to a pattern implementation is expected to be blocking and is called a "cycle". Cycles should be as
 short as possible to produce the desired visual effect. For example, `pattern_solid` has an extremely short cycle-time, only needing to set the color of the LEDs once, while `pattern_chasing` has a longer cycle-time, needing to shift the color of the LEDs across a strip.
 
 Finally, the Arduino project should be included in our main [2024Robot](https://github.com/FRC5881/2024Robot) repository.
@@ -131,7 +131,7 @@ Finally, the Arduino project should be included in our main [2024Robot](https://
 | ID | Name               |
 |----|--------------------|
 | 0  | SLOW_RAINBOW       |
-| 1  | SOILD_RED          |
+| 1  | SOLID_RED          |
 | 2  | SOLID_GREEN        |
 | 3  | SOLID_BLUE         |
 | 4  | BREATHING_RED      |
