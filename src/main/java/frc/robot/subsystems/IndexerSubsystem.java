@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,7 +17,8 @@ public class IndexerSubsystem extends SubsystemBase {
     private final CANSparkMax indexerMotor;
 
     public IndexerSubsystem() {
-        this.indexerMotor = new CANSparkMax(Constants.CANConstants.kIndexerMotor, MotorType.kBrushless);
+        indexerMotor = new CANSparkMax(Constants.CANConstants.kIndexerMotor, MotorType.kBrushless);
+        indexerMotor.setIdleMode(IdleMode.kBrake);
     }
 
     /**

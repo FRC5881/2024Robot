@@ -119,6 +119,13 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     /**
+     * Robot Relative swerve drive.
+     */
+    public void absoluteDrive(ChassisSpeeds chassisSpeeds) {
+        m_swerveDrive.drive(chassisSpeeds);
+    }
+
+    /**
      * Gets the current pose of the robot.
      * 
      * @return The estimated position (rotation + translation) of the robot.

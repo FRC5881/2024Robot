@@ -1,13 +1,18 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Value;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.ClimberConstants;
 
 /**
  * ClimberSubsystem controls our climber. It only goes up or down.
@@ -17,17 +22,33 @@ import frc.robot.Constants;
  */
 public class ClimberSubsystem extends SubsystemBase {
     private final CANSparkMax climberMotor;
+    private final DigitalInput limitSwitch = new DigitalInput(0);
 
     public ClimberSubsystem() {
-        this.climberMotor = new CANSparkMax(Constants.CANConstants.kClimberId, MotorType.kBrushless);
-        this.climberMotor.restoreFactoryDefaults();
-        this.climberMotor.setIdleMode(IdleMode.kBrake);
+        climberMotor = new CANSparkMax(Constants.CANConstants.kClimberId, MotorType.kBrushless);
+        climberMotor.restoreFactoryDefaults();
+        climberMotor.setIdleMode(IdleMode.kBrake);
+        climberMotor.setSmartCurrentLimit(30);
 
-        // climberMotor.setSoftLimit(SoftLimitDirection.kReverse, 0);
-        // climberMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
-        // climberMotor.setSoftLimit(SoftLimitDirection.kForward,
-        // Constants.ClimberConstants.kForwardLimit);
-        // climberMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+        climberMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.ClimberConstants.kForwardLimit);
+        climberMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putNumber("Climber/Height", climberMotor.getEncoder().getPosition());
+        SmartDashboard.putBoolean("Climber/LimitSwitch", limitSwitch.get());
+        SmartDashboard.putNumber("Climber/Voltage", climberMotor.getAppliedOutput() * climberMotor.getBusVoltage());
+        SmartDashboard.putNumber("Climber/Current", climberMotor.getOutputCurrent());
+        SmartDashboard.putNumber("Climber/Temperature", climberMotor.getMotorTemperature());
+
+        if (limitSwitch.get()) {
+            climberMotor.getEncoder().setPosition(0);
+        }
+    }
+
+    public Command cAutoHome() {
+        return run(() -> climberMotor.set(ClimberConstants.kAutoHome.in(Value))).until(limitSwitch::get);
     }
 
     /**
@@ -49,19 +70,14 @@ public class ClimberSubsystem extends SubsystemBase {
     }
 
     private void extend() {
-        climberMotor.set(Constants.ClimberConstants.kExtendPower);
+        climberMotor.set(0.5);
     }
 
     private void retract() {
-        climberMotor.set(-Constants.ClimberConstants.kRetractPower);
+        climberMotor.set(-1);
     }
 
     private void stop() {
         climberMotor.stopMotor();
-    }
-
-    @Override
-    public void periodic() {
-        SmartDashboard.putNumber("Climber/Height", climberMotor.getEncoder().getPosition());
     }
 }
