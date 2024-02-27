@@ -5,10 +5,10 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.Constants.ShooterConstants;
 import frc.robot.commands.DifferentialDrive.ArcadeDrive;
 import frc.robot.commands.DifferentialDrive.CurvatureDrive;
 import frc.robot.commands.DifferentialDrive.TankDrive;
+import frc.robot.commands.SwerveDrive.RobotRelativeDrive;
 import frc.robot.commands.SwerveDrive.FieldRelativeAbsoluteAngleDrive;
 import frc.robot.commands.SwerveDrive.FieldRelativeRotationRateDrive;
 import frc.robot.subsystems.ClimberSubsystem;
@@ -21,8 +21,6 @@ import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.utils.DoubleTransformer;
 import frc.robot.utils.SendableChooserCommand;
-
-import static edu.wpi.first.units.Units.Percent;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -87,6 +85,9 @@ public class RobotContainer {
 
                 m_driverController.R1().whileTrue(shootLow);
                 m_driverController.R2().whileTrue(shootHigh);
+
+                m_driverController.L2().whileTrue(
+                        shooter.cIntake().alongWith(indexer.cSendDown()));
             } else {
                 Command shootHigh = shooter.cRunSpeaker();
                 Command shootLow = shooter.cRunAmp();
@@ -157,10 +158,18 @@ public class RobotContainer {
         // Relative Drive commands
         Command rotationRate = new FieldRelativeRotationRateDrive(drive, translation, rightX);
 
+        // Robot Relative Drive
+        Command robotRelative = new RobotRelativeDrive(drive, translation, rightX);
+        Command reversedRobotRelative = new RobotRelativeDrive(drive, () -> translation.get().unaryMinus(),
+                rightX.negate());
+        reversedRobotRelative.setName("ReverseRobotRelative");
+
         // Reset gyro
         m_driverController.touchpad().onTrue(drive.cZeroGyro());
 
-        drive.setDefaultCommand(new SendableChooserCommand("Swerve Drive Command", rotationRate, absoluteAngle));
+        drive.setDefaultCommand(
+                new SendableChooserCommand("Swerve Drive Command", rotationRate, absoluteAngle, robotRelative,
+                        reversedRobotRelative));
         m_swerveDrive = Optional.of(drive);
     }
 
@@ -212,10 +221,7 @@ public class RobotContainer {
         var indexer = new IndexerSubsystem();
 
         // The indexer automatically positions NOTES as they are received
-        indexer.setDefaultCommand(indexer.cPositionNote());
-
-        m_driverController.povLeft().whileTrue(indexer.cSendDown());
-        m_driverController.povRight().whileTrue(indexer.cSendShooter());
+        // indexer.setDefaultCommand(indexer.cPositionNote());
 
         m_indexer = Optional.of(indexer);
     }
