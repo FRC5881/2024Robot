@@ -4,6 +4,8 @@ import java.util.Optional;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.utils.PenningtonLEDs;
 import frc.robot.utils.PenningtonLEDs.RawPattern;
 
@@ -163,5 +165,13 @@ public class LEDSubsystem {
         Pattern p = overridePattern.orElse(defaultPattern);
         RawPattern r = toRaw(p, getColor());
         leds.setPattern(r);
+    }
+
+    public Command cPattern(Pattern pattern) {
+        return Commands.runEnd(() -> startOverride(pattern), () -> endOverride(pattern));
+    }
+
+    public Command cCrazy() {
+        return cPattern(Pattern.FAST_RAINBOW_FLASH).withTimeout(2);
     }
 }
