@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
@@ -77,14 +78,16 @@ public final class Constants {
         /**
          * Climber extension soft limit (rotations)
          */
-        public static final float kForwardLimit = 100.0f;
+        public static final float kForwardLimit = 122.5f;
+
+        public static final Measure<Dimensionless> kAutoHome = Percent.of(-10);
     }
 
     public static class ShooterConstants {
         /**
          * What velocity to shoot NOTES into the AMP with
          */
-        public static final Measure<Velocity<Angle>> kShooterAmpSpeed = RotationsPerSecond.of(20);
+        public static final Measure<Velocity<Angle>> kShooterAmpSpeed = RotationsPerSecond.of(25);
 
         /**
          * Tolernace for the shooter to be considered at setpoint
@@ -94,14 +97,14 @@ public final class Constants {
         /**
          * Amount of time to wait for the shooter to reach any setpoint
          */
-        public static final Measure<Time> kTimeout = Seconds.of(0.5);
+        public static final Measure<Time> kTimeout = Seconds.of(0.75);
     }
 
     public static class IndexerConstants {
         /**
          * The power to drive the intake motor towards the shooter (percentage)
          */
-        public static final double kIndexerPower = 0.25;
+        public static final double kIndexerPower = 0.10;
     }
 
     public static class DifferentialDriveConstants {
