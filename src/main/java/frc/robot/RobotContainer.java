@@ -35,14 +35,13 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 
 public class RobotContainer {
     // The robot's subsystems are defined here...
-    private Optional<VisionSubsystem> m_vision = Optional.empty();
-    private Optional<SwerveSubsystem> m_swerveDrive = Optional.empty();
-    private Optional<DifferentialDriveSubsystem> m_differentialDrive = Optional.empty();
-    private Optional<ClimberSubsystem> m_climber = Optional.empty();
-    private Optional<IntakeSubsystem> m_intake = Optional.empty();
-
-    private Optional<IndexerSubsystem> m_indexer = Optional.empty();
-    private Optional<ShooterSubsystem> m_shooter = Optional.empty();
+    protected Optional<VisionSubsystem> m_vision = Optional.empty();
+    protected Optional<SwerveSubsystem> m_swerveDrive = Optional.empty();
+    protected Optional<DifferentialDriveSubsystem> m_differentialDrive = Optional.empty();
+    protected Optional<ClimberSubsystem> m_climber = Optional.empty();
+    protected Optional<IntakeSubsystem> m_intake = Optional.empty();
+    protected Optional<IndexerSubsystem> m_indexer = Optional.empty();
+    protected Optional<ShooterSubsystem> m_shooter = Optional.empty();
 
     private final CommandPS5Controller m_driverController = new CommandPS5Controller(
             OperatorConstants.kDriverControllerPort);
@@ -198,7 +197,7 @@ public class RobotContainer {
         var climber = new ClimberSubsystem();
 
         m_driverController.povUp().whileTrue(climber.cExtend());
-        m_driverController.povDown().whileTrue(climber.cRetract());
+        m_driverController.povDown().whileTrue(climber.cClimbFast());
 
         m_climber = Optional.of(climber);
     }

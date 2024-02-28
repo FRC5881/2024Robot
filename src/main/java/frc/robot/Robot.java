@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.LEDSubsystem.Pattern;
 
@@ -85,7 +86,10 @@ public class Robot extends TimedRobot {
 
         // schedule the autonomous command (example)
         if (m_autonomousCommand != null) {
-            m_autonomousCommand.schedule();
+            // "cimb" is either "AutoHome" or "Commands.none()" depending on if we have a
+            // climber.
+            Command climb = m_robotContainer.m_climber.map((climber) -> climber.cAutoHome()).orElse(Commands.none());
+            climb.alongWith(m_autonomousCommand).schedule();
         }
     }
 

@@ -48,6 +48,18 @@ public class ClimberSubsystem extends SubsystemBase {
         }
     }
 
+    private void extend() {
+        climberMotor.set(0.5);
+    }
+
+    private void retract() {
+        climberMotor.set(-1);
+    }
+
+    private void stop() {
+        climberMotor.stopMotor();
+    }
+
     public Command cAutoHome() {
         return run(() -> climberMotor.set(ClimberConstants.kAutoHome.in(Value))).until(limitSwitch::get);
     }
@@ -67,20 +79,15 @@ public class ClimberSubsystem extends SubsystemBase {
      * 
      * @return the Command
      */
-    public Command cRetract() {
-        return this.startEnd(this::retract, this::stop)
-                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_DOWN));
-    }
 
-    private void extend() {
-        climberMotor.set(0.5);
-    }
-
-    private void retract() {
-        climberMotor.set(-1);
-    }
-
-    private void stop() {
-        climberMotor.stopMotor();
+    public Command cClimbFast() {
+        return this.run(() -> {
+            if (limitSwitch.get() == true) {
+                runEnd(this::retract, this::stop)
+                        .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_DOWN));
+            } else {
+                run(this::stop);
+            }
+        });
     }
 }
