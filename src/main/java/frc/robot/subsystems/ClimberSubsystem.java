@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ClimberConstants;
+import frc.robot.subsystems.LEDSubsystem.Pattern;
 
 /**
  * ClimberSubsystem controls our climber. It only goes up or down.
@@ -57,7 +58,8 @@ public class ClimberSubsystem extends SubsystemBase {
      * @return the Command
      */
     public Command cExtend() {
-        return this.startEnd(this::extend, this::stop);
+        return this.startEnd(this::extend, this::stop)
+                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_UP));
     }
 
     /**
@@ -66,7 +68,8 @@ public class ClimberSubsystem extends SubsystemBase {
      * @return the Command
      */
     public Command cRetract() {
-        return this.startEnd(this::retract, this::stop);
+        return this.startEnd(this::retract, this::stop)
+                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_DOWN));
     }
 
     private void extend() {
