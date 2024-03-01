@@ -2,7 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Dimensionless;
+//import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
@@ -68,19 +68,19 @@ public final class Constants {
         /**
          * What power to extend the climber motor with (percentage)
          */
-        public static final double kExtendPower = 1.0;
+        // public static final double kExtendPower = 1.0;
 
         /**
          * What power to retract the climber motor with (percentage)
          */
-        public static final double kRetractPower = 1.0;
+        // public static final double kRetractPower = 1.0;
 
         /**
          * Climber extension soft limit (rotations)
          */
         public static final float kForwardLimit = 122.5f;
 
-        public static final Measure<Dimensionless> kAutoHome = Percent.of(-10);
+        // public static final Measure<Dimensionless> kAutoHome = Percent.of(-10);
     }
 
     public static class ShooterConstants {

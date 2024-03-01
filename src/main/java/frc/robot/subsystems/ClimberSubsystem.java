@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Value;
-
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
@@ -12,7 +10,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.ClimberConstants;
 import frc.robot.subsystems.LEDSubsystem.Pattern;
 
 /**
@@ -60,10 +57,6 @@ public class ClimberSubsystem extends SubsystemBase {
         climberMotor.stopMotor();
     }
 
-    public Command cAutoHome() {
-        return run(() -> climberMotor.set(ClimberConstants.kAutoHome.in(Value))).until(limitSwitch::get);
-    }
-
     /**
      * Returns a command that extends the climber while it is ran
      * 
@@ -89,5 +82,9 @@ public class ClimberSubsystem extends SubsystemBase {
                 run(this::stop);
             }
         });
+    }
+
+    public Command cAutoHome() {
+        return run(this::cClimbFast).withTimeout(10);
     }
 }
