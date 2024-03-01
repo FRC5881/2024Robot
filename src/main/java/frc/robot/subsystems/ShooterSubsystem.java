@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.subsystems.LEDSubsystem.Pattern;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
@@ -111,7 +112,8 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return the command to run
      */
     public Command cRunSpeaker() {
-        return cPercentOutput(Percent.of(100));
+        return cPercentOutput(Percent.of(100))
+                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_UP));
     }
 
     /**
@@ -136,7 +138,8 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return the command to run
      */
     public Command cRunAmp() {
-        return cSetpoint(ShooterConstants.kShooterAmpSpeed);
+        return cSetpoint(ShooterConstants.kShooterAmpSpeed)
+                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_UP));
     }
 
     /**
@@ -195,7 +198,8 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return The command to run.
      */
     public Command cIntake() {
-        return cPercentOutput(Percent.of(-15));
+        return cPercentOutput(Percent.of(-15))
+                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_DOWN));
     }
 
     // ---- SYSTEM IDENTIFICATION ---- //

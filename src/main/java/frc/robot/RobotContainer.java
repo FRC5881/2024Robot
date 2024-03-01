@@ -17,6 +17,7 @@ import frc.robot.Robot.RobotFrame;
 import frc.robot.subsystems.DifferentialDriveSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.utils.DoubleTransformer;
@@ -62,6 +63,8 @@ public class RobotContainer {
                 // setupDifferentialDrive();
                 break;
         }
+
+        m_driverController.options().whileTrue(LEDSubsystem.getInstance().cCrazy());
 
         // Swerve drive and Differential drive are mutually exclusive
         if (m_swerveDrive.isPresent() && m_differentialDrive.isPresent()) {

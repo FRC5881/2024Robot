@@ -6,6 +6,7 @@ import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.LEDSubsystem.Pattern;
 
 public class IntakeSubsystem extends SubsystemBase {
     private final CANSparkMax intakeMotor;
@@ -35,6 +36,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * sucks in a note
      */
     public Command cRun() {
-        return this.runEnd(this::suck, this::stop);
+        return this.runEnd(this::suck, this::stop)
+                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.SOLID_PURPLE));
     }
 }
