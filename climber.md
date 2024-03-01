@@ -34,10 +34,6 @@ This command should be run before any other climber command to ensure the climbe
 
 When run, the climber's winch is released, and the climber extends upwards. The climber will continue to extend until the soft-limit is reached or the command is interrupted.
 
-### Stay Down
-
-This is the primary climb command and the default command for the subsystem. The climber optimizes for the lowest possible voltage to keep the climber retracted. Every moment the climber isn't homed, more power is added to an accumulator. When contact is made, the accumulator slowly drains. This behavior keeps the climber retracted with minimal power usage.
-
 ### Climb Fast
 
 The climber is retracted at full power, and power is cut when the limit switch is touched. This command is used to quickly retract the climber but might be "jittery" as the climber is constantly turned on and off.
