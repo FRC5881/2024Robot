@@ -14,8 +14,24 @@ public final class Constants {
         public static final int kDriverControllerPort = 0;
 
         // SmartDashboard keys
-        public static final String kDriveSensitivity = "Drive sensitivity";
-        public static final String kTurnSensitivity = "Turn sensitivity";
+        public static final String kDriveSensitivity = "Drive Sensitivity";
+        public static final String kTurnSensitivity = "Turn Sensitivity";
+        public static final String kAutoTurn = "Auto Turn Sensitivity";
+
+        // Joystick deadband
+        public static final double kJoystickDeadzone = 0.05;
+    }
+
+    public static class DIOConstants {
+        /**
+         * The DIO port for the climber limit switch
+         */
+        public static final int kClimberLimitSwitch = 0;
+
+        /**
+         * The DIO port for the intake sensor
+         */
+        public static final int kIntakeSensor = 1;
     }
 
     public static class CANConstants {
@@ -50,18 +66,23 @@ public final class Constants {
         public static final int kIndexerMotor = 15;
 
         // Shooter
-        public static final int kShooterId = 21;
-        public static final int kShooterIntakeId = 22;
+        public static final int kShooterMainId = 21;
+        public static final int kShooterSecondaryId = 22;
 
         // Amp Guide
-        public static final int kAmpGuide = 30;
+        public static final int kAmpGuideId = 30;
     }
 
-    public static class IntakeConstants {
+    public static class GroundIntakeConstants {
         /**
-         * What power to spin the intake motor with (percentage)
+         * What power to spin the intake motor with
          */
-        public static final double kIntakePower = 1.0;
+        public static final Measure<Dimensionless> kHighPower = Percent.of(1.0);
+
+        /**
+         * What power to spin the intake motor with
+         */
+        public static final Measure<Dimensionless> kLowPower = Percent.of(0.50);
     }
 
     public static class ClimberConstants {
@@ -78,7 +99,7 @@ public final class Constants {
         /**
          * Climber extension soft limit (rotations)
          */
-        public static final float kForwardLimit = 122.5f;
+        public static final float kForwardLimit = 140f;
 
         public static final Measure<Dimensionless> kAutoHome = Percent.of(-10);
     }
@@ -87,12 +108,12 @@ public final class Constants {
         /**
          * What velocity to shoot NOTES into the AMP with
          */
-        public static final Measure<Velocity<Angle>> kShooterAmpSpeed = RotationsPerSecond.of(25);
+        public static final Measure<Velocity<Angle>> kShooterAmpSpeed = RotationsPerSecond.of(26);
 
         /**
-         * Tolernace for the shooter to be considered at setpoint
+         * Tolerance for the shooter to be considered at setpoint
          */
-        public static final Measure<Velocity<Angle>> kShooterTolerance = RotationsPerSecond.of(2);
+        public static final Measure<Velocity<Angle>> kShooterTolerance = RotationsPerSecond.of(2.0);
 
         /**
          * Amount of time to wait for the shooter to reach any setpoint
@@ -104,7 +125,7 @@ public final class Constants {
         /**
          * The power to drive the intake motor towards the shooter (percentage)
          */
-        public static final double kIndexerPower = 0.10;
+        public static final double kIndexerPower = 0.4;
     }
 
     public static class DifferentialDriveConstants {
@@ -136,6 +157,19 @@ public final class Constants {
         public static final double MAX_OMEGA = 2 * MAX_SPEED / TRACK_WIDTH;
     }
 
-    public static class SwerveDriveConstants {
+    public static class AmpGuideConstants {
+        /**
+         * AMP Guide soft limit / AMP Guide scoring position (rotations)
+         */
+        public static final float kForwardLimit = 22.83f;
+
+        /**
+         * Tolerance to be considered "within setpoint". (rotations)
+         * <p>
+         * Note: we're off loading the PIDController to our Motor Controller, so this
+         * tolerance has no effect on whether or not we're still commanding the AMP
+         * Guide. This is only used to help build Command compositions.
+         */
+        public static final float kTolerance = 1.0f;
     }
 }

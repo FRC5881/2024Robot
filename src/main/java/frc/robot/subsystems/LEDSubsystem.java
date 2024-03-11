@@ -1,32 +1,18 @@
 package frc.robot.subsystems;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.utils.PenningtonLEDs;
 import frc.robot.utils.PenningtonLEDs.RawPattern;
 
-public class LEDSubsystem {
-    private static LEDSubsystem instance = null;
-    private final PenningtonLEDs leds = new PenningtonLEDs(0);
-
-    private LEDSubsystem() {
-    }
-
-    /**
-     * Gets the singleton instance of the LEDSubsystem
-     * 
-     * @return the LEDSubsystem
-     */
-    public static LEDSubsystem getInstance() {
-        if (LEDSubsystem.instance == null) {
-            LEDSubsystem.instance = new LEDSubsystem();
-        }
-        return instance;
-    }
+public class LEDSubsystem implements Subsystem {
+    private static final PenningtonLEDs ledController = new PenningtonLEDs(0);
+    private static final LEDSubsystem instance = new LEDSubsystem();
 
     public enum Pattern {
         SLOW_RAINBOW,
@@ -72,11 +58,12 @@ public class LEDSubsystem {
      * This method typically just adds color information to an LED movement
      * definition.
      * <p>
-     * Pattern.SOLID may be converted to RawPattern.SOLID_RED or
-     * RawPattern.SOLID_BLUE depending on the alliance color
+     * {@code Pattern.SOLID} may be converted to {@code RawPattern.SOLID_RED} or
+     * {@code RawPattern.SOLID_BLUE} depending on the alliance color
      * 
      * @param pattern  the high level {@link Pattern} to display
      * @param alliance our alliance color (if known)
+     * 
      * @return the low level {@link RawPattern} to display
      */
     private static RawPattern toRaw(Pattern pattern, AllianceColor alliance) {
@@ -141,37 +128,89 @@ public class LEDSubsystem {
         }
     }
 
-    private Pattern defaultPattern = Pattern.SLOW_RAINBOW;
-    private Optional<Pattern> overridePattern = Optional.empty();
+    private static Pattern defaultPattern = Pattern.SLOW_RAINBOW;
+    private static Optional<Pattern> overridePattern = Optional.empty();
 
-    public void setDefault(Pattern pattern) {
+    /**
+     * Sends the currently active pattern to the LED controller
+     */
+    private static void sendPattern() {
+        Pattern p = overridePattern.orElse(defaultPattern);
+        RawPattern r = toRaw(p, getColor());
+        ledController.setPattern(r);
+    }
+
+    /**
+     * Sets the default pattern to display
+     * 
+     * @param pattern the {@link Pattern} to display
+     */
+    public static void setDefault(Pattern pattern) {
         defaultPattern = pattern;
         sendPattern();
     }
 
-    public void startOverride(Pattern pattern) {
+    /**
+     * Starts an override pattern
+     * 
+     * @param pattern the {@link Pattern} to display
+     */
+    public static void startOverride(Pattern pattern) {
         overridePattern = Optional.of(pattern);
         sendPattern();
     }
 
-    public void endOverride(Pattern pattern) {
+    /**
+     * Ends the current override pattern
+     * 
+     * @param pattern the {@link Pattern} to display
+     */
+    public static void endOverride(Pattern pattern) {
         if (overridePattern.equals(Optional.of(pattern))) {
             overridePattern.filter(pattern::equals).isPresent();
         }
         sendPattern();
     }
 
-    private void sendPattern() {
-        Pattern p = overridePattern.orElse(defaultPattern);
-        RawPattern r = toRaw(p, getColor());
-        leds.setPattern(r);
+    /**
+     * Creates a command that sets the override pattern
+     * <p>
+     * This command runs forever, so it's important to pair it with a command that
+     * ends the override
+     * 
+     * @param pattern the {@link Pattern} to display
+     * @return The {@link Command}
+     */
+    public static Command cSetOverride(Pattern pattern) {
+        return instance.runEnd(() -> startOverride(pattern), () -> endOverride(pattern));
     }
 
-    public Command cPattern(Pattern pattern) {
-        return Commands.runEnd(() -> startOverride(pattern), () -> endOverride(pattern));
+    /**
+     * Creates a command that sets the override pattern for a limited time
+     * <p>
+     * This command runs for a limited time, and will automatically end the override
+     * 
+     * @param pattern the {@link Pattern} to display
+     * @param seconds the number of seconds to display the pattern for
+     * @return The {@link Command}
+     * 
+     */
+    public static Command cSetOverride(Pattern pattern, double seconds) {
+        return cSetOverride(pattern).withTimeout(seconds);
     }
 
-    public Command cCrazy() {
-        return cPattern(Pattern.FAST_RAINBOW_FLASH).withTimeout(2);
+    /**
+     * Creates a command that sets the override pattern until a condition becomes
+     * true
+     * <p>
+     * This command runs until the condition is false, and will automatically end
+     * the override
+     * 
+     * @param pattern   the {@link Pattern} to display
+     * @param condition the condition to check
+     * @return The {@link Command}
+     */
+    public static Command cSetOverride(Pattern pattern, BooleanSupplier condition) {
+        return cSetOverride(pattern).until(condition);
     }
 }

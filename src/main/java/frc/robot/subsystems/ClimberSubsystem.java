@@ -18,8 +18,8 @@ import frc.robot.subsystems.LEDSubsystem.Pattern;
 /**
  * ClimberSubsystem controls our climber. It only goes up or down.
  * 
- * Interally we assume that positive voltage is extending and negative voltage
- * is decending.
+ * Internally we assume that positive voltage is extending and negative voltage
+ * is descending.
  */
 public class ClimberSubsystem extends SubsystemBase {
     private final CANSparkMax climberMotor;
@@ -59,7 +59,7 @@ public class ClimberSubsystem extends SubsystemBase {
      */
     public Command cExtend() {
         return this.startEnd(this::extend, this::stop)
-                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_UP));
+                .raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP));
     }
 
     /**
@@ -69,7 +69,7 @@ public class ClimberSubsystem extends SubsystemBase {
      */
     public Command cRetract() {
         return this.startEnd(this::retract, this::stop)
-                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_DOWN));
+                .raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_DOWN));
     }
 
     private void extend() {

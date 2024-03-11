@@ -3,7 +3,7 @@
         "front": -8,
         "left": -8
     },
-    "absoluteEncoderOffset": 331.43544,
+    "absoluteEncoderOffset": 329.3262,
     "drive": {
         "type": "sparkmax",
         "id": 4
@@ -17,7 +17,7 @@
         "id": 4
     },
     "inverted": {
-        "drive": true,
+        "drive": false,
         "angle": false
     }
 }

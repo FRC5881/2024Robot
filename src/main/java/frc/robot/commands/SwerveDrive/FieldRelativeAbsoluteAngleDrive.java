@@ -2,7 +2,7 @@ package frc.robot.commands.SwerveDrive;
 
 import java.util.function.Supplier;
 
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -27,7 +27,6 @@ public class FieldRelativeAbsoluteAngleDrive extends Command {
     private final Measure<Velocity<Angle>> MAX_OMEGA;
     private final Supplier<Translation2d> translationSupplier;
     private final Supplier<Rotation2d> angleSupplier;
-    private final PIDController angleController;
 
     /**
      * Creates a new FieldRelativeAbsoluteAngleDrive.
@@ -43,12 +42,12 @@ public class FieldRelativeAbsoluteAngleDrive extends Command {
             Supplier<Rotation2d> angle) {
         this.drive = drive;
         this.translationSupplier = translationSupplier;
-        this.angleSupplier = angle;
-        this.MAX_SPEED = drive.getMaximumVelocity();
-        this.MAX_OMEGA = drive.getMaximumAngularVelocity();
-        this.angleController = new PIDController(0.2, 0, 0);
-        this.angleController.enableContinuousInput(0, 1);
-        this.addRequirements(drive);
+        angleSupplier = angle;
+
+        MAX_SPEED = drive.getMaximumVelocity();
+        MAX_OMEGA = drive.getMaximumAngularVelocity();
+
+        addRequirements(drive);
     }
 
     public FieldRelativeAbsoluteAngleDrive(SwerveSubsystem drive, Supplier<Translation2d> translationSupplier,
@@ -65,7 +64,7 @@ public class FieldRelativeAbsoluteAngleDrive extends Command {
     @Override
     public void execute() {
         double drive_sensitivity = SmartDashboard.getNumber(OperatorConstants.kDriveSensitivity, 1.0);
-        double turn_sensitivity = SmartDashboard.getNumber(OperatorConstants.kTurnSensitivity, 1.0);
+        double kP = SmartDashboard.getNumber(OperatorConstants.kAutoTurn, 1.0);
 
         // Handle translation
         Translation2d translation = translationSupplier.get();
@@ -74,12 +73,13 @@ public class FieldRelativeAbsoluteAngleDrive extends Command {
 
         // Handle Rotation
         Rotation2d currentAngle = drive.getHeading();
-        double pidOutput = angleController.calculate(currentAngle.getRotations(), angleSupplier.get().getRotations());
-        var omega = MAX_OMEGA.times(pidOutput * turn_sensitivity);
+        double error = angleSupplier.get().getRotations() - currentAngle.getRotations();
+        double errorBound = MathUtil.inputModulus(error, 0.5, -0.5);
+        var omega = MAX_OMEGA.times(kP * errorBound);
 
         // Drive!
         ChassisSpeeds speeds = new ChassisSpeeds(vx, vy, omega);
-        drive.drive(speeds);
+        drive.driveFieldRelative(speeds);
     }
 
     @Override

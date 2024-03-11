@@ -11,20 +11,25 @@ import frc.robot.commands.DifferentialDrive.TankDrive;
 import frc.robot.commands.SwerveDrive.RobotRelativeDrive;
 import frc.robot.commands.SwerveDrive.FieldRelativeAbsoluteAngleDrive;
 import frc.robot.commands.SwerveDrive.FieldRelativeRotationRateDrive;
+import frc.robot.subsystems.AmpGuideSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.Robot.RobotFrame;
 import frc.robot.subsystems.DifferentialDriveSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
-import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.GroundIntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.LEDSubsystem.Pattern;
 import frc.robot.utils.DoubleTransformer;
 import frc.robot.utils.SendableChooserCommand;
 
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -39,7 +44,8 @@ public class RobotContainer {
     private Optional<SwerveSubsystem> m_swerveDrive = Optional.empty();
     private Optional<DifferentialDriveSubsystem> m_differentialDrive = Optional.empty();
     private Optional<ClimberSubsystem> m_climber = Optional.empty();
-    private Optional<IntakeSubsystem> m_intake = Optional.empty();
+    private Optional<GroundIntakeSubsystem> m_intake = Optional.empty();
+    private Optional<AmpGuideSubsystem> m_guide = Optional.empty();
 
     private Optional<IndexerSubsystem> m_indexer = Optional.empty();
     private Optional<ShooterSubsystem> m_shooter = Optional.empty();
@@ -55,54 +61,81 @@ public class RobotContainer {
                 setupClimber();
                 setupShooter();
                 setupIndexer();
+                setupIntake();
+                setupGuide();
                 break;
             case M1C2:
-                // setupSwerveDrive(m_vision, bot);
+                setupSwerveDrive(m_vision, bot);
                 break;
             case DOUGHNUT:
-                // setupDifferentialDrive();
+                setupDifferentialDrive();
                 break;
         }
 
-        m_driverController.options().whileTrue(LEDSubsystem.getInstance().cCrazy());
+        m_driverController.options().whileTrue(LEDSubsystem.cSetOverride(Pattern.FAST_RAINBOW_FLASH));
 
         // Swerve drive and Differential drive are mutually exclusive
         if (m_swerveDrive.isPresent() && m_differentialDrive.isPresent()) {
             throw new RuntimeException("Cannot have both swerve and differential drive subsystems");
         }
 
-        // "Shoot" commands behave differently if the indexer is present
-        //
-        // Namely, if we have an indexer it needs to send the NOTE up to the shooter.
-        //
-        // Without an indexer, the shooter should just run and wait for a human to
-        // insert the note
-        if (m_shooter.isPresent()) {
-            ShooterSubsystem shooter = m_shooter.get();
+        // This robot code requires we have a Shooter and Indexer
+        if (m_shooter.isPresent() && m_indexer.isPresent()) {
+            var shooter = m_shooter.get();
+            var indexer = m_indexer.get();
 
-            if (m_indexer.isPresent()) {
-                IndexerSubsystem indexer = m_indexer.get();
+            // By default the "releaseNote" command only runs the indexer
+            Supplier<Command> releaseNote = () -> indexer.cSendShooter();
 
-                Command shootHigh = shooter.cRunWhenSpeakerReady(indexer.cSendShooter());
-                Command shootLow = shooter.cRunWhenAmpReady(indexer.cSendShooter());
-
-                m_driverController.R1().whileTrue(shootLow);
-                m_driverController.R2().whileTrue(shootHigh);
-
-                m_driverController.L2().whileTrue(
-                        shooter.cIntake().alongWith(indexer.cSendDown()));
-            } else {
-                Command shootHigh = shooter.cRunSpeaker();
-                Command shootLow = shooter.cRunAmp();
-
-                m_driverController.R1().whileTrue(shootLow);
-                m_driverController.R2().whileTrue(shootHigh);
+            // Adding the ground intake to the "releaseNote" command is optional
+            if (m_intake.isPresent()) {
+                var intake = m_intake.get();
+                releaseNote = () -> Commands.parallel(indexer.cSendShooter(), intake.cRunLowSpeed());
             }
+
+            final Supplier<Command> releaseNoteFinal = releaseNote;
+
+            // Shoot into the SPEAKER
+            Command shootHigh = shooter.cRunWhenSpeakerReady(releaseNoteFinal.get());
+
+            // A similar command to "shootHigh" that is designed to be used in an auto
+            // It uses a timer to wait for the NOTE to exit the robot
+            Command autoShootHigh = Commands.sequence(
+                    shooter.cRunWhenSpeakerReady(indexer.cSendShooter()),
+                    Commands.waitSeconds(0.75));
+            NamedCommands.registerCommand("SPEAKER", autoShootHigh);
+
+            // If the guide exists, then "shootLow" requires the guide to be extended
+            // and requires the shooter to be ready
+            Supplier<Command> shootLow = () -> shooter.cRunWhenAmpReady(releaseNoteFinal.get());
+
+            if (m_guide.isPresent()) {
+                var guide = m_guide.get();
+
+                shootLow = () -> Commands.parallel(
+                        guide.cExtend().andThen(guide.waitUntilSetpoint()),
+                        shooter.cRunAmp().andThen(shooter.waitForAmpReady())).andThen(releaseNoteFinal.get());
+            }
+
+            // A similar command to "shootLow" that is designed to be used in an auto
+            // It uses a timer to wait for the NOTE to exit the robot
+            Command autoShootLow = shootLow.get().andThen(Commands.waitSeconds(1.0));
+            NamedCommands.registerCommand("AMP", autoShootLow);
+
+            // Driver Controls
+            m_driverController.R1().whileTrue(shootLow.get());
+            m_driverController.R2().whileTrue(shootHigh);
+
+            m_driverController.L2().whileTrue(shooter.cIntake().alongWith(indexer.cSendDown()));
         }
+
+        m_auto = new PathPlannerAuto("Forward");
     }
 
+    public Command m_auto = Commands.none();
+
     public Command getAutonomousCommand() {
-        return Commands.none();
+        return m_auto;
     }
 
     private void setupVision() {
@@ -124,7 +157,8 @@ public class RobotContainer {
         }
 
         SmartDashboard.putNumber(OperatorConstants.kDriveSensitivity, 1.0);
-        SmartDashboard.putNumber(OperatorConstants.kTurnSensitivity, 1.0);
+        SmartDashboard.putNumber(OperatorConstants.kTurnSensitivity, 1.5);
+        SmartDashboard.putNumber(OperatorConstants.kAutoTurn, 4.0);
 
         // Absolute drive commands
         var rightX = DoubleTransformer.of(m_driverController::getRightX).negate();
@@ -136,8 +170,8 @@ public class RobotContainer {
                     rightY.deadzone(0.75).getAsDouble());
         };
 
-        var leftX = DoubleTransformer.of(m_driverController::getLeftX).deadzone();
-        var leftY = DoubleTransformer.of(m_driverController::getLeftY).deadzone();
+        var leftX = DoubleTransformer.of(m_driverController::getLeftX).negate().deadzone();
+        var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone();
 
         Supplier<Translation2d> translation = () -> {
             return new Translation2d(leftY.getAsDouble(), leftX.getAsDouble());
@@ -146,11 +180,11 @@ public class RobotContainer {
         Command absoluteAngle = new FieldRelativeAbsoluteAngleDrive(drive, translation, angle);
         Command absoluteAngleTriangle = new FieldRelativeAbsoluteAngleDrive(drive, translation,
                 Rotation2d.fromDegrees(0));
-        Command absoluteAngleCircle = new FieldRelativeAbsoluteAngleDrive(drive, translation,
-                Rotation2d.fromDegrees(90));
         Command absoluteAngleSquare = new FieldRelativeAbsoluteAngleDrive(drive, translation,
-                Rotation2d.fromDegrees(180));
+                Rotation2d.fromDegrees(90));
         Command absoluteAngleCross = new FieldRelativeAbsoluteAngleDrive(drive, translation,
+                Rotation2d.fromDegrees(180));
+        Command absoluteAngleCircle = new FieldRelativeAbsoluteAngleDrive(drive, translation,
                 Rotation2d.fromDegrees(270));
 
         m_driverController.triangle().whileTrue(absoluteAngleTriangle);
@@ -167,12 +201,17 @@ public class RobotContainer {
                 rightX.negate());
         reversedRobotRelative.setName("ReverseRobotRelative");
 
-        // Reset gyro
-        m_driverController.touchpad().onTrue(drive.cZeroGyro());
-
+        // All Drive Commands
         drive.setDefaultCommand(
                 new SendableChooserCommand("Swerve Drive Command", rotationRate, absoluteAngle, robotRelative,
                         reversedRobotRelative));
+
+        // Reset gyro
+        m_driverController.touchpad().onTrue(drive.cZeroGyro());
+
+        // Lock Pose
+        m_driverController.L3().whileTrue(drive.cLock());
+
         m_swerveDrive = Optional.of(drive);
     }
 
@@ -180,11 +219,11 @@ public class RobotContainer {
         var drive = new DifferentialDriveSubsystem();
 
         SmartDashboard.putNumber(OperatorConstants.kDriveSensitivity, 1.0);
-        SmartDashboard.putNumber(OperatorConstants.kTurnSensitivity, 1.0);
+        SmartDashboard.putNumber(OperatorConstants.kTurnSensitivity, 1.5);
 
-        var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone(0.03);
-        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone(0.03);
-        var rightX = DoubleTransformer.of(m_driverController::getRightX).negate().deadzone(0.03);
+        var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone();
+        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone();
+        var rightX = DoubleTransformer.of(m_driverController::getRightX).negate().deadzone();
 
         Command arcade = new ArcadeDrive(drive, leftY, rightX);
         Command curvature = new CurvatureDrive(drive, leftY, rightX, m_driverController.L1());
@@ -204,10 +243,11 @@ public class RobotContainer {
     }
 
     private void setupIntake() {
-        var intake = new IntakeSubsystem();
+        var intake = new GroundIntakeSubsystem();
 
         // Intake a note from the ground
-        m_driverController.R1().whileTrue(intake.cRun());
+        m_driverController.L1().whileTrue(intake.cRunIntake());
+        NamedCommands.registerCommand("INTAKE", intake.cRunIntake());
 
         m_intake = Optional.of(intake);
     }
@@ -223,9 +263,16 @@ public class RobotContainer {
     private void setupIndexer() {
         var indexer = new IndexerSubsystem();
 
-        // The indexer automatically positions NOTES as they are received
-        // indexer.setDefaultCommand(indexer.cPositionNote());
+        // TODO: add manual overrides to the copilot controller
 
         m_indexer = Optional.of(indexer);
+    }
+
+    private void setupGuide() {
+        var guide = new AmpGuideSubsystem();
+
+        // TODO: add manual overrides to the copilot controller
+
+        m_guide = Optional.of(guide);
     }
 }

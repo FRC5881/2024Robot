@@ -58,8 +58,12 @@ public class RobotRelativeDrive extends Command {
         var vy = MAX_SPEED.times(translation.getY() * drive_sensitivity);
         var omega = MAX_OMEGA.times(omegaSupplier.getAsDouble() * turn_sensitivity);
 
+        SmartDashboard.putNumber("vx", vx.baseUnitMagnitude());
+        SmartDashboard.putNumber("vy", vy.baseUnitMagnitude());
+        SmartDashboard.putNumber("omega", omega.baseUnitMagnitude());
+
         ChassisSpeeds speeds = new ChassisSpeeds(vx, vy, omega);
-        drive.absoluteDrive(speeds);
+        drive.driveRobotRelative(speeds);
     }
 
     @Override

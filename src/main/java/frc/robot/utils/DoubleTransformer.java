@@ -4,6 +4,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.DoubleUnaryOperator;
 
 import edu.wpi.first.math.MathUtil;
+import frc.robot.Constants.OperatorConstants;
 
 /**
  * The {@code DoubleTransformer} class is a utility class for manipulating
@@ -83,7 +84,7 @@ public class DoubleTransformer implements DoubleSupplier {
      * @return A new {@code DoubleTransformer} with deadzone applied.
      */
     public DoubleTransformer deadzone() {
-        return deadzone(0.03);
+        return deadzone(OperatorConstants.kJoystickDeadzone);
     }
 
     /**

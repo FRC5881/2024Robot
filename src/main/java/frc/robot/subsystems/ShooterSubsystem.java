@@ -36,7 +36,7 @@ import static edu.wpi.first.units.Units.*;
  * The main and secondary have similar enough preformance that we can use
  * identical PID and feedforward constants for both.
  * 
- * The {@link IntakeSubsystem} seperately passes NOTES into the shooter.
+ * The {@link GroundIntakeSubsystem} seperately passes NOTES into the shooter.
  * 
  * The shooter can be in 2 modes:
  * - Full power mode - where 100% power is applied to the motors, creating the
@@ -55,14 +55,14 @@ public class ShooterSubsystem extends SubsystemBase {
     private final PIDController pidcontroller = new PIDController(0.05, 0, 0);
 
     public ShooterSubsystem() {
-        mainMotor = new CANSparkMax(Constants.CANConstants.kShooterId, MotorType.kBrushless);
+        mainMotor = new CANSparkMax(Constants.CANConstants.kShooterMainId, MotorType.kBrushless);
         mainMotor.restoreFactoryDefaults();
         mainMotor.setSmartCurrentLimit(40);
         mainMotor.setIdleMode(IdleMode.kBrake);
         // Convert from RPM to RPS
         mainMotor.getEncoder().setVelocityConversionFactor(1.0 / 60.0);
 
-        secondaryMotor = new CANSparkMax(Constants.CANConstants.kShooterIntakeId, MotorType.kBrushless);
+        secondaryMotor = new CANSparkMax(Constants.CANConstants.kShooterSecondaryId, MotorType.kBrushless);
         secondaryMotor.restoreFactoryDefaults();
         secondaryMotor.setSmartCurrentLimit(40);
         secondaryMotor.setIdleMode(IdleMode.kBrake);
@@ -112,8 +112,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return the command to run
      */
     public Command cRunSpeaker() {
-        return cPercentOutput(Percent.of(100))
-                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_UP));
+        return cPercentOutput(Percent.of(100)).raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP));
     }
 
     /**
@@ -138,8 +137,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return the command to run
      */
     public Command cRunAmp() {
-        return cSetpoint(ShooterConstants.kShooterAmpSpeed)
-                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_UP));
+        return cSetpoint(ShooterConstants.kShooterAmpSpeed).raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP));
     }
 
     /**
@@ -171,13 +169,23 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
+     * A command that does nothing, but finishes when the shooter is at the AMP
+     * setpoint velocity, or after a timeout.
+     * 
+     * @return The command to run.
+     */
+    public Command waitForAmpReady() {
+        return waitForReady(ShooterConstants.kShooterAmpSpeed);
+    }
+
+    /**
      * Runs the given {@link Command} when the shooter's ready to score in the AMP.
      * 
      * @param command The command to run when the shooter is ready.
      * @return The composed command.
      */
     public Command cRunWhenAmpReady(Command command) {
-        return cRunAmp().alongWith(waitForReady(ShooterConstants.kShooterAmpSpeed).andThen(command));
+        return cRunAmp().alongWith(waitForAmpReady().andThen(command));
     }
 
     /**
@@ -198,8 +206,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return The command to run.
      */
     public Command cIntake() {
-        return cPercentOutput(Percent.of(-15))
-                .raceWith(LEDSubsystem.getInstance().cPattern(Pattern.CHASING_DOWN));
+        return cPercentOutput(Percent.of(-15)).raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_DOWN));
     }
 
     // ---- SYSTEM IDENTIFICATION ---- //
