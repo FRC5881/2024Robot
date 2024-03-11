@@ -1,0 +1,55 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.5,
+      "y": 7.0
+    },
+    "rotation": 180.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "AtoSPK"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "SPEAKER"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SPKtoN11"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "INTAKE"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "N11toSPK"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "SPEAKER"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
