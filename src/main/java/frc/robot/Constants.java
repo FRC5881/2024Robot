@@ -26,12 +26,12 @@ public final class Constants {
         /**
          * The DIO port for the climber limit switch
          */
-        public static final int kClimberLimitSwitch = 0;
+        public static final int kClimberLimitSwitch = 1;
 
         /**
          * The DIO port for the intake sensor
          */
-        public static final int kIntakeSensor = 1;
+        public static final int kIntakeSensor = 0;
     }
 
     public static class CANConstants {
@@ -77,12 +77,12 @@ public final class Constants {
         /**
          * What power to spin the intake motor with
          */
-        public static final Measure<Dimensionless> kHighPower = Percent.of(1.0);
+        public static final Measure<Dimensionless> kHighPower = Percent.of(0.50);
 
         /**
          * What power to spin the intake motor with
          */
-        public static final Measure<Dimensionless> kLowPower = Percent.of(0.50);
+        public static final Measure<Dimensionless> kLowPower = Percent.of(0.25);
     }
 
     public static class ClimberConstants {
@@ -118,7 +118,7 @@ public final class Constants {
         /**
          * Amount of time to wait for the shooter to reach any setpoint
          */
-        public static final Measure<Time> kTimeout = Seconds.of(0.75);
+        public static final Measure<Time> kTimeout = Seconds.of(0.4);
     }
 
     public static class IndexerConstants {

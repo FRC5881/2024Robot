@@ -25,6 +25,7 @@ import frc.robot.subsystems.LEDSubsystem.Pattern;
 import frc.robot.utils.DoubleTransformer;
 import frc.robot.utils.SendableChooserCommand;
 
+import java.io.File;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -33,9 +34,11 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 
 public class RobotContainer {
@@ -79,10 +82,15 @@ public class RobotContainer {
             throw new RuntimeException("Cannot have both swerve and differential drive subsystems");
         }
 
-        // This robot code requires we have a Shooter and Indexer
         if (m_shooter.isPresent() && m_indexer.isPresent()) {
             var shooter = m_shooter.get();
             var indexer = m_indexer.get();
+
+            Command spinUp = shooter.cRunSpeaker();
+            Command exit = indexer.cSendShooter().withTimeout(0.75).andThen(shooter.cStop());
+
+            NamedCommands.registerCommand("SPINUP", spinUp);
+            NamedCommands.registerCommand("EXIT", exit);
 
             // By default the "releaseNote" command only runs the indexer
             Supplier<Command> releaseNote = () -> indexer.cSendShooter();
@@ -98,11 +106,11 @@ public class RobotContainer {
             // Shoot into the SPEAKER
             Command shootHigh = shooter.cRunWhenSpeakerReady(releaseNoteFinal.get());
 
-            // A similar command to "shootHigh" that is designed to be used in an auto
-            // It uses a timer to wait for the NOTE to exit the robot
+            // An autonomous command that automatically spins up and shoots a NOTE
             Command autoShootHigh = Commands.race(
                     shooter.cRunWhenSpeakerReady(indexer.cSendShooter()),
-                    Commands.waitSeconds(1.75));
+                    Commands.waitSeconds(1.25));
+
             NamedCommands.registerCommand("SPEAKER", autoShootHigh);
 
             // If the guide exists, then "shootLow" requires the guide to be extended
@@ -129,13 +137,31 @@ public class RobotContainer {
             m_driverController.L2().whileTrue(shooter.cIntake().alongWith(indexer.cSendDown()));
         }
 
-        m_auto = new PathPlannerAuto("TestNEW");
+        getAutonomousCommand();
     }
 
-    public Command m_auto = Commands.none();
+    private Optional<Command> m_auto = Optional.empty();
 
     public Command getAutonomousCommand() {
-        return m_auto;
+        if (m_auto.isEmpty()) {
+            // Read /deploy/pathplanner/autos directory
+            File autos = new File(Filesystem.getDeployDirectory(), "pathplanner/autos");
+
+            // Collect all the names in the directory that end with ".auto"
+            String[] autoNames = autos.list((dir, name) -> name.endsWith(".auto"));
+
+            Command[] autoCommands = new Command[autoNames.length];
+            for (int i = 0; i < autoNames.length; i++) {
+                // Trim the ".auto" extension
+                String name = autoNames[i].substring(0, autoNames[i].length() - 5);
+                System.out.println(name);
+                autoCommands[i] = new PathPlannerAuto(name);
+            }
+
+            m_auto = Optional.of(new SendableChooserCommand("Autonomous Command", autoCommands));
+        }
+
+        return m_auto.get();
     }
 
     private void setupVision() {
@@ -246,8 +272,8 @@ public class RobotContainer {
         var intake = new GroundIntakeSubsystem();
 
         // Intake a note from the ground
-        m_driverController.L1().whileTrue(intake.cRunIntake());
-        NamedCommands.registerCommand("INTAKE", intake.cRunIntake());
+        m_driverController.L1().whileTrue(intake.cRunUntilCaptured());
+        NamedCommands.registerCommand("INTAKE", intake.cRunUntilCaptured());
 
         m_intake = Optional.of(intake);
     }

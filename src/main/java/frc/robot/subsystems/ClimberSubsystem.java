@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ClimberConstants;
+import frc.robot.Constants.DIOConstants;
 import frc.robot.subsystems.LEDSubsystem.Pattern;
 
 /**
@@ -23,7 +24,7 @@ import frc.robot.subsystems.LEDSubsystem.Pattern;
  */
 public class ClimberSubsystem extends SubsystemBase {
     private final CANSparkMax climberMotor;
-    private final DigitalInput limitSwitch = new DigitalInput(0);
+    private final DigitalInput limitSwitch = new DigitalInput(DIOConstants.kClimberLimitSwitch);
 
     public ClimberSubsystem() {
         climberMotor = new CANSparkMax(Constants.CANConstants.kClimberId, MotorType.kBrushless);

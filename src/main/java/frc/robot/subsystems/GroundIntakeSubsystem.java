@@ -5,8 +5,9 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import static edu.wpi.first.units.Units.Percent;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.IdleMode;
 
-import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,11 +29,18 @@ public class GroundIntakeSubsystem extends SubsystemBase {
     private final CANSparkMax intakeMotor;
 
     // True if the sensor is blocked and we've captured a NOTE
-    private final DigitalInput irSensor = new DigitalInput(Constants.DIOConstants.kIntakeSensor);
+    private final AnalogInput irSensor = new AnalogInput(Constants.DIOConstants.kIntakeSensor);
 
     public GroundIntakeSubsystem() {
         intakeMotor = new CANSparkMax(Constants.CANConstants.kGroundIntakeId, MotorType.kBrushless);
+
+        intakeMotor.restoreFactoryDefaults();
         intakeMotor.setInverted(false);
+        intakeMotor.setIdleMode(IdleMode.kBrake);
+    }
+
+    private boolean hasNote() {
+        return irSensor.getVoltage() < 2.5;
     }
 
     /**
@@ -43,8 +51,7 @@ public class GroundIntakeSubsystem extends SubsystemBase {
 
         // Runs the "picking up" pattern until the sensor is blocked
         // Then runs the "picked up" pattern for a short time
-        return LEDSubsystem.cSetOverride(Pattern.CHASING_UP, irSensor::get)
-                .andThen(LEDSubsystem.cSetOverride(Pattern.FAST_FLASH, 0.5));
+        return LEDSubsystem.cSetOverride(Pattern.CHASING_UP, this::hasNote);
     }
 
     /**
@@ -73,9 +80,8 @@ public class GroundIntakeSubsystem extends SubsystemBase {
      * 
      * @return The command to run
      */
-    public Command cRunIntake() {
-        return runEnd(this::highSpeed, this::stop);
-        // .raceWith(signalAndStop().repeatedly());
+    public Command cRun() {
+        return runEnd(this::highSpeed, this::stop).raceWith(signalAndStop().repeatedly());
     }
 
     /**
@@ -93,13 +99,14 @@ public class GroundIntakeSubsystem extends SubsystemBase {
      * @return The command to run
      */
     public Command cRunUntilCaptured() {
-        return runEnd(this::highSpeed, this::stop).raceWith(signalAndStop());
+        return runEnd(this::highSpeed, this::stop).raceWith(waitUntilCaptured());
     }
 
     /**
      * A command that does nothing but wait for the sensor to be blocked
      */
     public Command waitUntilCaptured() {
-        return Commands.waitUntil(irSensor::get);
+        return Commands.waitUntil(this::hasNote).andThen(
+                Commands.waitSeconds(.1));
     }
 }

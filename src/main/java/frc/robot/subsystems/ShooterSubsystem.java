@@ -115,8 +115,12 @@ public class ShooterSubsystem extends SubsystemBase {
         return cPercentOutput(Percent.of(100)).raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP));
     }
 
+    public Command cStop() {
+        return runOnce(this::stop);
+    }
+
     /**
-     * Drives the shooter motors to a given setpoint.
+     * Drives the shooter motors at a given setpoint.
      * <p>
      * Uses a feedforward and PID controller to set the voltage of the motors.
      */

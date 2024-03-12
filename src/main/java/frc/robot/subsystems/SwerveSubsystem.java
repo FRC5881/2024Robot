@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
-import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
@@ -12,7 +11,6 @@ import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
@@ -41,7 +39,8 @@ public class SwerveSubsystem extends SubsystemBase {
      * @throws IOException If the swerve module configuration file cannot be read.
      */
     public SwerveSubsystem(Optional<VisionSubsystem> visionSubsystem, RobotFrame bot) throws IOException {
-        SwerveDriveTelemetry.verbosity = SwerveDriveTelemetry.TelemetryVerbosity.HIGH;
+        // SwerveDriveTelemetry.verbosity =
+        // SwerveDriveTelemetry.TelemetryVerbosity.HIGH;
 
         String swerveDir;
         switch (bot) {
