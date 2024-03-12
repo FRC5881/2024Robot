@@ -5,7 +5,7 @@
       "x": 0.6967559519609781,
       "y": 4.4
     },
-    "rotation": -60.531463905536036
+    "rotation": 120.0
   },
   "command": {
     "type": "sequential",
@@ -31,7 +31,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Right Note"
+                  "pathName": "StoN13"
                 }
               },
               {
@@ -46,7 +46,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Return Right Note"
+            "pathName": "N13toS"
           }
         },
         {

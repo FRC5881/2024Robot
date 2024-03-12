@@ -62,7 +62,7 @@ public class RobotContainer {
                 setupShooter();
                 setupIndexer();
                 setupIntake();
-                setupGuide();
+                // setupGuide();
                 break;
             case M1C2:
                 setupSwerveDrive(m_vision, bot);
@@ -100,9 +100,9 @@ public class RobotContainer {
 
             // A similar command to "shootHigh" that is designed to be used in an auto
             // It uses a timer to wait for the NOTE to exit the robot
-            Command autoShootHigh = Commands.sequence(
+            Command autoShootHigh = Commands.race(
                     shooter.cRunWhenSpeakerReady(indexer.cSendShooter()),
-                    Commands.waitSeconds(0.75));
+                    Commands.waitSeconds(1.75));
             NamedCommands.registerCommand("SPEAKER", autoShootHigh);
 
             // If the guide exists, then "shootLow" requires the guide to be extended
@@ -129,7 +129,7 @@ public class RobotContainer {
             m_driverController.L2().whileTrue(shooter.cIntake().alongWith(indexer.cSendDown()));
         }
 
-        m_auto = new PathPlannerAuto("Forward");
+        m_auto = new PathPlannerAuto("TestNEW");
     }
 
     public Command m_auto = Commands.none();

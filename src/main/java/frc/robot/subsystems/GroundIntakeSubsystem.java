@@ -32,7 +32,7 @@ public class GroundIntakeSubsystem extends SubsystemBase {
 
     public GroundIntakeSubsystem() {
         intakeMotor = new CANSparkMax(Constants.CANConstants.kGroundIntakeId, MotorType.kBrushless);
-        intakeMotor.setInverted(true);
+        intakeMotor.setInverted(false);
     }
 
     /**

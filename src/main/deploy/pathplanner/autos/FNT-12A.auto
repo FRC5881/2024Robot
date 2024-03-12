@@ -24,15 +24,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "SPKtoN11"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "INTAKE"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "INTAKE"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "SPKtoN11"
+                }
+              }
+            ]
           }
         },
         {
