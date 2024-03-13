@@ -107,6 +107,6 @@ public class GroundIntakeSubsystem extends SubsystemBase {
      */
     public Command waitUntilCaptured() {
         return Commands.waitUntil(this::hasNote).andThen(
-                Commands.waitSeconds(.1));
+                Commands.waitSeconds(0.15));
     }
 }

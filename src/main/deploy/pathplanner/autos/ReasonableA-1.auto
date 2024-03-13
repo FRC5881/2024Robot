@@ -20,13 +20,26 @@
         {
           "type": "named",
           "data": {
-            "name": "EXIT"
+            "name": "SPEAKER"
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "SA-N1"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "SA-N1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "INTAKE"
+                }
+              }
+            ]
           }
         },
         {
@@ -38,7 +51,7 @@
         {
           "type": "named",
           "data": {
-            "name": "EXIT"
+            "name": "SPEAKER"
           }
         }
       ]

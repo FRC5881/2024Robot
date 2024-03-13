@@ -38,7 +38,6 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 
 public class RobotContainer {
@@ -86,12 +85,6 @@ public class RobotContainer {
             var shooter = m_shooter.get();
             var indexer = m_indexer.get();
 
-            Command spinUp = shooter.cRunSpeaker();
-            Command exit = indexer.cSendShooter().withTimeout(0.75).andThen(shooter.cStop());
-
-            NamedCommands.registerCommand("SPINUP", spinUp);
-            NamedCommands.registerCommand("EXIT", exit);
-
             // By default the "releaseNote" command only runs the indexer
             Supplier<Command> releaseNote = () -> indexer.cSendShooter();
 
@@ -108,8 +101,8 @@ public class RobotContainer {
 
             // An autonomous command that automatically spins up and shoots a NOTE
             Command autoShootHigh = Commands.race(
-                    shooter.cRunWhenSpeakerReady(indexer.cSendShooter()),
-                    Commands.waitSeconds(1.25));
+                    shooter.cRunWhenSpeakerReady(releaseNoteFinal.get()),
+                    Commands.waitSeconds(1.50));
 
             NamedCommands.registerCommand("SPEAKER", autoShootHigh);
 

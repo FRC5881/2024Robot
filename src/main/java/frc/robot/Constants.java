@@ -118,7 +118,7 @@ public final class Constants {
         /**
          * Amount of time to wait for the shooter to reach any setpoint
          */
-        public static final Measure<Time> kTimeout = Seconds.of(0.4);
+        public static final Measure<Time> kTimeout = Seconds.of(0.5);
     }
 
     public static class IndexerConstants {
