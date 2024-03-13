@@ -1,6 +1,9 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkLowLevel.MotorType;
+
+import static edu.wpi.first.units.Units.Value;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 
@@ -16,25 +19,18 @@ public class IndexerSubsystem extends SubsystemBase {
         indexerMotor.setIdleMode(IdleMode.kBrake);
     }
 
-    /**
-     * Moves a note higher through the mechanism
-     */
     private void up() {
-        indexerMotor.set(Constants.IndexerConstants.kIndexerPower);
+        indexerMotor.set(Constants.IndexerConstants.kIndexerPower.in(Value));
     }
 
     private void down() {
-        indexerMotor.set(-Constants.IndexerConstants.kIndexerPower);
+        indexerMotor.set(-Constants.IndexerConstants.kIndexerPower.in(Value));
     }
 
-    /**
-     * Stops the indexer
-     */
     private void stop() {
         indexerMotor.set(0);
     }
 
-    // Override the sensor, and send the NOTE to the shooter!
     public Command cSendShooter() {
         return this.runEnd(this::up, this::stop);
     }
@@ -42,5 +38,4 @@ public class IndexerSubsystem extends SubsystemBase {
     public Command cSendDown() {
         return this.runEnd(this::down, this::stop);
     }
-
 }

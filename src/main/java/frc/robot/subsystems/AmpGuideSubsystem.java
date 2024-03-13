@@ -118,13 +118,13 @@ public class AmpGuideSubsystem extends SubsystemBase {
      * 
      * <pre>
      * {@code
-     * Command extendAndWait = cExtend().andThen(waitUntilSetpoint());
+     * Command extendAndWait = intake.cExtend().andThen(intake.cWaitForReady());
      * }
      * </pre>
      * 
      * @return The {@link Command}
      */
-    public Command waitUntilSetpoint() {
+    public Command cWaitForReady() {
         return Commands.waitUntil(() -> MathUtil.isNear(getSetpoint(), getPosition(), AmpGuideConstants.kTolerance));
     }
 }

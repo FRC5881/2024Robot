@@ -20,7 +20,6 @@ import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.GroundIntakeSubsystem;
 import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.LEDSubsystem.Pattern;
 import frc.robot.utils.DoubleTransformer;
 import frc.robot.utils.SendableChooserCommand;
@@ -42,9 +41,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 
 public class RobotContainer {
     // The robot's subsystems are defined here...
-    private Optional<VisionSubsystem> m_vision = Optional.empty();
     private Optional<SwerveSubsystem> m_swerveDrive = Optional.empty();
     private Optional<DifferentialDriveSubsystem> m_differentialDrive = Optional.empty();
+    @SuppressWarnings("unused")
     private Optional<ClimberSubsystem> m_climber = Optional.empty();
     private Optional<GroundIntakeSubsystem> m_intake = Optional.empty();
     private Optional<AmpGuideSubsystem> m_guide = Optional.empty();
@@ -59,22 +58,20 @@ public class RobotContainer {
         // Each bot has a different set of subsystems
         switch (bot) {
             case COMP:
-                setupSwerveDrive(m_vision, bot);
+                setupSwerveDrive(bot);
                 setupClimber();
                 setupShooter();
                 setupIndexer();
                 setupIntake();
-                // setupGuide();
+                setupGuide();
                 break;
             case M1C2:
-                setupSwerveDrive(m_vision, bot);
+                setupSwerveDrive(bot);
                 break;
             case DOUGHNUT:
                 setupDifferentialDrive();
                 break;
         }
-
-        m_driverController.options().whileTrue(LEDSubsystem.cSetOverride(Pattern.FAST_RAINBOW_FLASH));
 
         // Swerve drive and Differential drive are mutually exclusive
         if (m_swerveDrive.isPresent() && m_differentialDrive.isPresent()) {
@@ -114,14 +111,9 @@ public class RobotContainer {
                 var guide = m_guide.get();
 
                 shootLow = () -> Commands.parallel(
-                        guide.cExtend().andThen(guide.waitUntilSetpoint()),
+                        guide.cExtend().andThen(guide.cWaitForReady()),
                         shooter.cRunAmp().andThen(shooter.waitForAmpReady())).andThen(releaseNoteFinal.get());
             }
-
-            // A similar command to "shootLow" that is designed to be used in an auto
-            // It uses a timer to wait for the NOTE to exit the robot
-            Command autoShootLow = shootLow.get().andThen(Commands.waitSeconds(1.0));
-            NamedCommands.registerCommand("AMP", autoShootLow);
 
             // Driver Controls
             m_driverController.R1().whileTrue(shootLow.get());
@@ -130,13 +122,24 @@ public class RobotContainer {
             m_driverController.L2().whileTrue(shooter.cIntake().alongWith(indexer.cSendDown()));
         }
 
-        getAutonomousCommand();
+        // Communicates to the Human Player that the driver wants to AMPLIFY
+        m_driverController.options().whileTrue(LEDSubsystem.cSetOverride(Pattern.FAST_RAINBOW_FLASH));
+
+        // Preload the autonomous command
+        setupAutonomous(bot);
     }
 
-    private Optional<Command> m_auto = Optional.empty();
+    private Command m_auto = Commands.none();
 
-    public Command getAutonomousCommand() {
-        if (m_auto.isEmpty()) {
+    /**
+     * Constructs the autonomous command chooser.
+     * <p>
+     * Parses the "pathplanner/autos" directory to build all known autonomous
+     * routines.
+     */
+    public void setupAutonomous(RobotFrame bot) {
+        // Only our competition bot has autonomous routines
+        if (bot == RobotFrame.COMP) {
             // Read /deploy/pathplanner/autos directory
             File autos = new File(Filesystem.getDeployDirectory(), "pathplanner/autos");
 
@@ -147,27 +150,22 @@ public class RobotContainer {
             for (int i = 0; i < autoNames.length; i++) {
                 // Trim the ".auto" extension
                 String name = autoNames[i].substring(0, autoNames[i].length() - 5);
-                System.out.println(name);
                 autoCommands[i] = new PathPlannerAuto(name);
             }
 
-            m_auto = Optional.of(new SendableChooserCommand("Autonomous Command", autoCommands));
+            m_auto = new SendableChooserCommand("Autonomous Command", autoCommands);
         }
-
-        return m_auto.get();
     }
 
-    private void setupVision() {
-        var vision = new VisionSubsystem();
-
-        m_vision = Optional.of(vision);
+    public Command getAutonomousCommand() {
+        return m_auto;
     }
 
-    private void setupSwerveDrive(Optional<VisionSubsystem> visionSubsystem, RobotFrame bot) {
+    private void setupSwerveDrive(RobotFrame bot) {
         SwerveSubsystem drive = null;
 
         try {
-            drive = new SwerveSubsystem(visionSubsystem, bot);
+            drive = new SwerveSubsystem(bot);
         } catch (Exception e) {
             // End the robot program if we can't initialize the swerve drive.
             System.err.println("Failed to initialize swerve drive");
@@ -177,7 +175,7 @@ public class RobotContainer {
 
         SmartDashboard.putNumber(OperatorConstants.kDriveSensitivity, 1.0);
         SmartDashboard.putNumber(OperatorConstants.kTurnSensitivity, 1.5);
-        SmartDashboard.putNumber(OperatorConstants.kAutoTurn, 4.0);
+        SmartDashboard.putNumber(OperatorConstants.kAutoTurn, 3.0);
 
         // Absolute drive commands
         var rightX = DoubleTransformer.of(m_driverController::getRightX).negate();
@@ -282,15 +280,11 @@ public class RobotContainer {
     private void setupIndexer() {
         var indexer = new IndexerSubsystem();
 
-        // TODO: add manual overrides to the copilot controller
-
         m_indexer = Optional.of(indexer);
     }
 
     private void setupGuide() {
         var guide = new AmpGuideSubsystem();
-
-        // TODO: add manual overrides to the copilot controller
 
         m_guide = Optional.of(guide);
     }

@@ -1,13 +1,13 @@
 # Swerve Drive
 
-For our competetion bot we're using a swerve drive with a typical 4 module layout. 
+For our competition bot we're using a swerve drive with a typical 4 module layout. 
 
 ## Hardware used
 
 We purchased our modules from Swerve Drive Specialties with the L1 gear ratio and 4" billet wheels.
 
 Drive gear ratio is 8.14: 1
-Aziumuth gear ratio is 12.8: 1
+Azimuth gear ratio is 12.8: 1
 
 All of our swerve motors are REV NEO motors.
 
@@ -46,47 +46,3 @@ A: Azimuth Motor
    ╚══════╩═══════╩══════╝
           BACK   -x
 ```
-
-### M1C2
-
-#### Measured CANCoder Offsets
-
-| Module      | Offset (degrees) |
-|-------------|------------------|
-| Front Left  | 223.505859       |
-| Front Right | 221.133          |
-| Back Left   | 319.306641       |
-| Back Right  | 252.510          |
-
-#### Module Locations
-
-M1C2 has a 29" x 29" chassis with wheels inset 3" on each side. This makes a 23" x 23" sqaure of module locations. 23"/2 = 11.5" which is 0.2921 meters
-
-| Module      | (x, y meters)      |
-|-------------|--------------------|
-| Front Left  | (+0.2921, +0.2921) |
-| Front Right | (+0.2921, -0.2921) |
-| Back Left   | (-0.2921, +0.2921) |
-| Back Right  | (-0.2921, -0.2921) |
-
-### Competetion Bot
-
-#### Measured CANCoder Offsets
-
-| Module      | Offset (degrees) |
-|-------------|------------------|
-| Front Left  |                  |
-| Front Right |                  |
-| Back Left   |                  |
-| Back Right  |                  |
-
-#### Module Locations
-
-Our competetion chassis is 27" x 27". Modules are 5 1/2" x 5 1/2" and the drive wheel should be centered. 27 - 11 = 16" sqaure of module locations. 8" is 0.2032 meters
-
-| Module      | (x, y meters)      |
-|-------------|--------------------|
-| Front Left  | (+0.2032, +0.2032) |
-| Front Right | (+0.2032, -0.2032) |
-| Back Left   | (-0.2032, +0.2032) |
-| Back Right  | (-0.2032, -0.2032) |

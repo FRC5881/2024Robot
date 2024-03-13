@@ -29,30 +29,32 @@ import static edu.wpi.first.units.Units.*;
 
 /**
  * ShooterSubsystem controls our shooter.
- * 
+ * <p>
  * The shooter has 2 independent flywheels, a main and a secondary. The main
  * flywheel is at the top of the robot, secondary is slightly lower.
- * 
- * The main and secondary have similar enough preformance that we can use
+ * <p>
+ * The main and secondary have similar enough performance that we can use
  * identical PID and feedforward constants for both.
- * 
- * The {@link GroundIntakeSubsystem} seperately passes NOTES into the shooter.
- * 
- * The shooter can be in 2 modes:
- * - Full power mode - where 100% power is applied to the motors, creating the
+ * <p>
+ * The {@link IntakeSubsystem} passes NOTES into the shooter.
+ * <p>
+ * The shooter can be used in 2 modes:
+ * <ul>
+ * <li>Full power mode: where 100% power is applied to the motors, creating the
  * maximum (but inconsistent) launch speed.
- * - Controlled mode - where the motors are controlled by a PID loop to maintain
- * a consistent speed throughout the match.
- * 
- * The shooter can be used to intake NOTES from the source, in which case the
- * motors are spun slowly in reverse.
+ * <li>Controlled mode: where the motors are controlled by a PID loop to
+ * maintain a consistent speed throughout the match.
+ * </ul>
+ * <p>
+ * The shooter can also be used to intake NOTES from the source, in which case
+ * the motors are spun slowly in reverse.
  */
 public class ShooterSubsystem extends SubsystemBase {
     private final CANSparkMax mainMotor;
     private final CANSparkMax secondaryMotor;
 
     private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0, 0.12608, 0.0080106);
-    private final PIDController pidcontroller = new PIDController(0.05, 0, 0);
+    private final PIDController pidController = new PIDController(0.05, 0, 0);
 
     public ShooterSubsystem() {
         mainMotor = new CANSparkMax(Constants.CANConstants.kShooterMainId, MotorType.kBrushless);
@@ -126,12 +128,12 @@ public class ShooterSubsystem extends SubsystemBase {
      */
     private Command cSetpoint(Measure<Velocity<Angle>> setpoint) {
         return runEnd(() -> {
+            double target = setpoint.in(RotationsPerSecond);
             double mainSpeed = mainMotor.getEncoder().getVelocity();
             double secondarySpeed = secondaryMotor.getEncoder().getVelocity();
-            double rps = setpoint.in(RotationsPerSecond);
 
-            mainMotor.setVoltage(feedforward.calculate(rps) + pidcontroller.calculate(mainSpeed, rps));
-            secondaryMotor.setVoltage(feedforward.calculate(rps) + pidcontroller.calculate(secondarySpeed, rps));
+            mainMotor.setVoltage(feedforward.calculate(target) + pidController.calculate(mainSpeed, target));
+            secondaryMotor.setVoltage(feedforward.calculate(target) + pidController.calculate(secondarySpeed, target));
         }, this::stop);
     }
 
@@ -214,6 +216,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     // ---- SYSTEM IDENTIFICATION ---- //
+
     private final MutableMeasure<Voltage> mainVoltage = mutable(Volts.of(0));
     private final MutableMeasure<Angle> mainPosition = mutable(Rotation.of(0));
     private final MutableMeasure<Velocity<Angle>> mainVelocity = mutable(RotationsPerSecond.of(0));

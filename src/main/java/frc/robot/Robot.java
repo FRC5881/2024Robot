@@ -20,7 +20,7 @@ public class Robot extends TimedRobot {
      */
     public enum RobotFrame {
         /**
-         * Our Competion bot
+         * Our Competition bot
          * 
          * LOW - LOW
          */
@@ -47,7 +47,6 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         // Instantiate our RobotContainer. This will perform all our button bindings,
         // and put our autonomous chooser on the dashboard.
-        // m_robotContainer = new RobotContainer(detectChassis());
         m_robotContainer = new RobotContainer(RobotFrame.COMP);
     }
 

@@ -74,11 +74,11 @@ public class ClimberSubsystem extends SubsystemBase {
     }
 
     private void extend() {
-        climberMotor.set(0.5);
+        climberMotor.set(ClimberConstants.kExtendPower.in(Value));
     }
 
     private void retract() {
-        climberMotor.set(-1);
+        climberMotor.set(ClimberConstants.kRetractPower.in(Value));
     }
 
     private void stop() {

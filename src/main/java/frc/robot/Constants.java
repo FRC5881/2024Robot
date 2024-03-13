@@ -4,6 +4,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 
@@ -18,7 +19,7 @@ public final class Constants {
         public static final String kTurnSensitivity = "Turn Sensitivity";
         public static final String kAutoTurn = "Auto Turn Sensitivity";
 
-        // Joystick deadband
+        // Joystick dead-band
         public static final double kJoystickDeadzone = 0.05;
     }
 
@@ -27,10 +28,9 @@ public final class Constants {
          * The DIO port for the climber limit switch
          */
         public static final int kClimberLimitSwitch = 1;
+    }
 
-        /**
-         * The DIO port for the intake sensor
-         */
+    public static class AnalogInputConstants {
         public static final int kIntakeSensor = 0;
     }
 
@@ -89,12 +89,12 @@ public final class Constants {
         /**
          * What power to extend the climber motor with (percentage)
          */
-        public static final double kExtendPower = 1.0;
+        public static final Measure<Dimensionless> kExtendPower = Percent.of(0.75);
 
         /**
          * What power to retract the climber motor with (percentage)
          */
-        public static final double kRetractPower = 1.0;
+        public static final Measure<Dimensionless> kRetractPower = Percent.of(-1.0);
 
         /**
          * Climber extension soft limit (rotations)
@@ -116,7 +116,9 @@ public final class Constants {
         public static final Measure<Velocity<Angle>> kShooterTolerance = RotationsPerSecond.of(2.0);
 
         /**
-         * Amount of time to wait for the shooter to reach any setpoint
+         * Amount of time it takes for the shooter to reach any setpoint
+         * <p>
+         * For the SPEAKER this measure gives us a consistent time-to-launch
          */
         public static final Measure<Time> kTimeout = Seconds.of(0.5);
     }
@@ -125,7 +127,7 @@ public final class Constants {
         /**
          * The power to drive the intake motor towards the shooter (percentage)
          */
-        public static final double kIndexerPower = 0.4;
+        public static final Measure<Dimensionless> kIndexerPower = Percent.of(0.5);
     }
 
     public static class DifferentialDriveConstants {
@@ -138,9 +140,9 @@ public final class Constants {
          * <p>
          * Wheel diameter: 6 inches
          * <p>
-         * Efficency: 0.75
+         * Efficiency: 0.75
          * <p>
-         * speed = diameter * pi * gear ratio * efficency * rpm / 60
+         * speed = diameter * pi * gear ratio * efficiency * rpm / 60
          */
         public static final double MAX_SPEED = Units.inchesToMeters(6 * Math.PI * (1 / 8.45) * 0.75 * 5310 / 60);
 
@@ -168,7 +170,7 @@ public final class Constants {
          * <p>
          * Note: we're off loading the PIDController to our Motor Controller, so this
          * tolerance has no effect on whether or not we're still commanding the AMP
-         * Guide. This is only used to help build Command compositions.
+         * Guide. This is value is only used to help build Command compositions.
          */
         public static final float kTolerance = 1.0f;
     }

@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
@@ -19,13 +18,11 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot.RobotFrame;
 import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
-import swervelib.telemetry.SwerveDriveTelemetry;
 
 import static edu.wpi.first.math.util.Units.feetToMeters;
 
@@ -38,10 +35,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param visionSubsystem The vision subsystem to use for pose estimation.
      * @throws IOException If the swerve module configuration file cannot be read.
      */
-    public SwerveSubsystem(Optional<VisionSubsystem> visionSubsystem, RobotFrame bot) throws IOException {
-        // SwerveDriveTelemetry.verbosity =
-        // SwerveDriveTelemetry.TelemetryVerbosity.HIGH;
-
+    public SwerveSubsystem(RobotFrame bot) throws IOException {
         String swerveDir;
         switch (bot) {
             case COMP:
@@ -142,7 +136,7 @@ public class SwerveSubsystem extends SubsystemBase {
     /**
      * Returns the maximum velocity of the swerve drive.
      * 
-     * @reture A measure of the maximum velocity of the swerve drive.
+     * @return A measure of the maximum velocity of the swerve drive.
      */
     public Measure<Velocity<Distance>> getMaximumVelocity() {
         return Units.MetersPerSecond.of(m_swerveDrive.getMaximumVelocity());
@@ -154,7 +148,6 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return A measure of the maximum angular velocity of the swerve drive.
      */
     public Measure<Velocity<Angle>> getMaximumAngularVelocity() {
-        SmartDashboard.putNumber("Maximum Angular Velocity", m_swerveDrive.getMaximumAngularVelocity());
         return Units.RadiansPerSecond.of(m_swerveDrive.getMaximumAngularVelocity());
     }
 }
