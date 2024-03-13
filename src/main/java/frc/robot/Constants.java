@@ -4,7 +4,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 

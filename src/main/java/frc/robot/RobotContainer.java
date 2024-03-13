@@ -24,16 +24,15 @@ import frc.robot.subsystems.LEDSubsystem.Pattern;
 import frc.robot.utils.DoubleTransformer;
 import frc.robot.utils.SendableChooserCommand;
 
-import java.io.File;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -125,40 +124,22 @@ public class RobotContainer {
         // Communicates to the Human Player that the driver wants to AMPLIFY
         m_driverController.options().whileTrue(LEDSubsystem.cSetOverride(Pattern.FAST_RAINBOW_FLASH));
 
-        // Preload the autonomous command
-        setupAutonomous(bot);
-    }
-
-    private Command m_auto = Commands.none();
-
-    /**
-     * Constructs the autonomous command chooser.
-     * <p>
-     * Parses the "pathplanner/autos" directory to build all known autonomous
-     * routines.
-     */
-    public void setupAutonomous(RobotFrame bot) {
-        // Only our competition bot has autonomous routines
+        // Setup the autonomous chooser
         if (bot == RobotFrame.COMP) {
-            // Read /deploy/pathplanner/autos directory
-            File autos = new File(Filesystem.getDeployDirectory(), "pathplanner/autos");
-
-            // Collect all the names in the directory that end with ".auto"
-            String[] autoNames = autos.list((dir, name) -> name.endsWith(".auto"));
-
-            Command[] autoCommands = new Command[autoNames.length];
-            for (int i = 0; i < autoNames.length; i++) {
-                // Trim the ".auto" extension
-                String name = autoNames[i].substring(0, autoNames[i].length() - 5);
-                autoCommands[i] = new PathPlannerAuto(name);
-            }
-
-            m_auto = new SendableChooserCommand("Autonomous Command", autoCommands);
+            autoChooser = AutoBuilder.buildAutoChooser();
+        } else {
+            autoChooser = null;
         }
     }
 
+    private final SendableChooser<Command> autoChooser;
+
     public Command getAutonomousCommand() {
-        return m_auto;
+        if (autoChooser == null) {
+            return Commands.none();
+        }
+
+        return autoChooser.getSelected();
     }
 
     private void setupSwerveDrive(RobotFrame bot) {
