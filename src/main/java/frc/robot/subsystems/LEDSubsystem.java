@@ -5,6 +5,7 @@ import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.utils.PenningtonLEDs;
@@ -13,6 +14,14 @@ import frc.robot.utils.PenningtonLEDs.RawPattern;
 public class LEDSubsystem implements Subsystem {
     private static final PenningtonLEDs ledController = new PenningtonLEDs(0);
     private static final LEDSubsystem instance = new LEDSubsystem();
+
+    private LEDSubsystem() {
+        SmartDashboard.putNumber("Raw Pattern", 0);
+
+        Command p = runOnce(
+                () -> ledController.setPattern((int) SmartDashboard.getNumber("Raw Pattern", 0))).ignoringDisable(true);
+        SmartDashboard.putData("Enable Lights", p);
+    }
 
     public enum Pattern {
         SLOW_RAINBOW,
@@ -182,7 +191,8 @@ public class LEDSubsystem implements Subsystem {
      * @return The {@link Command}
      */
     public static Command cSetOverride(Pattern pattern) {
-        return instance.runEnd(() -> startOverride(pattern), () -> endOverride(pattern));
+        return instance.runEnd(() -> startOverride(pattern), () -> endOverride(pattern)).withName(pattern.toString())
+                .ignoringDisable(true);
     }
 
     /**

@@ -1,6 +1,7 @@
 package frc.robot.utils;
 
 import edu.wpi.first.wpilibj.AnalogOutput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * PenningtonLEDs is the low-level interface to control our custom-made LED
@@ -56,6 +57,10 @@ public class PenningtonLEDs {
         return 5.0 * (pattern.getId() + 0.5) / RawPattern.values().length;
     }
 
+    private static double getVoltage(int pattern) {
+        return 5.0 * (pattern + 0.5) / RawPattern.values().length;
+    }
+
     /**
      * Sets the desired pattern for the LEDs to display.
      * <p>
@@ -67,6 +72,12 @@ public class PenningtonLEDs {
      * @param pattern the {@link RawPattern} to display
      */
     public void setPattern(RawPattern pattern) {
+        SmartDashboard.putNumber("LEDs/Voltage", getVoltage(pattern));
+        m_analogOutput.setVoltage(getVoltage(pattern));
+    }
+
+    public void setPattern(int pattern) {
+        SmartDashboard.putNumber("LEDs/Voltage", getVoltage(pattern));
         m_analogOutput.setVoltage(getVoltage(pattern));
     }
 }

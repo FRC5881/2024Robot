@@ -1,7 +1,8 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Value;
+
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -65,19 +66,31 @@ public class AmpGuideSubsystem extends SubsystemBase {
 
         ampGuideMotor.setSoftLimit(SoftLimitDirection.kReverse, 0);
         ampGuideMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
-        ampGuideMotor.setSoftLimit(SoftLimitDirection.kForward, 22.83f);
+        ampGuideMotor.setSoftLimit(SoftLimitDirection.kForward, AmpGuideConstants.kForwardLimit);
         ampGuideMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
 
-        ampGuideMotor.getEncoder().setPosition(0.0);
         ampGuideMotor.burnFlash();
     }
 
     @Override
     public void periodic() {
-        ampGuideMotor.getPIDController().setReference(getSetpoint(), ControlType.kPosition);
+        switch (state) {
+            case EXTENDED:
+                if (ampGuideMotor.getEncoder().getPosition() < AmpGuideConstants.kForwardLimit) {
+                    ampGuideMotor.set(AmpGuideConstants.kPower.in(Value));
+                }
+                break;
+            case RETRACTED:
+                if (ampGuideMotor.getEncoder().getPosition() > 1) {
+                    ampGuideMotor.set(-AmpGuideConstants.kPower.in(Value));
+                }
+                break;
+            default:
+                break;
+        }
 
         // Telemetry
-        SmartDashboard.putNumber("Amp Guide/Setpoint", getSetpoint());
+        // SmartDashboard.putNumber("Amp Guide/Setpoint", getSetpoint());
         SmartDashboard.putNumber("Amp Guide/Position", getPosition());
         SmartDashboard.putNumber("Amp Guide/Voltage", ampGuideMotor.getBusVoltage() * ampGuideMotor.getAppliedOutput());
     }
@@ -88,7 +101,7 @@ public class AmpGuideSubsystem extends SubsystemBase {
      * @param state The {@link AmpGuideState} to target
      * @return The {@link Command}
      */
-    private Command cSetState(AmpGuideState state) {
+    public Command cSetState(AmpGuideState state) {
         return runOnce(() -> this.state = state);
     }
 
@@ -118,13 +131,24 @@ public class AmpGuideSubsystem extends SubsystemBase {
      * 
      * <pre>
      * {@code
-     * Command extendAndWait = intake.cExtend().andThen(intake.cWaitForReady());
+     * Command extendAndWait = guide.cExtend().andThen(guide.cWaitForReady());
      * }
      * </pre>
      * 
      * @return The {@link Command}
      */
     public Command cWaitForReady() {
-        return Commands.waitUntil(() -> MathUtil.isNear(getSetpoint(), getPosition(), AmpGuideConstants.kTolerance));
+        return Commands.waitUntil(() -> {
+            switch (state) {
+                case EXTENDED:
+                    return MathUtil.isNear(getPosition(), getSetpoint(), AmpGuideConstants.kTolerance)
+                            || getPosition() > getSetpoint();
+                case RETRACTED:
+                    return MathUtil.isNear(getPosition(), getSetpoint(), AmpGuideConstants.kTolerance)
+                            || getPosition() < getSetpoint();
+                default:
+                    return true;
+            }
+        });
     }
 }

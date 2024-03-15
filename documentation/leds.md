@@ -101,7 +101,7 @@ The Arduino should run an infinite loop with this structure:
 ```c
 void loop() {
     // Read the voltage from the AnalogOutput port
-    float voltage = analogRead(A0) * 5.0 / 1023.0;
+    int voltage = analogRead(A0) * 5.0 / 1023.0;
 
     switch (determine_pattern(voltage)) {
         case PAT_NONE:

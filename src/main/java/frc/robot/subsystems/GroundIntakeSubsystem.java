@@ -8,6 +8,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,6 +27,11 @@ public class GroundIntakeSubsystem extends SubsystemBase {
         intakeMotor.restoreFactoryDefaults();
         intakeMotor.setInverted(false);
         intakeMotor.setIdleMode(IdleMode.kBrake);
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putBoolean("Ground Intake/Has Note", hasNote());
     }
 
     /**

@@ -23,10 +23,7 @@ public final class Constants {
     }
 
     public static class DIOConstants {
-        /**
-         * The DIO port for the climber limit switch
-         */
-        public static final int kClimberLimitSwitch = 1;
+        public static final int kClimberLimitSwitch = 9;
     }
 
     public static class AnalogInputConstants {
@@ -76,29 +73,29 @@ public final class Constants {
         /**
          * What power to spin the intake motor with
          */
-        public static final Measure<Dimensionless> kHighPower = Percent.of(0.50);
+        public static final Measure<Dimensionless> kHighPower = Percent.of(75);
 
         /**
          * What power to spin the intake motor with
          */
-        public static final Measure<Dimensionless> kLowPower = Percent.of(0.25);
+        public static final Measure<Dimensionless> kLowPower = Percent.of(35);
     }
 
     public static class ClimberConstants {
         /**
          * What power to extend the climber motor with (percentage)
          */
-        public static final Measure<Dimensionless> kExtendPower = Percent.of(0.75);
+        public static final Measure<Dimensionless> kExtendPower = Percent.of(25);
 
         /**
          * What power to retract the climber motor with (percentage)
          */
-        public static final Measure<Dimensionless> kRetractPower = Percent.of(-1.0);
+        public static final Measure<Dimensionless> kRetractPower = Percent.of(-100);
 
         /**
          * Climber extension soft limit (rotations)
          */
-        public static final float kForwardLimit = 140f;
+        public static final float kForwardLimit = 180f;
 
         public static final Measure<Dimensionless> kAutoHome = Percent.of(-10);
     }
@@ -107,7 +104,7 @@ public final class Constants {
         /**
          * What velocity to shoot NOTES into the AMP with
          */
-        public static final Measure<Velocity<Angle>> kShooterAmpSpeed = RotationsPerSecond.of(26);
+        public static final Measure<Velocity<Angle>> kShooterAmpSpeed = RotationsPerSecond.of(23);
 
         /**
          * Tolerance for the shooter to be considered at setpoint
@@ -119,14 +116,14 @@ public final class Constants {
          * <p>
          * For the SPEAKER this measure gives us a consistent time-to-launch
          */
-        public static final Measure<Time> kTimeout = Seconds.of(0.5);
+        public static final Measure<Time> kTimeout = Seconds.of(0.75);
     }
 
     public static class IndexerConstants {
         /**
          * The power to drive the intake motor towards the shooter (percentage)
          */
-        public static final Measure<Dimensionless> kIndexerPower = Percent.of(0.5);
+        public static final Measure<Dimensionless> kIndexerPower = Percent.of(60);
     }
 
     public static class DifferentialDriveConstants {
@@ -162,7 +159,7 @@ public final class Constants {
         /**
          * AMP Guide soft limit / AMP Guide scoring position (rotations)
          */
-        public static final float kForwardLimit = 22.83f;
+        public static final float kForwardLimit = 260f;
 
         /**
          * Tolerance to be considered "within setpoint". (rotations)
@@ -171,6 +168,8 @@ public final class Constants {
          * tolerance has no effect on whether or not we're still commanding the AMP
          * Guide. This is value is only used to help build Command compositions.
          */
-        public static final float kTolerance = 1.0f;
+        public static final float kTolerance = 10.0f;
+
+        public static final Measure<Dimensionless> kPower = Percent.of(100);
     }
 }

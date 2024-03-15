@@ -18,6 +18,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot.RobotFrame;
@@ -69,7 +70,6 @@ public class SwerveSubsystem extends SubsystemBase {
                     return alliance.isPresent() ? alliance.get() == DriverStation.Alliance.Red : false;
                 },
                 this);
-
     }
 
     /**
@@ -149,5 +149,12 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public Measure<Velocity<Angle>> getMaximumAngularVelocity() {
         return Units.RadiansPerSecond.of(m_swerveDrive.getMaximumAngularVelocity());
+    }
+
+    @Override
+    public void periodic() {
+        ChassisSpeeds speeds = m_swerveDrive.getRobotVelocity();
+        SmartDashboard.putNumber("Swerve/Combined Speed",
+                Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
     }
 }

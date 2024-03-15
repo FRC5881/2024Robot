@@ -62,7 +62,7 @@ public class RobotContainer {
                 setupShooter();
                 setupIndexer();
                 setupIntake();
-                setupGuide();
+                // setupGuide();
                 break;
             case M1C2:
                 setupSwerveDrive(bot);
@@ -98,24 +98,29 @@ public class RobotContainer {
             // An autonomous command that automatically spins up and shoots a NOTE
             Command autoShootHigh = Commands.race(
                     shooter.cRunWhenSpeakerReady(releaseNoteFinal.get()),
-                    Commands.waitSeconds(1.50));
+                    Commands.waitSeconds(1.75));
 
             NamedCommands.registerCommand("SPEAKER", autoShootHigh);
 
             // If the guide exists, then "shootLow" requires the guide to be extended
             // and requires the shooter to be ready
-            Supplier<Command> shootLow = () -> shooter.cRunWhenAmpReady(releaseNoteFinal.get());
 
             if (m_guide.isPresent()) {
                 var guide = m_guide.get();
 
-                shootLow = () -> Commands.parallel(
-                        guide.cExtend().andThen(guide.cWaitForReady()),
-                        shooter.cRunAmp().andThen(shooter.waitForAmpReady())).andThen(releaseNoteFinal.get());
+                Command shootLow = Commands.parallel(
+                        shooter.cRunAmp(),
+                        guide.cExtend(),
+                        Commands.parallel(
+                                shooter.waitForAmpReady(),
+                                guide.cWaitForReady()).andThen(releaseNoteFinal.get()));
+
+                m_driverController.R1().whileTrue(shootLow);
+            } else {
+                m_driverController.R1().whileTrue(shooter.cRunWhenAmpReady(releaseNoteFinal.get()));
             }
 
             // Driver Controls
-            m_driverController.R1().whileTrue(shootLow.get());
             m_driverController.R2().whileTrue(shootHigh);
 
             m_driverController.L2().whileTrue(shooter.cIntake().alongWith(indexer.cSendDown()));
@@ -125,7 +130,7 @@ public class RobotContainer {
         m_driverController.options().whileTrue(LEDSubsystem.cSetOverride(Pattern.FAST_RAINBOW_FLASH));
 
         // Setup the autonomous chooser
-        if (bot == RobotFrame.COMP) {
+        if (bot == RobotFrame.COMP && m_shooter.isPresent()) {
             autoChooser = AutoBuilder.buildAutoChooser();
         } else {
             autoChooser = null;
@@ -201,8 +206,8 @@ public class RobotContainer {
 
         // All Drive Commands
         drive.setDefaultCommand(
-                new SendableChooserCommand("Swerve Drive Command", rotationRate, absoluteAngle, robotRelative,
-                        reversedRobotRelative));
+                new SendableChooserCommand("Swerve Drive Command", rotationRate, absoluteAngle,
+                        reversedRobotRelative, robotRelative));
 
         // Reset gyro
         m_driverController.touchpad().onTrue(drive.cZeroGyro());
@@ -237,6 +242,8 @@ public class RobotContainer {
         m_driverController.povUp().whileTrue(climber.cExtend());
         m_driverController.povDown().whileTrue(climber.cRetract());
 
+        SmartDashboard.putData("sClimber", climber);
+
         m_climber = Optional.of(climber);
     }
 
@@ -247,6 +254,8 @@ public class RobotContainer {
         m_driverController.L1().whileTrue(intake.cRunUntilCaptured());
         NamedCommands.registerCommand("INTAKE", intake.cRunUntilCaptured());
 
+        SmartDashboard.putData("sIntake", intake);
+
         m_intake = Optional.of(intake);
     }
 
@@ -254,6 +263,7 @@ public class RobotContainer {
         var shooter = new ShooterSubsystem();
 
         m_driverController.L2().whileTrue(shooter.cIntake());
+        SmartDashboard.putData("sShooter", shooter);
 
         m_shooter = Optional.of(shooter);
     }
@@ -261,11 +271,17 @@ public class RobotContainer {
     private void setupIndexer() {
         var indexer = new IndexerSubsystem();
 
+        SmartDashboard.putData("sIndexer", indexer);
+
         m_indexer = Optional.of(indexer);
     }
 
     private void setupGuide() {
         var guide = new AmpGuideSubsystem();
+
+        SmartDashboard.putData("sAmpGuide", guide);
+        m_driverController.povLeft().onTrue(guide.cExtend());
+        m_driverController.povRight().onTrue(guide.cRetract());
 
         m_guide = Optional.of(guide);
     }

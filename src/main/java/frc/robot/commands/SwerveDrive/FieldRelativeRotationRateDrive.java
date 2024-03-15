@@ -56,7 +56,7 @@ public class FieldRelativeRotationRateDrive extends Command {
         Translation2d translation = translationSupplier.get();
         var vx = MAX_SPEED.times(translation.getX() * drive_sensitivity);
         var vy = MAX_SPEED.times(translation.getY() * drive_sensitivity);
-        var omega = MAX_OMEGA.times(omegaSupplier.getAsDouble() * turn_sensitivity);
+        var omega = MAX_OMEGA.times(-1 * omegaSupplier.getAsDouble() * turn_sensitivity);
 
         SmartDashboard.putNumber("vx", vx.baseUnitMagnitude());
         SmartDashboard.putNumber("vy", vy.baseUnitMagnitude());
