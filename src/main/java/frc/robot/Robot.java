@@ -17,6 +17,7 @@ import frc.robot.subsystems.LEDSubsystem.Pattern;
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
     private RobotContainer m_robotContainer;
+    private Command m_climberHomeCommand = ClimberAutoHome();
 
     /**
      * Our code is designed to work with multiple robots. This enum is used to
@@ -65,6 +66,11 @@ public class Robot extends TimedRobot {
                 LEDSubsystem.cSetDefault(Pattern.SOLID_PURPLE));
     }
 
+    private Command ClimberAutoHome() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'ClimberAutoHome'");
+    }
+
     /**
      * This function is called every 20 ms, no matter the mode. Use this for items
      * like diagnostics that you want ran during disabled, autonomous, teleoperated
@@ -99,6 +105,7 @@ public class Robot extends TimedRobot {
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
+            m_climberHomeCommand.schedule();
         }
     }
 
