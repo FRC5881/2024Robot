@@ -9,33 +9,30 @@ import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
+import frc.robot.Constants.IndexerConstants;
+import frc.robot.Constants.CANConstants;
 
 public class IndexerSubsystem extends SubsystemBase {
     private final CANSparkMax indexerMotor;
 
     public IndexerSubsystem() {
-        indexerMotor = new CANSparkMax(Constants.CANConstants.kIndexerMotor, MotorType.kBrushless);
+        indexerMotor = new CANSparkMax(CANConstants.kIndexerMotor, MotorType.kBrushless);
         indexerMotor.setIdleMode(IdleMode.kBrake);
     }
 
     private void up() {
-        indexerMotor.set(Constants.IndexerConstants.kIndexerPower.in(Value));
+        indexerMotor.set(IndexerConstants.kIndexerPower.in(Value));
     }
 
     private void down() {
-        indexerMotor.set(-Constants.IndexerConstants.kIndexerPower.in(Value));
-    }
-
-    private void stop() {
-        indexerMotor.set(0);
+        indexerMotor.set(-IndexerConstants.kIndexerPower.in(Value));
     }
 
     public Command cSendShooter() {
-        return this.runEnd(this::up, this::stop);
+        return this.runEnd(this::up, indexerMotor::stopMotor);
     }
 
     public Command cSendDown() {
-        return this.runEnd(this::down, this::stop);
+        return this.runEnd(this::down, indexerMotor::stopMotor);
     }
 }
