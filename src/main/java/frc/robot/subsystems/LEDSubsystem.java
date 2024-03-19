@@ -5,7 +5,6 @@ import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.utils.PenningtonLEDs;
@@ -16,18 +15,12 @@ public class LEDSubsystem implements Subsystem {
     private static final LEDSubsystem instance = new LEDSubsystem();
 
     private LEDSubsystem() {
-        SmartDashboard.putNumber("Raw Pattern", 0);
-
-        Command p = runOnce(
-                () -> ledController.setPattern((int) SmartDashboard.getNumber("Raw Pattern", 0))).ignoringDisable(true);
-        SmartDashboard.putData("Enable Lights", p);
     }
 
     public enum Pattern {
         SLOW_RAINBOW,
         SOLID,
         BREATHING,
-        POWER_DOWN,
         SLOW_FLASH_GREEN,
         CHASING_UP,
         CHASING_DOWN,
@@ -115,8 +108,6 @@ public class LEDSubsystem implements Subsystem {
                 }
             case FAST_RAINBOW_FLASH:
                 return RawPattern.FAST_RAINBOW_FLASH;
-            case POWER_DOWN:
-                return RawPattern.POWER_DOWN;
             case SLOW_FLASH_GREEN:
                 return RawPattern.SLOW_FLASH_GREEN;
             case SLOW_RAINBOW:
@@ -157,6 +148,15 @@ public class LEDSubsystem implements Subsystem {
     public static void setDefault(Pattern pattern) {
         defaultPattern = pattern;
         sendPattern();
+    }
+
+    /**
+     * Sets the default pattern to display
+     * 
+     * @param pattern
+     */
+    public static Command cSetDefault(Pattern pattern) {
+        return instance.runOnce(() -> setDefault(pattern));
     }
 
     /**

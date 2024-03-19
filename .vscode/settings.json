@@ -30,5 +30,31 @@
   "editor.formatOnSave": true,
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
-  }
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  },
+  "files.associations": {
+    "array": "cpp",
+    "deque": "cpp",
+    "list": "cpp",
+    "string": "cpp",
+    "unordered_map": "cpp",
+    "vector": "cpp",
+    "string_view": "cpp",
+    "format": "cpp",
+    "initializer_list": "cpp",
+    "span": "cpp",
+    "valarray": "cpp",
+    "charconv": "cpp",
+    "chrono": "cpp",
+    "optional": "cpp",
+    "ratio": "cpp",
+    "system_error": "cpp",
+    "functional": "cpp",
+    "tuple": "cpp",
+    "type_traits": "cpp",
+    "utility": "cpp"
+  },
+  "C_Cpp.intelliSenseEngine": "Tag Parser",
 }

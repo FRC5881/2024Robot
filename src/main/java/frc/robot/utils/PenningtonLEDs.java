@@ -1,7 +1,6 @@
 package frc.robot.utils;
 
 import edu.wpi.first.wpilibj.AnalogOutput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * PenningtonLEDs is the low-level interface to control our custom-made LED
@@ -22,19 +21,18 @@ public class PenningtonLEDs {
         BREATHING_RED(4),
         BREATHING_GREEN(5),
         BREATHING_BLUE(6),
-        POWER_DOWN(7),
-        SLOW_FLASH_GREEN(8),
-        CHASING_UP_RED(9),
-        CHASING_UP_GREEN(10),
-        CHASING_UP_BLUE(11),
-        CHASING_DOWN_RED(12),
-        CHASING_DOWN_GREEN(13),
-        CHASING_DOWN_BLUE(14),
-        FAST_FLASH_RED(15),
-        FAST_FLASH_GREEN(16),
-        FAST_FLASH_BLUE(17),
-        SOLID_PURPLE(18),
-        FAST_RAINBOW_FLASH(19);
+        SLOW_FLASH_GREEN(7),
+        CHASING_UP_RED(8),
+        CHASING_UP_GREEN(9),
+        CHASING_UP_BLUE(10),
+        CHASING_DOWN_RED(11),
+        CHASING_DOWN_GREEN(12),
+        CHASING_DOWN_BLUE(13),
+        FAST_FLASH_RED(14),
+        FAST_FLASH_GREEN(15),
+        FAST_FLASH_BLUE(16),
+        SOLID_PURPLE(17),
+        FAST_RAINBOW_FLASH(18);
 
         private final int id;
 
@@ -57,10 +55,6 @@ public class PenningtonLEDs {
         return 5.0 * (pattern.getId() + 0.5) / RawPattern.values().length;
     }
 
-    private static double getVoltage(int pattern) {
-        return 5.0 * (pattern + 0.5) / RawPattern.values().length;
-    }
-
     /**
      * Sets the desired pattern for the LEDs to display.
      * <p>
@@ -72,12 +66,6 @@ public class PenningtonLEDs {
      * @param pattern the {@link RawPattern} to display
      */
     public void setPattern(RawPattern pattern) {
-        SmartDashboard.putNumber("LEDs/Voltage", getVoltage(pattern));
-        m_analogOutput.setVoltage(getVoltage(pattern));
-    }
-
-    public void setPattern(int pattern) {
-        SmartDashboard.putNumber("LEDs/Voltage", getVoltage(pattern));
         m_analogOutput.setVoltage(getVoltage(pattern));
     }
 }
