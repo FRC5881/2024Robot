@@ -78,12 +78,6 @@
           "data": {
             "pathName": "M1-SA"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "SPEAKER"
-          }
         }
       ]
     }
