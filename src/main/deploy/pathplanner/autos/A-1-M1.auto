@@ -53,6 +53,37 @@
           "data": {
             "name": "SPEAKER"
           }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "INTAKE"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "SA-M1"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "M1-SA"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "SPEAKER"
+          }
         }
       ]
     }
