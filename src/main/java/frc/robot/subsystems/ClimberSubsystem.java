@@ -99,7 +99,7 @@ public class ClimberSubsystem extends SubsystemBase {
      * 
      * @return the {@link Command}
      */
-    public Command autoHome() {
+    public Command cAutoHome() {
         return startEnd(this::retract, climberMotor::stopMotor)
                 .raceWith(Commands.waitSeconds(1).andThen(Commands.waitUntil(this::isStopped)))
                 .withTimeout(5)
