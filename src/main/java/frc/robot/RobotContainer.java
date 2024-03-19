@@ -36,6 +36,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 
 public class RobotContainer {
@@ -146,6 +147,20 @@ public class RobotContainer {
         }
 
         return autoChooser.getSelected();
+    }
+
+    /**
+     * This command runs at the start of teleop mode and is responsible for setting
+     * up subsystems.
+     */
+    public Command getTeleopCommand() {
+        ParallelCommandGroup commands = new ParallelCommandGroup();
+
+        if (m_climber.isPresent()) {
+            commands.addCommands(m_climber.get().cAutoHome());
+        }
+
+        return commands;
     }
 
     private void setupSwerveDrive(RobotFrame bot) {
