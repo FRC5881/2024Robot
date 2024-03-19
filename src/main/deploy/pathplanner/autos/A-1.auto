@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.6967559519609781,
-      "y": 4.4
+      "x": 0.6840430648453889,
+      "y": 6.701337662513288
     },
-    "rotation": 120.0
+    "rotation": -120.0
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "C-SC"
+            "pathName": "A-SA"
           }
         },
         {
@@ -30,7 +30,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "SC-N3"
+                  "pathName": "SA-N1"
                 }
               },
               {
@@ -45,13 +45,32 @@
         {
           "type": "path",
           "data": {
-            "pathName": "N3-SC"
+            "pathName": "N1-SA"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "SPEAKER"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "INTAKE"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "SA-M1"
+                }
+              }
+            ]
           }
         }
       ]
