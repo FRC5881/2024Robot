@@ -30,7 +30,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
         climberMotor.restoreFactoryDefaults();
         climberMotor.setIdleMode(IdleMode.kBrake);
-        climberMotor.setSmartCurrentLimit(30);
+        climberMotor.setSmartCurrentLimit(40);
 
         climberMotor.enableSoftLimit(SoftLimitDirection.kForward, false);
         climberMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
