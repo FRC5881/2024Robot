@@ -60,15 +60,13 @@ public class ShooterSubsystem extends SubsystemBase {
         mainMotor = new CANSparkMax(Constants.CANConstants.kShooterMainId, MotorType.kBrushless);
         mainMotor.restoreFactoryDefaults();
         mainMotor.setSmartCurrentLimit(40);
-        mainMotor.setIdleMode(IdleMode.kBrake);
-        // Convert from RPM to RPS
+        mainMotor.setIdleMode(IdleMode.kCoast);
         mainMotor.getEncoder().setVelocityConversionFactor(1.0 / 60.0);
 
         secondaryMotor = new CANSparkMax(Constants.CANConstants.kShooterSecondaryId, MotorType.kBrushless);
         secondaryMotor.restoreFactoryDefaults();
         secondaryMotor.setSmartCurrentLimit(40);
-        secondaryMotor.setIdleMode(IdleMode.kBrake);
-        // Convert from RPM to RPS
+        secondaryMotor.setIdleMode(IdleMode.kCoast);
         secondaryMotor.getEncoder().setVelocityConversionFactor(1.0 / 60.0);
     }
 
@@ -77,7 +75,8 @@ public class ShooterSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Shooter/MainRPS", mainMotor.getEncoder().getVelocity());
         SmartDashboard.putNumber("Shooter/SecondaryRPS", secondaryMotor.getEncoder().getVelocity());
 
-        SmartDashboard.putNumber("Shooter/MainVoltage", mainMotor.getAppliedOutput() * mainMotor.getBusVoltage());
+        SmartDashboard.putNumber("Shooter/MainVoltage",
+                mainMotor.getAppliedOutput() * mainMotor.getBusVoltage());
         SmartDashboard.putNumber("Shooter/SecondaryVoltage",
                 secondaryMotor.getAppliedOutput() * secondaryMotor.getBusVoltage());
 
@@ -88,7 +87,7 @@ public class ShooterSubsystem extends SubsystemBase {
     // ---- CONTROLS ---- //
 
     /**
-     * Stops the shooter subsystem flywheels.
+     * Stops the shooter subsystem flywheels
      */
     private void stop() {
         mainMotor.stopMotor();
@@ -96,15 +95,26 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
-     * Drives the shooter motors with a given power.
+     * Drives the shooter motors with a given power
      * 
-     * @param percentage the values to drive the motors at, between -1 and 1.
+     * @param percentage the values to drive both motors at
      * @return the command to run
      */
-    private Command cPercentOutput(Measure<Dimensionless> percentage) {
+    private Command cDrivePercent(Measure<Dimensionless> percentage) {
+        return cDrivePercent(percentage, percentage);
+    }
+
+    /**
+     * Drives the shooter motors with a given power
+     * 
+     * @param main      the value to drive the main motor at
+     * @param secondary the value to drive the secondary motor at
+     * @return the command to run
+     */
+    private Command cDrivePercent(Measure<Dimensionless> main, Measure<Dimensionless> secondary) {
         return runEnd(() -> {
-            mainMotor.set(percentage.in(Value));
-            secondaryMotor.set(percentage.in(Value));
+            mainMotor.set(main.in(Value));
+            secondaryMotor.set(secondary.in(Value));
         }, this::stop);
     }
 
@@ -114,19 +124,19 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return the command to run
      */
     public Command cRunSpeaker() {
-        return cPercentOutput(Percent.of(100)).raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP));
-    }
-
-    public Command cStop() {
-        return runOnce(this::stop);
+        return cDrivePercent(ShooterConstants.kSpeakerMainPower, ShooterConstants.kSpeakerSecondaryPower)
+                .raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP));
     }
 
     /**
-     * Drives the shooter motors at a given setpoint.
+     * Drives the shooter motors at a given setpoint
      * <p>
-     * Uses a feedforward and PID controller to set the voltage of the motors.
+     * Uses feedforward and PID controller to set the voltage of the motors
+     * 
+     * @param setpoint the desired setpoint velocity
+     * @return the command to run
      */
-    private Command cSetpoint(Measure<Velocity<Angle>> setpoint) {
+    private Command cDriveSetpoint(Measure<Velocity<Angle>> setpoint) {
         return runEnd(() -> {
             double target = setpoint.in(RotationsPerSecond);
             double mainSpeed = mainMotor.getEncoder().getVelocity();
@@ -143,7 +153,8 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return the command to run
      */
     public Command cRunAmp() {
-        return cSetpoint(ShooterConstants.kShooterAmpSpeed).raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP));
+        return cDriveSetpoint(ShooterConstants.kAmpSpeed)
+                .raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP));
     }
 
     /**
@@ -157,7 +168,7 @@ public class ShooterSubsystem extends SubsystemBase {
         double mainSpeed = mainMotor.getEncoder().getVelocity();
         double secondarySpeed = secondaryMotor.getEncoder().getVelocity();
         double rps = setpoint.in(RotationsPerSecond);
-        double tolerance = ShooterConstants.kShooterTolerance.in(RotationsPerSecond);
+        double tolerance = ShooterConstants.kTolerance.in(RotationsPerSecond);
 
         return MathUtil.isNear(mainSpeed, rps, tolerance) && MathUtil.isNear(secondarySpeed, rps, tolerance);
     }
@@ -181,7 +192,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return The command to run.
      */
     public Command waitForAmpReady() {
-        return waitForReady(ShooterConstants.kShooterAmpSpeed);
+        return waitForReady(ShooterConstants.kAmpSpeed);
     }
 
     /**
@@ -212,7 +223,8 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return The command to run.
      */
     public Command cIntake() {
-        return cPercentOutput(Percent.of(-15)).raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_DOWN));
+        return cDrivePercent(ShooterConstants.kInsertPower)
+                .raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_DOWN));
     }
 
     // ---- SYSTEM IDENTIFICATION ---- //

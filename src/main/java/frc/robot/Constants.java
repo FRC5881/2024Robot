@@ -78,7 +78,7 @@ public final class Constants {
         /**
          * What power to spin the intake motor with
          */
-        public static final Measure<Dimensionless> kLowPower = Percent.of(35);
+        public static final Measure<Dimensionless> kLowPower = Percent.of(50);
     }
 
     public static class ClimberConstants {
@@ -102,28 +102,43 @@ public final class Constants {
 
     public static class ShooterConstants {
         /**
-         * What velocity to shoot NOTES into the AMP with
+         * What velocity to target the AMP with
          */
-        public static final Measure<Velocity<Angle>> kShooterAmpSpeed = RotationsPerSecond.of(23);
+        public static final Measure<Velocity<Angle>> kAmpSpeed = RotationsPerSecond.of(23);
+
+        /**
+         * What power to target the SPEAKER with (main motor)
+         */
+        public static final Measure<Dimensionless> kSpeakerMainPower = Percent.of(100);
+
+        /**
+         * What power to target the SPEAKER with (secondary motor)
+         */
+        public static final Measure<Dimensionless> kSpeakerSecondaryPower = Percent.of(100);
+
+        /**
+         * What power to run the shooter at when inserting
+         */
+        public static final Measure<Dimensionless> kInsertPower = Percent.of(-25);
 
         /**
          * Tolerance for the shooter to be considered at setpoint
          */
-        public static final Measure<Velocity<Angle>> kShooterTolerance = RotationsPerSecond.of(2.0);
+        public static final Measure<Velocity<Angle>> kTolerance = RotationsPerSecond.of(2.0);
 
         /**
          * Amount of time it takes for the shooter to reach any setpoint
          * <p>
          * For the SPEAKER this measure gives us a consistent time-to-launch
          */
-        public static final Measure<Time> kTimeout = Seconds.of(0.75);
+        public static final Measure<Time> kTimeout = Seconds.of(0.80);
     }
 
     public static class IndexerConstants {
         /**
          * The power to drive the intake motor towards the shooter (percentage)
          */
-        public static final Measure<Dimensionless> kIndexerPower = Percent.of(60);
+        public static final Measure<Dimensionless> kIndexerPower = Percent.of(100);
     }
 
     public static class DifferentialDriveConstants {
