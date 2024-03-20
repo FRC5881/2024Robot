@@ -7,7 +7,9 @@ package frc.robot;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -17,6 +19,8 @@ import frc.robot.subsystems.LEDSubsystem.Pattern;
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
     private RobotContainer m_robotContainer;
+
+    private static PowerDistribution pdh = new PowerDistribution();
 
     /**
      * Our code is designed to work with multiple robots. This enum is used to
@@ -62,7 +66,9 @@ public class Robot extends TimedRobot {
 
         // Set pattern on E-STOP
         new Trigger(DriverStation::isEStopped).onTrue(
-                LEDSubsystem.cSetDefault(Pattern.SOLID_PURPLE));
+                LEDSubsystem.cSetDefault(Pattern.SLOW_FLASH_PURPLE));
+
+        SmartDashboard.putData(pdh);
     }
 
     /**
@@ -118,8 +124,6 @@ public class Robot extends TimedRobot {
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();
         }
-
-        m_robotContainer.getTeleopCommand().schedule();
     }
 
     /** This function is called periodically during operator control. */
@@ -129,7 +133,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void testInit() {
-        LEDSubsystem.setDefault(Pattern.SLOW_FLASH_GREEN);
+        LEDSubsystem.setDefault(Pattern.SLOW_FLASH_PURPLE);
 
         // Cancels all running commands at the start of test mode.
         CommandScheduler.getInstance().cancelAll();

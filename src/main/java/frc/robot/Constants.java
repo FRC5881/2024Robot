@@ -85,12 +85,12 @@ public final class Constants {
         /**
          * What power to extend the climber motor with (percentage)
          */
-        public static final Measure<Dimensionless> kExtendPower = Percent.of(25);
+        public static final Measure<Dimensionless> kExtendPower = Percent.of(100);
 
         /**
          * What power to retract the climber motor with (percentage)
          */
-        public static final Measure<Dimensionless> kRetractPower = Percent.of(-100);
+        public static final Measure<Dimensionless> kRetractPower = Percent.of(100);
 
         /**
          * Climber extension soft limit (rotations)
@@ -104,7 +104,7 @@ public final class Constants {
         /**
          * What velocity to target the AMP with
          */
-        public static final Measure<Velocity<Angle>> kAmpSpeed = RotationsPerSecond.of(23);
+        public static final Measure<Velocity<Angle>> kAmpSpeed = RotationsPerSecond.of(20);
 
         /**
          * What power to target the SPEAKER with (main motor)
@@ -174,7 +174,12 @@ public final class Constants {
         /**
          * AMP Guide soft limit / AMP Guide scoring position (rotations)
          */
-        public static final float kForwardLimit = 260f;
+        public static final float kForwardLimit = 40.8f;
+
+        /**
+         * AMP Guide soft limit / AMP Guide scoring position (rotations)
+         */
+        public static final float kRetractedPosition = 13.0f;
 
         /**
          * Tolerance to be considered "within setpoint". (rotations)
@@ -183,8 +188,8 @@ public final class Constants {
          * tolerance has no effect on whether or not we're still commanding the AMP
          * Guide. This is value is only used to help build Command compositions.
          */
-        public static final float kTolerance = 10.0f;
+        public static final float kTolerance = 1.0f;
 
-        public static final Measure<Dimensionless> kPower = Percent.of(100);
+        public static final Measure<Dimensionless> kMaxOutput = Percent.of(100);
     }
 }

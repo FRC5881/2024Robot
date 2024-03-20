@@ -31,8 +31,7 @@ public class PenningtonLEDs {
         FAST_FLASH_RED(14),
         FAST_FLASH_GREEN(15),
         FAST_FLASH_BLUE(16),
-        SOLID_PURPLE(17),
-        FAST_RAINBOW_FLASH(18);
+        FAST_RAINBOW_FLASH(17);
 
         private final int id;
 

@@ -7,6 +7,8 @@ import static edu.wpi.first.units.Units.Value;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 
+import edu.wpi.first.units.Dimensionless;
+import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,6 +34,7 @@ public class GroundIntakeSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putBoolean("Ground Intake/Has Note", hasNote());
+        SmartDashboard.putNumber("Ground Intake/Voltage", intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage());
     }
 
     /**
@@ -44,14 +47,12 @@ public class GroundIntakeSubsystem extends SubsystemBase {
     }
 
     /**
-     * Waits until the ground intake subsystem has captured a note.
+     * Run the intake at a given power
      * 
      * @return The {@link Command}
      */
-    private Command waitUntilCaptured() {
-        return Commands.sequence(
-                Commands.race(Commands.waitUntil(this::hasNote), LEDSubsystem.cSetOverride(Pattern.CHASING_UP)),
-                Commands.race(Commands.waitSeconds(0.15), LEDSubsystem.cSetOverride(Pattern.FAST_FLASH)));
+    private Command cRunAt(Measure<Dimensionless> power) {
+        return runEnd(() -> intakeMotor.set(power.in(Value)), intakeMotor::stopMotor);
     }
 
     /**
@@ -60,16 +61,32 @@ public class GroundIntakeSubsystem extends SubsystemBase {
      * @return The {@link Command}
      */
     public Command cRunLowSpeed() {
-        return runEnd(() -> intakeMotor.set(GroundIntakeConstants.kLowPower.in(Value)), intakeMotor::stopMotor);
+        return cRunAt(GroundIntakeConstants.kLowPower);
     }
 
     /**
-     * Run the intake at high speed, <i>stopping</i> when a note is captured
+     * Run the intake at high speed, <i>stopping</i> when a NOTE is captured
      * 
      * @return The {@link Command}
      */
     public Command cRunUntilCaptured() {
-        return runEnd(() -> intakeMotor.set(GroundIntakeConstants.kHighPower.in(Value)), intakeMotor::stopMotor)
-                .raceWith(waitUntilCaptured());
+        return Commands.race(
+                cRunAt(GroundIntakeConstants.kHighPower),
+                Commands.sequence(
+                        Commands.waitUntil(this::hasNote).raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP)),
+                        LEDSubsystem.cSetOverride(Pattern.FAST_FLASH, 0.15)));
+    }
+
+    /**
+     * Run the intake at high speed, even if a NOTE is detected.
+     * <p>
+     * The LEDs will still flash when a note is detected, but the intake will
+     * continue to run until the command is interrupted.
+     */
+    public Command cRun() {
+        return Commands.parallel(
+                cRunAt(GroundIntakeConstants.kHighPower),
+                Commands.waitUntil(this::hasNote).andThen(
+                        LEDSubsystem.cSetOverride(Pattern.FAST_FLASH)));
     }
 }

@@ -7,7 +7,7 @@
 #define BREATHING_RED 4
 #define BREATHING_GREEN 5
 #define BREATHING_BLUE 6
-#define SLOW_FLASH_GREEN 7
+#define SLOW_FLASH_PURPLE 7
 #define CHASING_UP_RED 8
 #define CHASING_UP_GREEN 9
 #define CHASING_UP_BLUE 10
@@ -17,37 +17,32 @@
 #define FAST_FLASH_RED 14
 #define FAST_FLASH_GREEN 15
 #define FAST_FLASH_BLUE 16
-#define SOLID_PURPLE 17
-#define FAST_RAINBOW_FLASH 18
+#define FAST_RAINBOW_FLASH 17
 
-#define NUM_PATTERNS 19
+#define NUM_PATTERNS 18
 
 #define PIN_NEO_PIXEL 9 // Arduino pin that connects to NeoPixel
-#define NUM_PIXELS 87   // The number of LEDs (pixels) on NeoPixel (robot LED)
-
-Adafruit_NeoPixel NeoPixel(NUM_PIXELS, PIN_NEO_PIXEL, NEO_GRB + NEO_KHZ800);
 
 // Robot settings
 int max_pixel = 84;
-int right_pixel_count = 29;
-int left_pixel_count = 29;
 int side_pixel_count = 29;
-int top_pixel_count = 26;
+int top_pixel_count = max_pixel-2*side_pixel_count;
 
 // Pattern delays
-int breath_delay = 50;
-int fast_flash_delay = 200;
-int slow_flash_delay = 1000;
-int power_off_delay = 100;
-int chase_delay = 50;
-int slow_rainbow_delay = 10;
+int breath_delay = 100;
+int fast_flash_delay = 75;
+int slow_flash_delay = 250;
+int slow_rainbow_delay = 0;
+int fast_rainbow_delay = 0;
+
+Adafruit_NeoPixel NeoPixel(max_pixel, PIN_NEO_PIXEL, NEO_GRB + NEO_KHZ800);
 
 // Default RGB values
 const uint8_t value = 70;
-const uint32_t RED = NeoPixel.color(value, 0, 0);
-const uint32_t GREEN = NeoPixel.color(0, value, 0);
-const uint32_t BLUE = NeoPixel.color(0, 0, value);
-const uint32_t PURPLE = NeoPixel.color(value, 0, value);
+const uint32_t RED = NeoPixel.Color(value, 0, 0);
+const uint32_t GREEN = NeoPixel.Color(0, value, 0);
+const uint32_t BLUE = NeoPixel.Color(0, 0, value);
+const uint32_t PURPLE = NeoPixel.Color(value, 0, value);
 
 void setup()
 {
@@ -59,6 +54,15 @@ void loop()
 {
     // Read the voltage from the AnalogOutput port
     int voltage = (analogRead(A0) * NUM_PATTERNS) / 1024;
+    voltage = CHASING_UP_RED;
+
+    Serial.println(analogRead(A0));
+    Serial.println(voltage);
+    Serial.println();
+    
+    uint32_t SUPER_RED = NeoPixel.Color(255, 0, 0);
+    uint32_t SUPER_GREEN = NeoPixel.Color(0, 255, 0);
+    uint32_t SUPER_BLUE = NeoPixel.Color(0, 0, 255);
 
     switch (voltage)
     {
@@ -78,53 +82,57 @@ void loop()
         break;
 
     case BREATHING_RED:
-        breathingPattern(RED);
+        breathing(0, 0x88);
         break;
     case BREATHING_GREEN:
-        breathingPattern(GREEN);
+        breathing((1.0/3.0) * 0xFFFF, 0x88);
         break;
     case BREATHING_BLUE:
-        breathingPattern(BLUE);
+        breathing((2.0/3.0) * 0xFFFF, 0xFF);
         break;
 
-    case SLOW_FLASH_GREEN:
-        flash(0, green, 0);
+    case SLOW_FLASH_PURPLE:
+        flash(PURPLE);
         delay(slow_flash_delay);
         break;
 
     case CHASING_UP_RED:
-        chasingUp(red, 0, 0);
-        delay(chase_delay);
+        chasingUp(SUPER_RED);
         break;
     case CHASING_UP_GREEN:
-        chasingUp(0, green, 0);
-        delay(chase_delay);
+        chasingUp(SUPER_GREEN);
         break;
     case CHASING_UP_BLUE:
-        chasingUp(0, 0, blue);
-        delay(chase_delay);
+        chasingUp(SUPER_BLUE);
         break;
 
+
+    case CHASING_DOWN_RED:
+        chasingDown(SUPER_RED);
+        break;
+    case CHASING_DOWN_GREEN:
+        chasingDown(SUPER_GREEN);
+        break;
+    case CHASING_DOWN_BLUE:
+        chasingDown(SUPER_BLUE);
+        break;
+        
     case FAST_FLASH_RED:
-        flash(red, 0, 0);
+        flash(RED);
         delay(fast_flash_delay);
         break;
     case FAST_FLASH_GREEN:
-        flash(0, green, 0);
+        flash(GREEN);
         delay(fast_flash_delay);
         break;
     case FAST_FLASH_BLUE:
-        flash(0, 0, blue);
+        flash(BLUE);
         delay(fast_flash_delay);
-        break;
-
-    case SOLID_PURPLE:
-        solidPattern(PURPLE);
         break;
 
     case FAST_RAINBOW_FLASH:
         noise();
-        delay(fast_flash_delay);
+        delay(fast_rainbow_delay);
         break;
     }
 }
@@ -174,6 +182,12 @@ void slowRainbow()
     NeoPixel.show();
 }
 
+int mod(int a, int b)
+{
+    int r = a % b;
+    return r < 0 ? r + b : r;
+}
+
 const int chase_length = 6;
 int chase_state = 0;
 
@@ -186,11 +200,11 @@ int chase_state = 0;
 void chasingUp(uint32_t color)
 {
     NeoPixel.clear();
-    NeoPixel.fill(color, chase_state, chase_state + chase_length);
-    NeoPixel.fill(color, NUM_PIXELS - chase_state, NUM_PIXELS - (chase_state + chase_length));
+    NeoPixel.fill(color, chase_state, chase_length);
+    NeoPixel.fill(color, max_pixel - chase_state, chase_length);
     NeoPixel.show();
 
-    chase_state = (chase_state + 1) % ((max_pixel + chase_length) / 2);
+    chase_state = mod((chase_state + 1), 1 + (max_pixel - chase_length) / 4);
 }
 
 /**
@@ -202,11 +216,11 @@ void chasingUp(uint32_t color)
 void chasingDown(uint32_t color)
 {
     NeoPixel.clear();
-    NeoPixel.fill(color, chase_state, chase_state + chase_length);
-    NeoPixel.fill(color, NUM_PIXELS - chase_state, NUM_PIXELS - (chase_state + chase_length));
+    NeoPixel.fill(color, chase_state, chase_length);
+    NeoPixel.fill(color, max_pixel - chase_state, chase_length);
     NeoPixel.show();
 
-    chase_state = (chase_state - 1) % ((max_pixel + chase_length) / 2);
+    chase_state = mod((chase_state - 1), 1 + (max_pixel - chase_length) / 4);
 }
 
 bool flash_state = false;
@@ -239,18 +253,18 @@ void flash(uint32_t color)
  */
 void noise()
 {
-    for (int pixel = 0; pixel < NUM_PIXELS; pixel++)
+    for (int pixel = 0; pixel < max_pixel; pixel++)
     {
-        uint8_t random_red = random(0, red);
-        uint8_t random_blue = random(0, blue);
-        uint8_t random_green = random(0, green);
+        uint8_t random_red = random(0, value);
+        uint8_t random_blue = random(0, value);
+        uint8_t random_green = random(0, value);
 
         NeoPixel.setPixelColor(pixel, random_red, random_blue, random_green);
     }
     NeoPixel.show();
 }
 
-const int breathing_steps = 35;
+const int breathing_steps = 100;
 int breathing_state = 0;
 int breathing_direction = 1;
 

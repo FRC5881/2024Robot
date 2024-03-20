@@ -21,11 +21,10 @@ public class LEDSubsystem implements Subsystem {
         SLOW_RAINBOW,
         SOLID,
         BREATHING,
-        SLOW_FLASH_GREEN,
+        SLOW_FLASH_PURPLE,
         CHASING_UP,
         CHASING_DOWN,
         FAST_FLASH,
-        SOLID_PURPLE,
         FAST_RAINBOW_FLASH;
 
         @Override
@@ -108,7 +107,7 @@ public class LEDSubsystem implements Subsystem {
                 }
             case FAST_RAINBOW_FLASH:
                 return RawPattern.FAST_RAINBOW_FLASH;
-            case SLOW_FLASH_GREEN:
+            case SLOW_FLASH_PURPLE:
                 return RawPattern.SLOW_FLASH_GREEN;
             case SLOW_RAINBOW:
                 return RawPattern.SLOW_RAINBOW;
@@ -121,8 +120,6 @@ public class LEDSubsystem implements Subsystem {
                     case RED:
                         return RawPattern.SOLID_RED;
                 }
-            case SOLID_PURPLE:
-                return RawPattern.SOLID_PURPLE;
             default:
                 return RawPattern.SLOW_RAINBOW;
         }

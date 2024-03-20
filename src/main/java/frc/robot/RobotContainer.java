@@ -36,7 +36,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 
 public class RobotContainer {
@@ -63,7 +62,7 @@ public class RobotContainer {
                 setupShooter();
                 setupIndexer();
                 setupIntake();
-                // setupGuide();
+                setupGuide();
                 break;
             case M1C2:
                 setupSwerveDrive(bot);
@@ -95,6 +94,7 @@ public class RobotContainer {
 
             // Shoot into the SPEAKER
             Command shootHigh = shooter.cRunWhenSpeakerReady(releaseNoteFinal.get());
+            m_driverController.R2().whileTrue(shootHigh);
 
             // An autonomous command that automatically spins up and shoots a NOTE
             Command autoShootHigh = Commands.race(
@@ -103,27 +103,19 @@ public class RobotContainer {
 
             NamedCommands.registerCommand("SPEAKER", autoShootHigh);
 
-            // If the guide exists, then "shootLow" requires the guide to be extended
-            // and requires the shooter to be ready
-
             if (m_guide.isPresent()) {
                 var guide = m_guide.get();
 
                 Command shootLow = Commands.parallel(
-                        shooter.cRunAmp(),
-                        guide.cExtend(),
-                        Commands.parallel(
-                                shooter.waitForAmpReady(),
-                                guide.cWaitForReady()).andThen(releaseNoteFinal.get()));
+                        shooter.cRunWhenAmpReady(releaseNoteFinal.get()),
+                        guide.cExtend());
 
                 m_driverController.R1().whileTrue(shootLow);
             } else {
                 m_driverController.R1().whileTrue(shooter.cRunWhenAmpReady(releaseNoteFinal.get()));
             }
 
-            // Driver Controls
-            m_driverController.R2().whileTrue(shootHigh);
-
+            // Intake from the SOURCE
             m_driverController.L2().whileTrue(shooter.cIntake().alongWith(indexer.cSendDown()));
         }
 
@@ -147,20 +139,6 @@ public class RobotContainer {
         }
 
         return autoChooser.getSelected();
-    }
-
-    /**
-     * This command runs at the start of teleop mode and is responsible for setting
-     * up subsystems.
-     */
-    public Command getTeleopCommand() {
-        ParallelCommandGroup commands = new ParallelCommandGroup();
-
-        if (m_climber.isPresent()) {
-            commands.addCommands(m_climber.get().cAutoHome());
-        }
-
-        return commands;
     }
 
     private void setupSwerveDrive(RobotFrame bot) {
@@ -197,19 +175,6 @@ public class RobotContainer {
         };
 
         Command absoluteAngle = new FieldRelativeAbsoluteAngleDrive(drive, translation, angle);
-        Command absoluteAngleTriangle = new FieldRelativeAbsoluteAngleDrive(drive, translation,
-                Rotation2d.fromDegrees(0));
-        Command absoluteAngleSquare = new FieldRelativeAbsoluteAngleDrive(drive, translation,
-                Rotation2d.fromDegrees(90));
-        Command absoluteAngleCross = new FieldRelativeAbsoluteAngleDrive(drive, translation,
-                Rotation2d.fromDegrees(180));
-        Command absoluteAngleCircle = new FieldRelativeAbsoluteAngleDrive(drive, translation,
-                Rotation2d.fromDegrees(270));
-
-        m_driverController.triangle().whileTrue(absoluteAngleTriangle);
-        m_driverController.circle().whileTrue(absoluteAngleCircle);
-        m_driverController.square().whileTrue(absoluteAngleSquare);
-        m_driverController.cross().whileTrue(absoluteAngleCross);
 
         // Relative Drive commands
         Command rotationRate = new FieldRelativeRotationRateDrive(drive, translation, rightX);
@@ -265,7 +230,7 @@ public class RobotContainer {
         var intake = new GroundIntakeSubsystem();
 
         // Intake a note from the ground
-        m_driverController.L1().whileTrue(intake.cRunUntilCaptured());
+        m_driverController.L1().whileTrue(intake.cRunUntilCaptured().repeatedly());
         NamedCommands.registerCommand("INTAKE", intake.cRunUntilCaptured());
 
         m_intake = Optional.of(intake);
@@ -288,8 +253,8 @@ public class RobotContainer {
     private void setupGuide() {
         var guide = new AmpGuideSubsystem();
 
-        m_driverController.povLeft().onTrue(guide.cExtend());
-        m_driverController.povRight().onTrue(guide.cRetract());
+        m_driverController.circle().onTrue(guide.cExtend());
+        m_driverController.cross().onTrue(guide.cRetract());
 
         m_guide = Optional.of(guide);
     }
