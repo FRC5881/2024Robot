@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.6840430648453889,
+      "x": 15.85595693515461,
       "y": 6.701337662513288
     },
-    "rotation": -120.0
+    "rotation": -60.0
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "A-SA"
+            "pathName": "RED-A-SA"
           }
         },
         {
@@ -30,7 +30,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "SA-N1"
+                  "pathName": "RED-SA-N1"
                 }
               },
               {
@@ -45,7 +45,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "N1-SA"
+            "pathName": "RED-N1-SA"
           }
         },
         {
@@ -53,10 +53,35 @@
           "data": {
             "name": "SPEAKER"
           }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "INTAKE"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "RED-SA-M1"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RED-M1-SA"
+          }
         }
       ]
     }
   },
-  "folder": null,
+  "folder": "RED",
   "choreoAuto": false
 }

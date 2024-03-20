@@ -14,12 +14,12 @@
         {
           "type": "path",
           "data": {
-            "pathName": "D-L"
+            "pathName": "BLUE-D-L"
           }
         }
       ]
     }
   },
-  "folder": null,
+  "folder": "BLUE",
   "choreoAuto": false
 }

@@ -1,0 +1,25 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 16.00582229004057,
+      "y": 2.0677551129538356
+    },
+    "rotation": 180
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "RED-D-L"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "RED",
+  "choreoAuto": false
+}
