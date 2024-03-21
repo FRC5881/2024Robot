@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 15.19,
+      "x": 1.35,
       "y": 5.6
     },
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "command": {
     "type": "sequential",
@@ -76,7 +76,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "RED-Copy of N1-SA"
+            "pathName": "RED-N1-SB"
           }
         },
         {
