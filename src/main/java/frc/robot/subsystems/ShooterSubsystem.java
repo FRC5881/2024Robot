@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.subsystems.LEDSubsystem.Pattern;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
@@ -124,8 +123,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return the command to run
      */
     public Command cRunSpeaker() {
-        return cDrivePercent(ShooterConstants.kSpeakerMainPower, ShooterConstants.kSpeakerSecondaryPower)
-                .raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP));
+        return cDrivePercent(ShooterConstants.kSpeakerMainPower, ShooterConstants.kSpeakerSecondaryPower);
     }
 
     /**
@@ -153,8 +151,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return the command to run
      */
     public Command cRunAmp() {
-        return cDriveSetpoint(ShooterConstants.kAmpSpeed)
-                .raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP));
+        return cDriveSetpoint(ShooterConstants.kAmpSpeed);
     }
 
     /**
@@ -223,8 +220,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @return The command to run.
      */
     public Command cIntake() {
-        return cDrivePercent(ShooterConstants.kInsertPower)
-                .raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_DOWN));
+        return cDrivePercent(ShooterConstants.kInsertPower);
     }
 
     // ---- SYSTEM IDENTIFICATION ---- //

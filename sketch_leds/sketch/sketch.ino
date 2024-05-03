@@ -26,7 +26,7 @@
 // Robot settings
 int max_pixel = 84;
 int side_pixel_count = 29;
-int top_pixel_count = max_pixel-2*side_pixel_count;
+int top_pixel_count = max_pixel - 2 * side_pixel_count;
 
 // Pattern delays
 int breath_delay = 100;
@@ -53,13 +53,12 @@ void setup()
 void loop()
 {
     // Read the voltage from the AnalogOutput port
-    int voltage = (analogRead(A0) * NUM_PATTERNS) / 1024;
-    voltage = CHASING_UP_RED;
+    int voltage = round((analogRead(A0) * NUM_PATTERNS) / 1024);
 
     Serial.println(analogRead(A0));
     Serial.println(voltage);
     Serial.println();
-    
+
     uint32_t SUPER_RED = NeoPixel.Color(255, 0, 0);
     uint32_t SUPER_GREEN = NeoPixel.Color(0, 255, 0);
     uint32_t SUPER_BLUE = NeoPixel.Color(0, 0, 255);
@@ -81,14 +80,14 @@ void loop()
         solidPattern(BLUE);
         break;
 
-    case BREATHING_RED:
-        breathing(0, 0x88);
+    case BREATHING_RED: // TODO - Remove hack
+        solidPattern(BLUE);
         break;
     case BREATHING_GREEN:
-        breathing((1.0/3.0) * 0xFFFF, 0x88);
+        breathing((1.0 / 3.0) * 0xFFFF, 0x88);
         break;
     case BREATHING_BLUE:
-        breathing((2.0/3.0) * 0xFFFF, 0xFF);
+        breathing((2.0 / 3.0) * 0xFFFF, 0xFF);
         break;
 
     case SLOW_FLASH_PURPLE:
@@ -106,7 +105,6 @@ void loop()
         chasingUp(SUPER_BLUE);
         break;
 
-
     case CHASING_DOWN_RED:
         chasingDown(SUPER_RED);
         break;
@@ -116,7 +114,7 @@ void loop()
     case CHASING_DOWN_BLUE:
         chasingDown(SUPER_BLUE);
         break;
-        
+
     case FAST_FLASH_RED:
         flash(RED);
         delay(fast_flash_delay);

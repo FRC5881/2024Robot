@@ -95,7 +95,7 @@ public final class Constants {
         /**
          * Climber extension soft limit (rotations)
          */
-        public static final float kForwardLimit = 180f;
+        public static final float kForwardLimit = 268f;
 
         public static final Measure<Dimensionless> kAutoHome = Percent.of(-10);
     }
@@ -104,7 +104,7 @@ public final class Constants {
         /**
          * What velocity to target the AMP with
          */
-        public static final Measure<Velocity<Angle>> kAmpSpeed = RotationsPerSecond.of(20);
+        public static final Measure<Velocity<Angle>> kAmpSpeed = RotationsPerSecond.of(17.5);
 
         /**
          * What power to target the SPEAKER with (main motor)
@@ -174,7 +174,7 @@ public final class Constants {
         /**
          * AMP Guide soft limit / AMP Guide scoring position (rotations)
          */
-        public static final float kForwardLimit = 40.8f;
+        public static final float kForwardLimit = 39f;
 
         /**
          * AMP Guide soft limit / AMP Guide scoring position (rotations)

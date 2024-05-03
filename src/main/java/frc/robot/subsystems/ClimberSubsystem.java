@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CANConstants;
 import frc.robot.Constants.ClimberConstants;
-import frc.robot.subsystems.LEDSubsystem.Pattern;
 
 /**
  * ClimberSubsystem controls our climber. It only goes up or down.
@@ -22,6 +21,7 @@ import frc.robot.subsystems.LEDSubsystem.Pattern;
  */
 public class ClimberSubsystem extends SubsystemBase {
     private final CANSparkMax climberMotor;
+    private boolean hasLimit = false;
 
     public ClimberSubsystem() {
         climberMotor = new CANSparkMax(CANConstants.kClimberId, MotorType.kBrushless);
@@ -30,8 +30,10 @@ public class ClimberSubsystem extends SubsystemBase {
         climberMotor.setIdleMode(IdleMode.kBrake);
         climberMotor.setSmartCurrentLimit(40);
 
-        climberMotor.enableSoftLimit(SoftLimitDirection.kForward, false);
+        climberMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+        climberMotor.setSoftLimit(SoftLimitDirection.kForward, ClimberConstants.kForwardLimit);
         climberMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
+        climberMotor.setSoftLimit(SoftLimitDirection.kReverse, 0);
 
         climberMotor.burnFlash();
     }
@@ -50,8 +52,7 @@ public class ClimberSubsystem extends SubsystemBase {
      * @return the {@link Command}
      */
     public Command cExtend() {
-        return startEnd(this::extend, climberMotor::stopMotor)
-                .raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_UP));
+        return startEnd(this::extend, climberMotor::stopMotor);
     }
 
     /**
@@ -60,11 +61,16 @@ public class ClimberSubsystem extends SubsystemBase {
      * @return the {@link Command}
      */
     public Command cRetract() {
-        return startEnd(this::retract, climberMotor::stopMotor)
-                .raceWith(LEDSubsystem.cSetOverride(Pattern.CHASING_DOWN));
+        return startEnd(this::retract, climberMotor::stopMotor);
     }
 
     private void extend() {
+        if (!hasLimit) {
+            climberMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+            climberMotor.getEncoder().setPosition(0);
+            hasLimit = true;
+        }
+
         climberMotor.set(ClimberConstants.kExtendPower.in(Value));
     }
 

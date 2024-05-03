@@ -18,9 +18,7 @@ import frc.robot.Robot.RobotFrame;
 import frc.robot.subsystems.DifferentialDriveSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.GroundIntakeSubsystem;
-import frc.robot.subsystems.LEDSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.subsystems.LEDSubsystem.Pattern;
 import frc.robot.utils.DoubleTransformer;
 import frc.robot.utils.SendableChooserCommand;
 
@@ -119,9 +117,6 @@ public class RobotContainer {
             m_driverController.L2().whileTrue(shooter.cIntake().alongWith(indexer.cSendDown()));
         }
 
-        // Communicates to the Human Player that the driver wants to AMPLIFY
-        m_driverController.options().whileTrue(LEDSubsystem.cSetOverride(Pattern.FAST_RAINBOW_FLASH));
-
         // Setup the autonomous chooser
         if (bot == RobotFrame.COMP && m_shooter.isPresent() && m_swerveDrive.isPresent()) {
             autoChooser = AutoBuilder.buildAutoChooser();
@@ -187,7 +182,7 @@ public class RobotContainer {
 
         // All Drive Commands
         drive.setDefaultCommand(
-                new SendableChooserCommand("Swerve Drive Command", robotRelative, rotationRate, absoluteAngle,
+                new SendableChooserCommand("Swerve Drive Command", rotationRate, robotRelative, absoluteAngle,
                         reversedRobotRelative));
 
         // Reset gyro
