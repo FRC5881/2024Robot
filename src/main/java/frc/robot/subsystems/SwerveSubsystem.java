@@ -170,10 +170,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
     /// Uses a P-controller to minimize the supplier angle
     public Command cTurnToTarget(DoubleSupplier supplier) {
-        return run(() -> {
+        return runEnd(() -> {
             ChassisSpeeds speed = new ChassisSpeeds(0, 0, -KP * supplier.getAsDouble());
             driveRobotRelative(speed);
-        }).until(() -> supplier.getAsDouble() < TOLERANCE);
+        }, this::stop).until(() -> supplier.getAsDouble() < TOLERANCE);
     }
 
     /// Drives forward forever
