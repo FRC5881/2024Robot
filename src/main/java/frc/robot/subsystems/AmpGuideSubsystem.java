@@ -6,6 +6,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -51,7 +52,8 @@ public class AmpGuideSubsystem extends SubsystemBase {
         ampGuideMotor.setSoftLimit(SoftLimitDirection.kForward, AmpGuideConstants.kForwardLimit);
         ampGuideMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
 
-        ampGuideMotor.getPIDController().setP(1.5);
+        ampGuideMotor.getPIDController().setP(2);
+        ampGuideMotor.getPIDController().setOutputRange(-0.5, 0.5);
 
         ampGuideMotor.burnFlash();
     }
@@ -59,6 +61,7 @@ public class AmpGuideSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         ampGuideMotor.getPIDController().setReference(state.getSetpoint(), ControlType.kPosition);
+        SmartDashboard.putNumber("Amp Guide/Height", ampGuideMotor.getEncoder().getPosition());
     }
 
     private Command cSetState(AmpGuideState state) {
