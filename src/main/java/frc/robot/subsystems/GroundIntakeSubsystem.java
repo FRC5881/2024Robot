@@ -67,7 +67,7 @@ public class GroundIntakeSubsystem extends SubsystemBase {
      * 
      * @return true if a note is detected, false otherwise.
      */
-    private boolean hasNote() {
+    public boolean hasNote() {
         return irSensor.getVoltage() > 2.5;
     }
 
