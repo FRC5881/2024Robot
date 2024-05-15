@@ -57,7 +57,7 @@ public class RobotContainer {
         // Each bot has a different set of subsystems
         switch (bot) {
             case COMP:
-                setupSwerveDrive(bot);
+                setupSwerveDrive(bot, m_intake);
                 setupClimber();
                 setupShooter();
                 setupIndexer();
@@ -65,7 +65,7 @@ public class RobotContainer {
                 setupGuide();
                 break;
             case M1C2:
-                setupSwerveDrive(bot);
+                setupSwerveDrive(bot, Optional.empty());
                 break;
             case DOUGHNUT:
                 setupDifferentialDrive();
@@ -141,11 +141,11 @@ public class RobotContainer {
         return autoChooser.getSelected();
     }
 
-    private void setupSwerveDrive(RobotFrame bot) {
+    private void setupSwerveDrive(RobotFrame bot, Optional<GroundIntakeSubsystem> m_intake) {
         SwerveSubsystem drive = null;
 
         try {
-            drive = new SwerveSubsystem(bot);
+            drive = new SwerveSubsystem(bot, m_intake);
         } catch (Exception e) {
             // End the robot program if we can't initialize the swerve drive.
             System.err.println("Failed to initialize swerve drive");
@@ -195,6 +195,9 @@ public class RobotContainer {
 
         // Lock Pose
         m_driverController.L3().whileTrue(drive.cLock());
+
+        // Use cDumbSkedaddle() and go to a note
+        m_driverController.triangle().onTrue(drive.cDumbSkedaddle());
 
         m_swerveDrive = Optional.of(drive);
     }
