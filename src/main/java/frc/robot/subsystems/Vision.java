@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.Optional;
-
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -30,7 +28,7 @@ public class Vision extends SubsystemBase {
     private static Vision instance = null;
 
     private Vision() {
-        camera = new PhotonCamera("LogiNotes");
+        camera = new PhotonCamera("Logi_Webcam_C920e (1)");
     }
 
     public static Vision getInstance() {
@@ -76,16 +74,12 @@ public class Vision extends SubsystemBase {
     // Precondition: this command only makes sense if there is a target in frame
     public double getTargetYaw() {
         PhotonPipelineResult result = camera.getLatestResult();
-        boolean hasTargets = result.hasTargets();
-
-        if (hasTargets == true) {
+        if (result.hasTargets()) {
             PhotonTrackedTarget target = result.getBestTarget();
             double yaw = target.getYaw();
-            // Right is positive (from center?)
-
-            return yaw;
-        } else {
-            return 360;
+            return -yaw;
         }
+
+        return 0;
     }
 }

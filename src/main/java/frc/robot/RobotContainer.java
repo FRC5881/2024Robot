@@ -197,7 +197,8 @@ public class RobotContainer {
         m_driverController.L3().whileTrue(drive.cLock());
 
         // Use cDumbSkedaddle() and go to a note
-        m_driverController.triangle().onTrue(drive.cDumbSkedaddle());
+        // m_driverController.triangle().onTrue(drive.cDumbSkedaddle());
+        m_driverController.triangle().whileTrue(drive.cTestTracking());
 
         m_swerveDrive = Optional.of(drive);
     }

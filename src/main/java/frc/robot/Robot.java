@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.LEDSubsystem;
+import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.LEDSubsystem.Pattern;
 
 public class Robot extends TimedRobot {
@@ -58,7 +59,7 @@ public class Robot extends TimedRobot {
         m_robotContainer = new RobotContainer(RobotFrame.COMP);
 
         // Start the camera server
-        CameraServer.startAutomaticCapture();
+        // CameraServer.startAutomaticCapture();
 
         // Start the data logger
         DataLogManager.start();
@@ -82,6 +83,8 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+
+        SmartDashboard.putNumber("/Vision/Yaw", Vision.getInstance().getTargetYaw());
     }
 
     /** This function is called once each time the robot enters Disabled mode. */

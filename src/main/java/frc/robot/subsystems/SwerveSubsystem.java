@@ -10,6 +10,8 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -165,15 +167,25 @@ public class SwerveSubsystem extends SubsystemBase {
                 Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
     }
 
-    private double TOLERANCE = 0.1;
-    private double KP = 0.5;
+    private PIDController visionPID = new PIDController(0.2, 0, 0.2 / 5.0);
 
     /// Uses a P-controller to minimize the supplier angle
     public Command cTurnToTarget(DoubleSupplier supplier) {
+        SmartDashboard.putData("/Vision/Vision PID", visionPID);
+
         return runEnd(() -> {
-            ChassisSpeeds speed = new ChassisSpeeds(0, 0, -KP * supplier.getAsDouble());
+            double yaw = supplier.getAsDouble();
+            if (Math.abs(yaw) < 1.0) {
+                yaw = 0;
+            }
+
+            double rate = -1 * (visionPID.calculate(yaw, 0));
+
+            ChassisSpeeds speed = new ChassisSpeeds(0, 0, rate);
+            SmartDashboard.putNumber("/Vision/Turn Rate", rate);
+
             driveRobotRelative(speed);
-        }, this::stop).until(() -> supplier.getAsDouble() < TOLERANCE);
+        }, this::stop);
     }
 
     /// Drives forward forever
@@ -182,6 +194,10 @@ public class SwerveSubsystem extends SubsystemBase {
             ChassisSpeeds speed = new ChassisSpeeds(0.6, 0, 0);
             driveRobotRelative(speed);
         }, this::stop);
+    }
+
+    public Command cTestTracking() {
+        return cTurnToTarget(Vision.getInstance()::getTargetYaw);
     }
 
     public Command cDumbSkedaddle() {
