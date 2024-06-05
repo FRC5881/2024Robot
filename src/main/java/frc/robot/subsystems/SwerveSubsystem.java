@@ -3,19 +3,18 @@ package frc.robot.subsystems;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
@@ -32,6 +31,7 @@ import swervelib.SwerveDrive;
 import swervelib.parser.SwerveParser;
 
 import static edu.wpi.first.math.util.Units.feetToMeters;
+import static edu.wpi.first.units.Units.Rotation;
 
 public class SwerveSubsystem extends SubsystemBase {
     private final SwerveDrive m_swerveDrive;
@@ -119,7 +119,8 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return The current gyro angle as a Rotation2d.
      */
     public Rotation2d getHeading() {
-        return m_swerveDrive.getYaw();
+        // return m_swerveDrive.getYaw();
+        return m_swerveDrive.getOdometryHeading();
     }
 
     /**
@@ -167,37 +168,65 @@ public class SwerveSubsystem extends SubsystemBase {
                 Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
     }
 
-    private PIDController visionPID = new PIDController(0.2, 0, 0.2 / 5.0);
+    private final PIDController visionPID = new PIDController(0.2, 0, 0.2 / 5.0);
+    private final TrapezoidProfile m_profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0.85 * 360, 720));
+
+    private TrapezoidProfile.State m_goal = new TrapezoidProfile.State();
+    private TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
+    double kDt = 0.02;
+
+    private Rotation2d m_last_heading = new Rotation2d();
 
     /// Uses a P-controller to minimize the supplier angle
-    public Command cTurnToTarget(DoubleSupplier supplier) {
+    public Command cTurnToTarget(Supplier<Rotation2d> supplier) {
         SmartDashboard.putData("/Vision/Vision PID", visionPID);
 
+        // visionPID.setTolerance(0.8);
+        visionPID.enableContinuousInput(-180, 180);
+
         return runEnd(() -> {
-            double yaw = supplier.getAsDouble();
-            if (Math.abs(yaw) < 1.0) {
-                yaw = 0;
+            // measurement is the yaw returned from the Photonvision camera
+            Rotation2d measurement = m_last_heading;
+            m_last_heading = getHeading();
+
+            SmartDashboard.putNumber("/Vision/Measurement", measurement.getDegrees());
+
+            m_goal = new TrapezoidProfile.State(supplier.get().getDegrees() + measurement.getDegrees(), 0);
+            SmartDashboard.putNumber("/Vision/Goal", m_goal.position);
+
+            Rotation2d m_rot2d_goal = new Rotation2d(m_goal.position);
+            Rotation2d error = getHeading().minus(m_rot2d_goal);
+
+            m_setpoint = m_profile.calculate(kDt, m_setpoint, m_goal);
+            SmartDashboard.putNumber("/Vision/Setpoint", m_setpoint.position);
+
+            double omega = visionPID.calculate(measurement.getDegrees(), m_setpoint.position);
+            double rev = -1 * Math.cos(error.getRadians() * (90 / 35) * (Math.PI / 180));
+            ChassisSpeeds speed = new ChassisSpeeds(rev, 0, omega);
+            SmartDashboard.putNumber("/Vision/Turn Rate", omega);
+
+            SmartDashboard.putBoolean("/Vision/Has Target", Vision.getInstance().hasTarget());
+            if (!Vision.getInstance().hasTarget()) {
+                stop();
+                return;
             }
 
-            double rate = -1 * (visionPID.calculate(yaw, 0));
-
-            ChassisSpeeds speed = new ChassisSpeeds(0, 0, rate);
-            SmartDashboard.putNumber("/Vision/Turn Rate", rate);
-
             driveRobotRelative(speed);
-        }, this::stop);
+        }, this::stop).beforeStarting(() -> {
+            m_last_heading = getHeading();
+        }, this);
     }
 
     /// Drives forward forever
-    public Command cDriveForward() {
+    public Command cDriveReverse() {
         return runEnd(() -> {
-            ChassisSpeeds speed = new ChassisSpeeds(0.6, 0, 0);
+            ChassisSpeeds speed = new ChassisSpeeds(-0.5, 0, 0);
             driveRobotRelative(speed);
         }, this::stop);
     }
 
     public Command cTestTracking() {
-        return cTurnToTarget(Vision.getInstance()::getTargetYaw);
+        return cTurnToTarget(Vision.getInstance()::getSmoothYaw);
     }
 
     public Command cDumbSkedaddle() {
@@ -206,9 +235,9 @@ public class SwerveSubsystem extends SubsystemBase {
         }
 
         GroundIntakeSubsystem intake = m_intake.get();
-        return Commands.sequence(
-                Commands.parallel(cTurnToTarget(Vision.getInstance()::getTargetYaw)),
-                Commands.race(Commands.waitSeconds(7.0), cDriveForward(), intake.cRunUntilCaptured()));
+        return Commands.race(
+                cTurnToTarget(Vision.getInstance()::getSmoothYaw),
+                intake.cRunUntilCaptured());
 
         // return cTurnToTarget(Vision.getInstance()::getTargetYaw).andThen(
         // cDriveForward().raceWith(intake.cRunUntilCaptured()).withTimeout(7.0));
@@ -249,9 +278,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
         GroundIntakeSubsystem intake = m_intake.get();
 
-        return Commands.sequence(
-                Commands.parallel(cTurnToTarget(Vision.getInstance()::getTargetYaw)),
-                Commands.race(Commands.waitSeconds(7.0), cDriveForward(), intake.cRunUntilCaptured()));
+        // return Commands.sequence(
+        // Commands.parallel(cTurnToTarget.getDegrees(Vision.getInstance()::getTargetYaw)),
+        // Commands.race(Commands.waitSeconds(7.0), cDriveForward(),
+        // intake.cRunUntilCaptured()));
+        return Commands.none();
     }
-
 }

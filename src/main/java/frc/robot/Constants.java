@@ -78,7 +78,7 @@ public final class Constants {
         /**
          * What power to spin the intake motor with
          */
-        public static final Measure<Dimensionless> kLowPower = Percent.of(50);
+        public static final Measure<Dimensionless> kLowPower = Percent.of(100);
     }
 
     public static class ClimberConstants {

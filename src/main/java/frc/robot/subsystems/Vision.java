@@ -4,6 +4,9 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Vision extends SubsystemBase {
@@ -72,14 +75,33 @@ public class Vision extends SubsystemBase {
     }
 
     // Precondition: this command only makes sense if there is a target in frame
-    public double getTargetYaw() {
+    public Rotation2d getTargetYaw() {
         PhotonPipelineResult result = camera.getLatestResult();
         if (result.hasTargets()) {
             PhotonTrackedTarget target = result.getBestTarget();
             double yaw = target.getYaw();
-            return -yaw;
-        }
 
-        return 0;
+            Rotation2d yawR = new Rotation2d(Math.toRadians(-yaw));
+
+            return yawR;
+        } else {
+            Rotation2d temp = new Rotation2d(0);
+            return temp;
+        }
+    }
+
+    public boolean hasTarget() {
+        PhotonPipelineResult result = camera.getLatestResult();
+        return result.hasTargets();
+    }
+
+    public Rotation2d getSmoothYaw() {
+        // LinearFilter filter = LinearFilter.singlePoleIIR(0.1, 0.02);
+        // SmartDashboard.putNumber("/Vision/Raw Yaw", getTargetYaw().getDegrees());
+        // double smooth = filter.calculate(getTargetYaw().getDegrees());
+        // SmartDashboard.putNumber("/Vision/Smooth Yaw", smooth);
+        // return Rotation2d.fromDegrees(smooth);
+
+        return getTargetYaw();
     }
 }

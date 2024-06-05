@@ -57,11 +57,11 @@ public class RobotContainer {
         // Each bot has a different set of subsystems
         switch (bot) {
             case COMP:
+                setupIntake();
                 setupSwerveDrive(bot, m_intake);
                 setupClimber();
                 setupShooter();
                 setupIndexer();
-                setupIntake();
                 setupGuide();
                 break;
             case M1C2:
@@ -198,7 +198,7 @@ public class RobotContainer {
 
         // Use cDumbSkedaddle() and go to a note
         // m_driverController.triangle().onTrue(drive.cDumbSkedaddle());
-        m_driverController.triangle().whileTrue(drive.cTestTracking());
+        m_driverController.triangle().whileTrue(drive.cDumbSkedaddle());
 
         m_swerveDrive = Optional.of(drive);
     }
@@ -257,8 +257,8 @@ public class RobotContainer {
     private void setupGuide() {
         var guide = new AmpGuideSubsystem();
 
-        m_driverController.circle().onTrue(guide.cExtend());
-        m_driverController.cross().onTrue(guide.cRetract());
+        // m_driverController.circle().onTrue(guide.cExtend());
+        // m_driverController.cross().onTrue(guide.cRetract());
 
         m_guide = Optional.of(guide);
     }
