@@ -230,7 +230,11 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public Command cFollow() {
         double notepitch = Vision.getInstance().getTargetPitch();
-        if (notepitch >= 60 && notepitch < 90) {
+        double angle = 60;
+        SmartDashboard.putNumber("/SwerveSubsystem/Closeness Angle", angle);
+        angle = SmartDashboard.getNumber("/SwerveSubsystem/Closeness Angle", angle);
+
+        if (notepitch >= angle && notepitch < 90) {
             return cAutoPickUp(Vision.getInstance()::getSmoothYaw, false);
         } else {
             return cAutoPickUp(Vision.getInstance()::getSmoothYaw);
