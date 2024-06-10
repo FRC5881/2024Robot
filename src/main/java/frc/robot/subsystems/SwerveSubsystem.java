@@ -173,12 +173,17 @@ public class SwerveSubsystem extends SubsystemBase {
 
     private TrapezoidProfile.State m_goal = new TrapezoidProfile.State();
     private TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
+    // This is 0.02 because the bot runs at 50hz (0.02 = 1/50), so one tick
     double kDt = 0.02;
 
     private Rotation2d m_last_heading = new Rotation2d();
 
     /// Uses a P-controller to minimize the supplier angle
-    public Command cTurnToTarget(Supplier<Rotation2d> supplier) {
+    public Command cAutoPickUp(Supplier<Rotation2d> supplier) {
+        cAutoPickUp(supplier, true);
+    }
+
+    public Command cAutoPickUp(Supplier<Rotation2d> supplier, boolean go) {
         SmartDashboard.putData("/Vision/Vision PID", visionPID);
 
         // visionPID.setTolerance(0.8);
@@ -202,7 +207,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
             double omega = visionPID.calculate(measurement.getDegrees(), m_setpoint.position);
             double rev = -1 * Math.cos(error.getRadians() * (90 / 35) * (Math.PI / 180));
-            ChassisSpeeds speed = new ChassisSpeeds(rev, 0, omega);
+
+            ChassisSpeeds speed;
+            if (go == false) {
+                speed = new ChassisSpeeds(0, 0, omega);
+            } else {
+                speed = new ChassisSpeeds(rev, 0, omega);
+            }
             SmartDashboard.putNumber("/Vision/Turn Rate", omega);
 
             SmartDashboard.putBoolean("/Vision/Has Target", Vision.getInstance().hasTarget());
@@ -217,6 +228,15 @@ public class SwerveSubsystem extends SubsystemBase {
         }, this);
     }
 
+    public Command cFollow() {
+        double notepitch = Vision.getInstance().getTargetPitch();
+        if (notepitch >= 60 && notepitch < 90) {
+            return cAutoPickUp(Vision.getInstance()::getSmoothYaw, false);
+        } else {
+            return cAutoPickUp(Vision.getInstance()::getSmoothYaw);
+        }
+    }
+
     /// Drives forward forever
     public Command cDriveReverse() {
         return runEnd(() -> {
@@ -226,7 +246,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public Command cTestTracking() {
-        return cTurnToTarget(Vision.getInstance()::getSmoothYaw);
+        return cAutoPickUp(Vision.getInstance()::getSmoothYaw);
     }
 
     public Command cDumbSkedaddle() {
@@ -236,27 +256,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
         GroundIntakeSubsystem intake = m_intake.get();
         return Commands.race(
-                cTurnToTarget(Vision.getInstance()::getSmoothYaw),
+                cAutoPickUp(Vision.getInstance()::getSmoothYaw),
                 intake.cRunUntilCaptured());
-
-        // return cTurnToTarget(Vision.getInstance()::getTargetYaw).andThen(
-        // cDriveForward().raceWith(intake.cRunUntilCaptured()).withTimeout(7.0));
-
-        // void initailize()
-        // void execute()
-        // bool isFinished()
-        // void end()
-
-        // Commands.sequence(c1, c2);
-
-        // if has target:
-        // turn to target
-        // parrallel:
-        // run intake until pickup
-        // drive forward
-        // for at most 5 seconds
-        // else:
-        // error
     }
 
     public double distTraveled() {

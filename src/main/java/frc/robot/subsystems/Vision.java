@@ -1,5 +1,8 @@
 package frc.robot.subsystems;
 
+import java.time.Clock;
+import java.util.Optional;
+
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -74,19 +77,34 @@ public class Vision extends SubsystemBase {
         }
     }
 
+    // This need to update with each tick... how?
+    private double m_last_timestamp = 0;
+    private Rotation2d m_last_heading = new Rotation2d();
+
+    // private double m_last_timestamp = System.currentTimeMillis();
+
     // Precondition: this command only makes sense if there is a target in frame
-    public Rotation2d getTargetYaw() {
+    public Optional<Rotation2d> getTargetYaw(Rotation2d robotHeading) {
         PhotonPipelineResult result = camera.getLatestResult();
+
+        if (result.getTimestampSeconds() == m_last_timestamp) {
+            return Optional.of(m_last_heading);
+        }
+
+        m_last_timestamp = result.getTimestampSeconds();
+
         if (result.hasTargets()) {
             PhotonTrackedTarget target = result.getBestTarget();
             double yaw = target.getYaw();
 
             Rotation2d yawR = new Rotation2d(Math.toRadians(-yaw));
 
-            return yawR;
-        } else {
+            return Optional.of(yawR);
+        }
+
+        else {
             Rotation2d temp = new Rotation2d(0);
-            return temp;
+            return Optional.of(temp);
         }
     }
 
@@ -103,5 +121,21 @@ public class Vision extends SubsystemBase {
         // return Rotation2d.fromDegrees(smooth);
 
         return getTargetYaw();
+    }
+
+    public double getTargetPitch() {
+        PhotonPipelineResult result = camera.getLatestResult();
+
+        if (result.hasTargets()) {
+            PhotonTrackedTarget target = result.getBestTarget();
+            double pitch = target.getPitch();
+
+            return pitch;
+        }
+
+        else {
+            double temp = 90;
+            return temp;
+        }
     }
 }
