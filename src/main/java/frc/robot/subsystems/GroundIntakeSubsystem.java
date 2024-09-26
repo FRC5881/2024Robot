@@ -97,7 +97,7 @@ public class GroundIntakeSubsystem extends SubsystemBase {
     public Command cRunUntilCaptured() {
         return Commands.race(
                 cRunAt(GroundIntakeConstants.kHighPower),
-                Commands.waitUntil(this::hasNote).andThen(Commands.waitSeconds(0.15)));
+                Commands.waitUntil(this::hasNote));
     }
 
     /**
