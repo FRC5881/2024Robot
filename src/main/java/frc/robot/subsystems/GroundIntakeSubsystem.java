@@ -4,8 +4,6 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import static edu.wpi.first.units.Units.Value;
 
-import java.sql.Driver;
-
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 
