@@ -11,7 +11,6 @@ import frc.robot.commands.DifferentialDrive.TankDrive;
 import frc.robot.commands.SwerveDrive.RobotRelativeDrive;
 import frc.robot.commands.SwerveDrive.FieldRelativeAbsoluteAngleDrive;
 import frc.robot.commands.SwerveDrive.FieldRelativeRotationRateDrive;
-import frc.robot.subsystems.AmpGuideSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.Robot.RobotFrame;
@@ -43,7 +42,6 @@ public class RobotContainer {
     @SuppressWarnings("unused")
     private Optional<ClimberSubsystem> m_climber = Optional.empty();
     private Optional<GroundIntakeSubsystem> m_intake = Optional.empty();
-    private Optional<AmpGuideSubsystem> m_guide = Optional.empty();
 
     private Optional<IndexerSubsystem> m_indexer = Optional.empty();
     private Optional<ShooterSubsystem> m_shooter = Optional.empty();
@@ -60,7 +58,6 @@ public class RobotContainer {
                 setupShooter();
                 setupIndexer();
                 setupIntake();
-                setupGuide();
                 break;
             case M1C2:
                 setupSwerveDrive(bot);
@@ -101,17 +98,7 @@ public class RobotContainer {
 
             NamedCommands.registerCommand("SPEAKER", autoShootHigh);
 
-            if (m_guide.isPresent()) {
-                var guide = m_guide.get();
-
-                Command shootLow = Commands.parallel(
-                        shooter.cRunWhenAmpReady(releaseNoteFinal.get()),
-                        guide.cExtend());
-
-                m_driverController.R1().whileTrue(shootLow);
-            } else {
-                m_driverController.R1().whileTrue(shooter.cRunWhenAmpReady(releaseNoteFinal.get()));
-            }
+            m_driverController.R1().whileTrue(shooter.cRunWhenAmpReady(releaseNoteFinal.get()));
 
             // Intake from the SOURCE
             m_driverController.L2().whileTrue(shooter.cIntake().alongWith(indexer.cSendDown()));
@@ -243,14 +230,5 @@ public class RobotContainer {
         var indexer = new IndexerSubsystem();
 
         m_indexer = Optional.of(indexer);
-    }
-
-    private void setupGuide() {
-        var guide = new AmpGuideSubsystem();
-
-        m_driverController.circle().onTrue(guide.cExtend());
-        m_driverController.cross().onTrue(guide.cRetract());
-
-        m_guide = Optional.of(guide);
     }
 }
