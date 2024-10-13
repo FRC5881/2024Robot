@@ -115,6 +115,4 @@ public class StraightShooterSubsystem extends SubsystemBase {
         return cSetVelocities(topLeft, topRight, bottomLeft, bottomRight);
     }
 
-
-
 }
