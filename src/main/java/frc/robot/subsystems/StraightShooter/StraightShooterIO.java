@@ -25,6 +25,20 @@ public interface StraightShooterIO {
         this.setVoltage(voltages[0], voltages[1], voltages[2], voltages[3]);
     }
 
+    default void stop() {
+        setVoltage(0, 0, 0, 0);
+    }
+
+
+    public double getFFks();
+    public double getFFkv();
+    public double getFFka();
+
+    public double getPIDkp();
+    public double getPIDki();
+    public double getPIDkd();
+
+
     /**
      * Returns the rotational velocity of the top left shooter.
      * @return rotational velocity, RPMs
