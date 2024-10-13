@@ -9,7 +9,7 @@ public interface StraightShooterIO {
      * @param bottomLeft
      * @param bottomRight
      */
-    public void setVoltage(double topLeft, double topRight, double bottomLeft, double bottomRight);
+    public void setVoltages(double topLeft, double topRight, double bottomLeft, double bottomRight);
     
     /**
      * Sets the desired voltages of all 4 shooter motors using an array.
@@ -17,16 +17,25 @@ public interface StraightShooterIO {
      * @param voltages [topLeft, topRight, bottonLeft, bottonRight].
      * @throws IllegalArgumentException
      */
-    default public void setVoltage(double[] voltages) throws IllegalArgumentException {
+    default public void setVoltages(double[] voltages) throws IllegalArgumentException {
         if (voltages.length != 4) {
             throw new IllegalArgumentException("StraightShooter has 4 motors and therefor requires 4 voltages");
         }
 
-        this.setVoltage(voltages[0], voltages[1], voltages[2], voltages[3]);
+        this.setVoltages(voltages[0], voltages[1], voltages[2], voltages[3]);
     }
 
     default void stop() {
-        setVoltage(0, 0, 0, 0);
+        setVoltages(0, 0, 0, 0);
+    }
+
+    public double getVoltageTL();
+    public double getVoltageTR();
+    public double getVoltageBL();
+    public double getVoltageBR();
+
+    default public double[] getVoltages() {
+        return new double[] { getVoltageTL(), getVoltageTR(), getVoltageBL(), getVoltageBR() };
     }
 
 
@@ -43,25 +52,25 @@ public interface StraightShooterIO {
      * Returns the rotational velocity of the top left shooter.
      * @return rotational velocity, RPMs
      */
-    public double getTopLeftVelocity();
+    public double getVelocityTL();
 
     /**
      * Returns the rotational velocity of the top right shooter.
      * @return rotational velocity, RPMs
      */
-    public double getTopRightVelocity();
+    public double getVelocityTR();
 
     /**
      * Returns the rotational velocity of the bottom left shooter.
      * @return rotational velocity, RPMs
      */
-    public double getBottomLeftVelocity();
+    public double getVelocityBL();
 
     /**
      * Returns the rotational velocity of the bottom right shooter.
      * @return rotational velocity, RPMs
      */
-    public double getBottomRightVelocity();
+    public double getVelocityBR();
 
     /**
      * Returns the current rotational velocity of all 4 motors. In rotations per minute.
@@ -69,6 +78,6 @@ public interface StraightShooterIO {
      * @return [topLeftRPM, topRightRPM, bottomLeftRPM, bottomRightRPM]
      */
     default public double[] getVelocities() {
-        return new double[] { getTopLeftVelocity(), getTopRightVelocity(), getBottomLeftVelocity(), getBottomRightVelocity() };
+        return new double[] { getVelocityTL(), getVelocityTR(), getVelocityBL(), getVelocityBR() };
     }
 }

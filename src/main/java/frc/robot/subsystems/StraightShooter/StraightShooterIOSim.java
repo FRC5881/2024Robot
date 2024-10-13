@@ -22,17 +22,17 @@ public class StraightShooterIOSim implements StraightShooterIO {
     private static final DCMotor NEO = DCMotor.getNEO(1);
 
     @Override
-    public void setVoltage(double topLeft, double topRight, double bottomLeft, double bottomRight) {
+    public void setVoltages(double topLeft, double topRight, double bottomLeft, double bottomRight) {
         // Limit input voltage to simulate battery brownout
         double busVoltage = RoboRioSim.getVInVoltage();
 
         // At most, we can only draw the bus voltage and 40A per motor
-        double maxTopLeft = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getTopLeftVelocity() * RPM_TO_RAD_PER_SEC));
-        double maxTopRight = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getTopRightVelocity() * RPM_TO_RAD_PER_SEC));
-        double maxBottomLeft = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getBottomLeftVelocity() * RPM_TO_RAD_PER_SEC));
-        double maxBottomRight = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getBottomRightVelocity() * RPM_TO_RAD_PER_SEC));
+        double maxTopLeft = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getVelocityTL() * RPM_TO_RAD_PER_SEC));
+        double maxTopRight = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getVelocityTR() * RPM_TO_RAD_PER_SEC));
+        double maxBottomLeft = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getVelocityBL() * RPM_TO_RAD_PER_SEC));
+        double maxBottomRight = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getVelocityBR() * RPM_TO_RAD_PER_SEC));
 
-        SmartDashboard.putNumber("/StraightShooter/Top Left Shooter Voltage", NEO.getVoltage(NEO.getTorque(40), getBottomRightVelocity() * RPM_TO_RAD_PER_SEC));
+        SmartDashboard.putNumber("/StraightShooter/Top Left Shooter Voltage", NEO.getVoltage(NEO.getTorque(40), getVelocityBR() * RPM_TO_RAD_PER_SEC));
         
         m_topLeftFlywheelSim.setInputVoltage(Math.min(topLeft, maxTopLeft));
         m_topRightFlywheelSim.setInputVoltage(Math.min(topRight, maxTopRight));
@@ -41,22 +41,22 @@ public class StraightShooterIOSim implements StraightShooterIO {
     }
 
     @Override
-    public double getTopLeftVelocity() {
+    public double getVelocityTL() {
         return m_topLeftFlywheelSim.getAngularVelocityRPM();
     }
 
     @Override
-    public double getTopRightVelocity() {
+    public double getVelocityTR() {
         return m_topRightFlywheelSim.getAngularVelocityRPM();
     }
 
     @Override
-    public double getBottomLeftVelocity() {
+    public double getVelocityBL() {
         return m_bottomLeftFlywheelSim.getAngularVelocityRPM();
     }
 
     @Override
-    public double getBottomRightVelocity() {
+    public double getVelocityBR() {
         return m_bottomRightFlywheelSim.getAngularVelocityRPM();
     }
 
