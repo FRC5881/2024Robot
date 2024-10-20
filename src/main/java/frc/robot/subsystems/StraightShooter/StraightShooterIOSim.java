@@ -28,10 +28,10 @@ public class StraightShooterIOSim implements StraightShooterIO {
         double busVoltage = RoboRioSim.getVInVoltage();
 
         // At most, we can only draw the bus voltage and 40A per motor. These numbers are always positive
-        double tl_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(40), getVelocityTL() * RPM_TO_RAD_PER_SEC));
-        double tr_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(40), getVelocityTR() * RPM_TO_RAD_PER_SEC));
-        double bl_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(40), getVelocityBL() * RPM_TO_RAD_PER_SEC));
-        double br_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(40), getVelocityBR() * RPM_TO_RAD_PER_SEC));
+        double tl_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(Math.signum(topLeft) * 40), getVelocityTL() * RPM_TO_RAD_PER_SEC));
+        double tr_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(Math.signum(topRight) * 40), getVelocityTR() * RPM_TO_RAD_PER_SEC));
+        double bl_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(Math.signum(bottomLeft) * 40), getVelocityBL() * RPM_TO_RAD_PER_SEC));
+        double br_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(Math.signum(bottomRight) * 40), getVelocityBR() * RPM_TO_RAD_PER_SEC));
 
         // Pick the smallest of bus voltage and max voltages
         double maxTopLeft = Math.min(busVoltage, tl_40amp_voltage);
