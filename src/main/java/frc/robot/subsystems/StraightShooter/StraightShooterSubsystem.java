@@ -3,8 +3,19 @@ package frc.robot.subsystems.StraightShooter;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
+
 import frc.robot.Robot;
 
 public class StraightShooterSubsystem extends SubsystemBase {
@@ -34,7 +45,15 @@ public class StraightShooterSubsystem extends SubsystemBase {
         } else {
             io = new StraightShooterIOSim();
         }
-        io.setVoltages(0,0,0,0);
+
+        SmartDashboard.putNumber("/StraightShooter/PID kp", kp);
+        SmartDashboard.putNumber("/StraightShooter/PID ki", ki);
+        SmartDashboard.putNumber("/StraightShooter/PID kd", kd);
+
+        SmartDashboard.putNumber("/StraightShooter/VelocityDrive TL", 0);
+        SmartDashboard.putNumber("/StraightShooter/VelocityDrive TR", 0);
+        SmartDashboard.putNumber("/StraightShooter/VelocityDrive BL", 0);
+        SmartDashboard.putNumber("/StraightShooter/VelocityDrive BR", 0);
     }
 
     @Override
@@ -48,37 +67,28 @@ public class StraightShooterSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("/StraightShooter/Bottom Left Shooter RPM", io.getVelocityBL());
         SmartDashboard.putNumber("/StraightShooter/Bottom Right Shooter RPM", io.getVelocityBR());
 
-        SmartDashboard.putNumber("/StraightShooter/FeedForward ks", io.getFFks());
-        SmartDashboard.putNumber("/StraightShooter/FeedForward kv", io.getFFkv());
-        SmartDashboard.putNumber("/StraightShooter/FeedForward ka", io.getFFka()); //
-        ks = SmartDashboard.getNumber("/StraightShooter/FeedForward ks", io.getFFks());
-        kv = SmartDashboard.getNumber("/StraightShooter/FeedForward kv", io.getFFkv());
-        ka = SmartDashboard.getNumber("/StraightShooter/FeedForward ka", io.getFFka());
+        double newKp = SmartDashboard.getNumber("/StraightShooter/PID kp", kp);
+        double newKi = SmartDashboard.getNumber("/StraightShooter/PID ki", ki);
+        double newKd = SmartDashboard.getNumber("/StraightShooter/PID kd", kd);
 
-        SmartDashboard.putNumber("/StraightShooter/PID kp", io.getPIDkp());
-        SmartDashboard.putNumber("/StraightShooter/PID ki", io.getPIDki());
-        SmartDashboard.putNumber("/StraightShooter/PID kd", io.getPIDkd()); //
-        kp = SmartDashboard.getNumber("/StraightShooter/PID kp", io.getPIDkp());
-        ki = SmartDashboard.getNumber("/StraightShooter/PID ki", io.getPIDki());
-        kd = SmartDashboard.getNumber("/StraightShooter/PID kd", io.getPIDkd());
-
-        SmartDashboard.putNumber("/StraightShooter/VoltageDrive TL", io.getVoltageTL());
-        SmartDashboard.putNumber("/StraightShooter/VoltageDrive TR", io.getVoltageTR());
-        SmartDashboard.putNumber("/StraightShooter/VoltageDrive BL", io.getVoltageBL());
-        SmartDashboard.putNumber("/StraightShooter/VoltageDrive BR", io.getVoltageBR()); //
-        SmartDashboard.getNumber("/StraightShooter/VoltageDrive TL", io.getVoltageTL());
-        SmartDashboard.getNumber("/StraightShooter/VoltageDrive TR", io.getVoltageTR());
-        SmartDashboard.getNumber("/StraightShooter/VoltageDrive BL", io.getVoltageBL());
-        SmartDashboard.getNumber("/StraightShooter/VoltageDrive BR", io.getVoltageBR());
-
-        SmartDashboard.putNumber("/StraightShooter/VelocityDrive TL", io.getVelocityTL());
-        SmartDashboard.putNumber("/StraightShooter/VelocityDrive TR", io.getVelocityTR());
-        SmartDashboard.putNumber("/StraightShooter/VelocityDrive BL", io.getVelocityBL());
-        SmartDashboard.putNumber("/StraightShooter/VelocityDrive BR", io.getVelocityBR()); //
-        SmartDashboard.getNumber("/StraightShooter/VelocityDrive TL", io.getVelocityTL());
-        SmartDashboard.getNumber("/StraightShooter/VelocityDrive TR", io.getVelocityTR());
-        SmartDashboard.getNumber("/StraightShooter/VelocityDrive BL", io.getVelocityBL());
-        SmartDashboard.getNumber("/StraightShooter/VelocityDrive BR", io.getVelocityBR());
+        if (newKp != pidControllerTL.getP()) {
+            pidControllerTL.setP(newKp);
+            pidControllerTR.setP(newKp);
+            pidControllerBL.setP(newKp);
+            pidControllerBR.setP(newKp);
+        }
+        if (newKi != pidControllerTL.getI()) {
+            pidControllerTL.setI(newKi);
+            pidControllerTR.setI(newKi);
+            pidControllerBL.setI(newKi);
+            pidControllerBR.setI(newKi);
+        }
+        if (newKd != pidControllerTL.getD()) {
+            pidControllerTL.setD(newKd);
+            pidControllerTR.setD(newKd);
+            pidControllerBL.setD(newKd);
+            pidControllerBR.setD(newKd);
+        }
     }
 
     // Drive all 4 motors at 12 volts
@@ -93,26 +103,88 @@ public class StraightShooterSubsystem extends SubsystemBase {
         });
     }
 
-    public Command cSetVelocities(double[] setpoints) {
+    public void voltageCalculator(double[] setpoints) {
+        SmartDashboard.putNumber("/StraightShooter/Shooter BL Setpoint", setpoints[2]);
 
-        //setpoint in Rotations per second
+        double TLSpeed = io.getVelocityTL();
+        double TRSpeed = io.getVelocityTR();
+        double BLSpeed = io.getVelocityBL();
+        double BRSpeed = io.getVelocityBR();
+
+        io.setVoltages(feedforwardTL.calculate(setpoints[0]) + pidControllerTL.calculate(TLSpeed, setpoints[0]),
+                    feedforwardTR.calculate(setpoints[1]) + pidControllerTR.calculate(TRSpeed, setpoints[1]),
+                    feedforwardBL.calculate(setpoints[2]) + pidControllerBL.calculate(BLSpeed, setpoints[2]),
+                    feedforwardBR.calculate(setpoints[3]) + pidControllerBR.calculate(BRSpeed, setpoints[3])
+                    );
+    }
+
+    
+    public Command cSetConstantVelocities(double[] setpoints) {
+        return runEnd(() -> voltageCalculator(setpoints), io::stop);
+    }
+
+    public Command cSetConstantVelocities(double topLeft, double topRight, double bottomLeft, double bottomRight) {
+        double[] velocities = {topLeft, topRight, bottomLeft, bottomRight};
+        return cSetConstantVelocities(velocities);
+    }
+
+    public Command cSetSmartDashboardVelocities() {
         return runEnd(() -> {
-            double TLSpeed = io.getVelocityTL();
-            double TRSpeed = io.getVelocityTR();
-            double BLSpeed = io.getVelocityBL();
-            double BRSpeed = io.getVelocityBR();
-            
-
-            io.setVoltages(feedforwardTL.calculate(setpoints[0]) + pidControllerTL.calculate(TLSpeed, setpoints[0]),
-                        feedforwardTR.calculate(setpoints[1]) + pidControllerTR.calculate(TRSpeed, setpoints[1]),
-                        feedforwardBL.calculate(setpoints[2]) + pidControllerBL.calculate(BLSpeed, setpoints[2]),
-                        feedforwardBR.calculate(setpoints[3]) + pidControllerBR.calculate(BRSpeed, setpoints[3])
-                        );
+            double TLSetpoint = SmartDashboard.getNumber("/StraightShooter/VelocityDrive TL", 0);
+            double TRSetpoint = SmartDashboard.getNumber("/StraightShooter/VelocityDrive TR", 0);
+            double BLSetpoint = SmartDashboard.getNumber("/StraightShooter/VelocityDrive BL", 0);
+            double BRSetpoint = SmartDashboard.getNumber("/StraightShooter/VelocityDrive BR", 0);
+    
+            voltageCalculator(new double[] {
+                TLSetpoint, TRSetpoint, BLSetpoint, BRSetpoint
+            });
         }, io::stop);
     }
 
-    public Command cSetVelocities(double topLeft, double topRight, double bottomLeft, double bottomRight) {
-        return cSetVelocities(topLeft, topRight, bottomLeft, bottomRight);
+    // voltage
+    // position
+    // velocity
+    private final MutableMeasure<Voltage> volts = MutableMeasure.mutable(Units.Volts.of(0));
+    private final MutableMeasure<Angle> rotations = MutableMeasure.mutable(Units.Rotations.of(0));
+    private final MutableMeasure<Velocity<Angle>> velocity = MutableMeasure.mutable(Units.Rotations.of(0).per(Units.Minute.of(1)));
+
+    private String motorName = "TopLeft";
+    private int motorId = 0;
+
+    private void setVoltage(Measure<Voltage> v) {
+        io.setVoltages(v.baseUnitMagnitude(), v.baseUnitMagnitude(), v.baseUnitMagnitude(), v.baseUnitMagnitude());
+
+        volts.mut_setBaseUnitMagnitude(v.baseUnitMagnitude());
+        velocity.mut_setMagnitude(io.getVelocities()[motorId]);
+        rotations.mut_setMagnitude(io.getVelocities()[motorId]);
     }
 
+    private void log(SysIdRoutineLog log) {
+        log.motor(motorName)
+            .voltage(volts)
+            .angularPosition(rotations)
+            .angularVelocity(velocity);
+    }
+
+    private SysIdRoutine.Config config = new SysIdRoutine.Config(Units.Volts.of(0.5).per(Units.Seconds.of(1)),
+                                                                Units.Volts.of(10.5),
+                                                                Units.Seconds.of(12 / 0.5));
+    private SysIdRoutine.Mechanism mechanism = new SysIdRoutine.Mechanism(this::setVoltage, this::log, this);
+    private SysIdRoutine routine = new SysIdRoutine(config, mechanism);
+
+    public Command cSysid() {
+        return 
+            (
+                routine.dynamic(Direction.kForward)
+                .withTimeout(5)
+            ).andThen(
+                routine.dynamic(Direction.kReverse)
+                .withTimeout(5)
+            )
+            .andThen(Commands.waitSeconds(5))
+            .andThen(routine.quasistatic(Direction.kForward))
+
+            .andThen(Commands.waitSeconds(5))
+            .andThen(routine.quasistatic(Direction.kReverse));
+    }
 }

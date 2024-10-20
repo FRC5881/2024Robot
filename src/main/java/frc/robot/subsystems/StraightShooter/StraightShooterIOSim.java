@@ -1,8 +1,9 @@
-package frc.robot.subsystems.StraightShooter;
+    package frc.robot.subsystems.StraightShooter;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -14,10 +15,10 @@ public class StraightShooterIOSim implements StraightShooterIO {
     private static final double RPM_TO_RAD_PER_SEC = 2 * Math.PI / 60;
 
     // top left, top right, bottom left, bottom right
-    private final FlywheelSim m_topLeftFlywheelSim = new FlywheelSim(DCMotor.getNEO(1), 1, J_WHEELS);
-    private final FlywheelSim m_topRightFlywheelSim = new FlywheelSim(DCMotor.getNEO(1), 1, J_WHEELS);
-    private final FlywheelSim m_bottomLeftFlywheelSim = new FlywheelSim(DCMotor.getNEO(1), 1, J_WHEELS);
-    private final FlywheelSim m_bottomRightFlywheelSim = new FlywheelSim(DCMotor.getNEO(1), 1, J_WHEELS);
+    private final DCMotorSim m_topLeftFlywheelSim = new DCMotorSim(DCMotor.getNEO(1), 1, J_WHEELS);
+    private final DCMotorSim m_topRightFlywheelSim = new DCMotorSim(DCMotor.getNEO(1), 1, J_WHEELS);
+    private final DCMotorSim m_bottomLeftFlywheelSim = new DCMotorSim(DCMotor.getNEO(1), 1, J_WHEELS);
+    private final DCMotorSim m_bottomRightFlywheelSim = new DCMotorSim(DCMotor.getNEO(1), 1, J_WHEELS);
 
     private static final DCMotor NEO = DCMotor.getNEO(1);
 
@@ -26,18 +27,34 @@ public class StraightShooterIOSim implements StraightShooterIO {
         // Limit input voltage to simulate battery brownout
         double busVoltage = RoboRioSim.getVInVoltage();
 
-        // At most, we can only draw the bus voltage and 40A per motor
-        double maxTopLeft = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getVelocityTL() * RPM_TO_RAD_PER_SEC));
-        double maxTopRight = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getVelocityTR() * RPM_TO_RAD_PER_SEC));
-        double maxBottomLeft = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getVelocityBL() * RPM_TO_RAD_PER_SEC));
-        double maxBottomRight = Math.min(busVoltage, NEO.getVoltage(NEO.getTorque(40), getVelocityBR() * RPM_TO_RAD_PER_SEC));
+        // At most, we can only draw the bus voltage and 40A per motor. These numbers are always positive
+        double tl_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(40), getVelocityTL() * RPM_TO_RAD_PER_SEC));
+        double tr_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(40), getVelocityTR() * RPM_TO_RAD_PER_SEC));
+        double bl_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(40), getVelocityBL() * RPM_TO_RAD_PER_SEC));
+        double br_40amp_voltage = Math.abs(NEO.getVoltage(NEO.getTorque(40), getVelocityBR() * RPM_TO_RAD_PER_SEC));
 
-        SmartDashboard.putNumber("/StraightShooter/Top Left Shooter Voltage", NEO.getVoltage(NEO.getTorque(40), getVelocityBR() * RPM_TO_RAD_PER_SEC));
+        // Pick the smallest of bus voltage and max voltages
+        double maxTopLeft = Math.min(busVoltage, tl_40amp_voltage);
+        double maxTopRight = Math.min(busVoltage, tr_40amp_voltage);
+        double maxBottomLeft = Math.min(busVoltage, bl_40amp_voltage);
+        double maxBottomRight = Math.min(busVoltage, br_40amp_voltage);
+
+        // Clamp the input voltages to be between -max and +max
+        topLeft = MathUtil.clamp(topLeft, -maxTopLeft, maxTopLeft);
+        topRight = MathUtil.clamp(topRight, -maxTopRight, maxTopRight);
+        bottomLeft = MathUtil.clamp(bottomLeft, -maxBottomLeft, maxBottomLeft);
+        bottomRight = MathUtil.clamp(bottomRight, -maxBottomRight, maxBottomRight);
         
-        m_topLeftFlywheelSim.setInputVoltage(Math.min(topLeft, maxTopLeft));
-        m_topRightFlywheelSim.setInputVoltage(Math.min(topRight, maxTopRight));
-        m_bottomLeftFlywheelSim.setInputVoltage(Math.min(bottomLeft, maxBottomLeft));
-        m_bottomRightFlywheelSim.setInputVoltage(Math.min(bottomRight, maxBottomRight));
+        SmartDashboard.putNumber("/StraightShooter/TL Voltage", topLeft);
+        SmartDashboard.putNumber("/StraightShooter/TR Voltage", topRight);
+        SmartDashboard.putNumber("/StraightShooter/BL Voltage", bottomLeft);
+        SmartDashboard.putNumber("/StraightShooter/BR Voltage", bottomRight);
+
+        // Apply the voltage limits after the clamping
+        m_topLeftFlywheelSim.setInputVoltage(topLeft);
+        m_topRightFlywheelSim.setInputVoltage(topRight);
+        m_bottomLeftFlywheelSim.setInputVoltage(bottomLeft);
+        m_bottomRightFlywheelSim.setInputVoltage(bottomRight);
     }
 
     @Override
@@ -66,9 +83,23 @@ public class StraightShooterIOSim implements StraightShooterIO {
         m_bottomLeftFlywheelSim.update(dt);
         m_bottomRightFlywheelSim.update(dt);
 
-        SmartDashboard.putNumber("/StraightShooter/Top Left Shooter Amps", m_topLeftFlywheelSim.getCurrentDrawAmps());
-
+        // Update the simulated battery voltage
         double simulatedVoltage = BatterySim.calculateDefaultBatteryLoadedVoltage(m_topLeftFlywheelSim.getCurrentDrawAmps() + m_topRightFlywheelSim.getCurrentDrawAmps() + m_bottomLeftFlywheelSim.getCurrentDrawAmps() + m_bottomRightFlywheelSim.getCurrentDrawAmps());
         RoboRioSim.setVInVoltage(simulatedVoltage);
+
+        SmartDashboard.putNumber("/StraightShooter/TL Current", m_topLeftFlywheelSim.getCurrentDrawAmps());
+        SmartDashboard.putNumber("/StraightShooter/TR Current", m_topRightFlywheelSim.getCurrentDrawAmps());
+        SmartDashboard.putNumber("/StraightShooter/BL Current", m_bottomLeftFlywheelSim.getCurrentDrawAmps());
+        SmartDashboard.putNumber("/StraightShooter/BR Current", m_bottomRightFlywheelSim.getCurrentDrawAmps());
+    }
+
+    @Override
+    public double[] getPositions() {
+        double tlPosition = m_topLeftFlywheelSim.getAngularPositionRotations();
+        double trPosition = m_topRightFlywheelSim.getAngularPositionRotations();
+        double blPosition = m_bottomLeftFlywheelSim.getAngularPositionRotations();
+        double brPosition = m_bottomRightFlywheelSim.getAngularPositionRotations();
+
+        return new double[] {tlPosition, trPosition, blPosition, brPosition};
     }
 }

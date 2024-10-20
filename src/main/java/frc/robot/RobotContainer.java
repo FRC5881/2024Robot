@@ -103,7 +103,7 @@ public class RobotContainer {
             m_driverController.R2().whileTrue(shootHigh);
             NamedCommands.registerCommand("SPEAKER", shootHigh);
 
-            Command customVeloShot = shooter.cSetVelocities(io.getVelocityTL(), io.getVelocityTR(), io.getVelocityBL(), io.getVelocityBR()).alongWith(
+            Command customVeloShot = shooter.cSetSmartDashboardVelocities().alongWith(
                 Commands.waitSeconds(1.5).andThen(releaseNoteFinal.get())
             );
 
@@ -112,6 +112,7 @@ public class RobotContainer {
 
             if (autoChooser != null) {
                 autoChooser.addOption("Shoot!", shootHigh);
+                autoChooser.addOption("Sysid", shooter.cSysid());
             }
         }
     }

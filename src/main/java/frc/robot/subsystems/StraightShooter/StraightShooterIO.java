@@ -16,28 +16,6 @@ public interface StraightShooterIO {
         setVoltages(0, 0, 0, 0);
     }
 
-    public double getVoltageTL();
-    public double getVoltageTR();
-    public double getVoltageBL();
-    public double getVoltageBR();
-
-    default public double[] getVoltages() {
-        return new double[] { getVoltageTL(), getVoltageTR(), getVoltageBL(), getVoltageBR() };
-    }
-
-
-    //FEEDFORWARD STUFF
-    public double getFFks();
-    public double getFFkv();
-    public double getFFka();
-
-    
-    //PID STUFF
-    public double getPIDkp();
-    public double getPIDki();
-    public double getPIDkd();
- 
-
     //VELOCITY STUFF
     public double getVelocityTL();
     public double getVelocityTR();
@@ -47,4 +25,6 @@ public interface StraightShooterIO {
     default public double[] getVelocities() {
         return new double[] { getVelocityTL(), getVelocityTR(), getVelocityBL(), getVelocityBR() };
     }
+
+    public double[] getPositions();
 }

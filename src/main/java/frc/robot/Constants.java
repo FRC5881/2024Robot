@@ -62,11 +62,10 @@ public final class Constants {
         public static final int kIndexerMotor = 15;
 
         // Shooter
-        public static final int kShooterMainId = 21;
-        public static final int kShooterSecondaryId = 22;
-
-        // Amp Guide
-        public static final int kAmpGuideId = 30;
+        public static final int kShooterTL = 21;
+        public static final int kShooterTR = 22;
+        public static final int kShooterBL = 23;
+        public static final int kShooterBR = 24;
     }
 
     public static class GroundIntakeConstants {
