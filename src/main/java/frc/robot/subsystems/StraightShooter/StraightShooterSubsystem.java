@@ -92,11 +92,11 @@ public class StraightShooterSubsystem extends SubsystemBase {
     }
 
     // Drive all 4 motors at 12 volts
-    public Command cRunAt12V() {
+    public Command cRunAt(double v) {
         SmartDashboard.putNumber("/StraightShooter/Shooter Voltage", 0);
         return runEnd(() -> {
-            SmartDashboard.putNumber("/StraightShooter/Shooter Voltage", 12);
-            io.setVoltages(12, 12, 12, 12);
+            SmartDashboard.putNumber("/StraightShooter/Shooter Voltage", v);
+            io.setVoltages(v, v, v, v);
         }, () -> {
             SmartDashboard.putNumber("/StraightShooter/Shooter Voltage", 0);
             io.setVoltages(0, 0, 0, 0);

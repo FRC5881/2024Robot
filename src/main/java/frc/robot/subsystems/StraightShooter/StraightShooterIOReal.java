@@ -6,60 +6,71 @@ import com.revrobotics.CANSparkMax;
 import frc.robot.Constants.CANConstants;
 
 public class StraightShooterIOReal implements StraightShooterIO {
-    private final CANSparkMax shooterTL;
-    private final CANSparkMax shooterTR;
-    private final CANSparkMax shooterBL;
-    private final CANSparkMax shooterBR;
+    private final CANSparkMax shooterTopLeft;
+    private final CANSparkMax shooterTopRight;
+    private final CANSparkMax shooterBottomLeft;
+    private final CANSparkMax shooterBottomRight;
     
     public StraightShooterIOReal() {
-        shooterTL = new CANSparkMax(CANConstants.kShooterTL, MotorType.kBrushless);
-        shooterTL.setIdleMode(IdleMode.kCoast);
-        shooterTR = new CANSparkMax(CANConstants.kShooterTR, MotorType.kBrushless);
-        shooterTR.setIdleMode(IdleMode.kCoast);
-        shooterBL = new CANSparkMax(CANConstants.kShooterBL, MotorType.kBrushless);
-        shooterBL.setIdleMode(IdleMode.kCoast);
-        shooterBR = new CANSparkMax(CANConstants.kShooterBR, MotorType.kBrushless);
-        shooterBR.setIdleMode(IdleMode.kCoast);
+        shooterTopLeft = new CANSparkMax(CANConstants.kShooterTL, MotorType.kBrushless);
+        shooterTopLeft.restoreFactoryDefaults();
+        shooterTopLeft.setIdleMode(IdleMode.kCoast);
+        shooterTopLeft.setInverted(false);
+
+        shooterTopRight = new CANSparkMax(CANConstants.kShooterTR, MotorType.kBrushless);
+        shooterTopRight.restoreFactoryDefaults();
+        shooterTopRight.setIdleMode(IdleMode.kCoast);
+        shooterTopRight.setInverted(true);
+
+        shooterBottomLeft = new CANSparkMax(CANConstants.kShooterBL, MotorType.kBrushless);
+        shooterBottomLeft.restoreFactoryDefaults();
+        shooterBottomLeft.setIdleMode(IdleMode.kCoast);
+        shooterBottomLeft.setInverted(false);
+
+        shooterBottomRight = new CANSparkMax(CANConstants.kShooterBR, MotorType.kBrushless);
+        shooterBottomRight.restoreFactoryDefaults();
+        shooterBottomRight.setIdleMode(IdleMode.kCoast);
+        shooterBottomRight.setInverted(true);
     }
 
     @Override
     public void setVoltages(double topLeft, double topRight, double bottomLeft, double bottomRight) {
-        shooterTL.setVoltage(topLeft);
-        shooterTR.setVoltage(topRight);
-        shooterBL.setVoltage(bottomLeft);
-        shooterBR.setVoltage(bottomRight);
+        shooterTopLeft.setVoltage(topLeft);
+        shooterTopRight.setVoltage(topRight);
+        shooterBottomLeft.setVoltage(bottomLeft);
+        shooterBottomRight.setVoltage(bottomRight);
     }
 
     @Override
     public double getVelocityTL() {
-        double veloTL = shooterTL.getEncoder().getVelocity();
+        double veloTL = shooterTopLeft.getEncoder().getVelocity();
         return veloTL;
     }
 
     @Override
     public double getVelocityTR() {
-        double veloTR = shooterTR.getEncoder().getVelocity();
+        double veloTR = shooterTopRight.getEncoder().getVelocity();
         return veloTR;
     }
 
     @Override
     public double getVelocityBL() {
-        double veloBL = shooterBL.getEncoder().getVelocity();
+        double veloBL = shooterBottomLeft.getEncoder().getVelocity();
         return veloBL;
     }
 
     @Override
     public double getVelocityBR() {
-        double veloBR = shooterBR.getEncoder().getVelocity();
+        double veloBR = shooterBottomRight.getEncoder().getVelocity();
         return veloBR;
     }
 
     @Override
     public double[] getPositions() {
-        double posTL = shooterTL.getEncoder().getPosition();
-        double posTR = shooterTR.getEncoder().getPosition();
-        double posBL = shooterBL.getEncoder().getPosition();
-        double posBR = shooterBR.getEncoder().getPosition();
+        double posTL = shooterTopLeft.getEncoder().getPosition();
+        double posTR = shooterTopRight.getEncoder().getPosition();
+        double posBL = shooterBottomLeft.getEncoder().getPosition();
+        double posBR = shooterBottomRight.getEncoder().getPosition();
         double[] posArr = {posTL, posTR, posBL, posBR};
         return posArr;
     }

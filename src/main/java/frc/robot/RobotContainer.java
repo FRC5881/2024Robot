@@ -96,7 +96,7 @@ public class RobotContainer {
             final Supplier<Command> releaseNoteFinal = releaseNote;
 
             // Shoot into the SPEAKER
-            Command shootHigh = shooter.cRunAt12V().alongWith(
+            Command shootHigh = shooter.cRunAt(12).alongWith(
                 Commands.waitSeconds(1.5).andThen(releaseNoteFinal.get())
             );
 
@@ -224,6 +224,8 @@ public class RobotContainer {
 
     private void setupShooter() {
         var shooter = new StraightShooterSubsystem();
+
+        m_driverController.L2().whileTrue(shooter.cRunAt(-6));
 
         m_shooter = Optional.of(shooter);
     }
