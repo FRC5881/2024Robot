@@ -12,12 +12,12 @@ import frc.robot.commands.SwerveDrive.RobotRelativeDrive;
 import frc.robot.commands.SwerveDrive.FieldRelativeAbsoluteAngleDrive;
 import frc.robot.commands.SwerveDrive.FieldRelativeRotationRateDrive;
 import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.Robot.RobotFrame;
 import frc.robot.subsystems.DifferentialDriveSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.GroundIntakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.StraightShooter.StraightShooterSubsystem;
 import frc.robot.utils.DoubleTransformer;
 import frc.robot.utils.SendableChooserCommand;
 
@@ -44,7 +44,7 @@ public class RobotContainer {
     private Optional<GroundIntakeSubsystem> m_intake = Optional.empty();
 
     private Optional<IndexerSubsystem> m_indexer = Optional.empty();
-    private Optional<ShooterSubsystem> m_shooter = Optional.empty();
+    private Optional<StraightShooterSubsystem> m_shooter = Optional.empty();
 
     private final CommandPS5Controller m_driverController = new CommandPS5Controller(
             OperatorConstants.kDriverControllerPort);
@@ -72,6 +72,14 @@ public class RobotContainer {
             throw new RuntimeException("Cannot have both swerve and differential drive subsystems");
         }
 
+        // Setup the autonomous chooser
+        if (bot == RobotFrame.COMP && m_shooter.isPresent() && m_swerveDrive.isPresent()) {
+            autoChooser = AutoBuilder.buildAutoChooser();
+            SmartDashboard.putData("Autonomous Command", autoChooser);
+        } else {
+            autoChooser = null;
+        }
+
         if (m_shooter.isPresent() && m_indexer.isPresent()) {
             var shooter = m_shooter.get();
             var indexer = m_indexer.get();
@@ -88,28 +96,30 @@ public class RobotContainer {
             final Supplier<Command> releaseNoteFinal = releaseNote;
 
             // Shoot into the SPEAKER
-            Command shootHigh = shooter.cRunWhenSpeakerReady(releaseNoteFinal.get());
+            Command shootHigh = shooter.cRunAt(12).alongWith(
+                Commands.waitSeconds(1.5).andThen(releaseNoteFinal.get())
+            );
+
             m_driverController.R2().whileTrue(shootHigh);
+            NamedCommands.registerCommand("SPEAKER", shootHigh);
 
-            // An autonomous command that automatically spins up and shoots a NOTE
-            Command autoShootHigh = Commands.race(
-                    shooter.cRunWhenSpeakerReady(releaseNoteFinal.get()),
-                    Commands.waitSeconds(1.75));
+            Command customVeloShot = shooter.cSetConstantVelocities(
+                1000, 5500, 1000,5500
+            ).alongWith(
+                Commands.waitSeconds(1.5).andThen(releaseNoteFinal.get())
+            );
 
-            NamedCommands.registerCommand("SPEAKER", autoShootHigh);
+            // m_driverController.R1().whileTrue(customVeloShot);
+            // NamedCommands.registerCommand("VELOSHOT", customVeloShot);
+            
+            m_driverController.R1().whileTrue(customVeloShot);
+            NamedCommands.registerCommand("SETALL", customVeloShot);
 
-            m_driverController.R1().whileTrue(shooter.cRunWhenAmpReady(releaseNoteFinal.get()));
 
-            // Intake from the SOURCE
-            m_driverController.L2().whileTrue(shooter.cIntake().alongWith(indexer.cSendDown()));
-        }
-
-        // Setup the autonomous chooser
-        if (bot == RobotFrame.COMP && m_shooter.isPresent() && m_swerveDrive.isPresent()) {
-            autoChooser = AutoBuilder.buildAutoChooser();
-            SmartDashboard.putData("Autonomous Command", autoChooser);
-        } else {
-            autoChooser = null;
+            if (autoChooser != null) {
+                autoChooser.addOption("Shoot!", shootHigh);
+                autoChooser.addOption("Sysid", shooter.cSysid());
+            }
         }
     }
 
@@ -219,9 +229,9 @@ public class RobotContainer {
     }
 
     private void setupShooter() {
-        var shooter = new ShooterSubsystem();
+        var shooter = new StraightShooterSubsystem();
 
-        m_driverController.L2().whileTrue(shooter.cIntake());
+        m_driverController.L2().whileTrue(shooter.cRunAt(-6));
 
         m_shooter = Optional.of(shooter);
     }
