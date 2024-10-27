@@ -20,16 +20,16 @@ import frc.robot.Robot;
 
 public class StraightShooterSubsystem extends SubsystemBase {
     //TODO: Check values --- if we're using different wheels we'll also have to have different controllers.
-    double ks = 0;
-    double kv = 0.12608;
-    double ka = 0.0080106;
+    double ks = 0.10492;
+    double kv = 0.12555 / 60.0;
+    double ka = 0.0054332 / (60 * 60);
     
-    private final SimpleMotorFeedforward feedforwardTL = new SimpleMotorFeedforward(0, 0.12608, 0.0080106);
-    private final SimpleMotorFeedforward feedforwardTR = new SimpleMotorFeedforward(0, 0.12608, 0.0080106);
-    private final SimpleMotorFeedforward feedforwardBL = new SimpleMotorFeedforward(0, 0.12608, 0.0080106);
-    private final SimpleMotorFeedforward feedforwardBR = new SimpleMotorFeedforward(0, 0.12608, 0.0080106);
+    private final SimpleMotorFeedforward feedforwardTL = new SimpleMotorFeedforward(ks, kv, ka);
+    private final SimpleMotorFeedforward feedforwardTR = new SimpleMotorFeedforward(ks, kv, ka);
+    private final SimpleMotorFeedforward feedforwardBL = new SimpleMotorFeedforward(ks, kv, ka);
+    private final SimpleMotorFeedforward feedforwardBR = new SimpleMotorFeedforward(ks, kv, ka);
     
-    double kp = 0.05;
+    double kp = 0.0001;
     double ki = 0;
     double kd = 0;
     private final PIDController pidControllerTL = new PIDController(kp, ki, kd);
@@ -54,6 +54,7 @@ public class StraightShooterSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("/StraightShooter/VelocityDrive TR", 0);
         SmartDashboard.putNumber("/StraightShooter/VelocityDrive BL", 0);
         SmartDashboard.putNumber("/StraightShooter/VelocityDrive BR", 0);
+        SmartDashboard.putNumber("/StraightShooter/VelocityDrive ALL", 3333);
     }
 
     @Override
@@ -104,7 +105,7 @@ public class StraightShooterSubsystem extends SubsystemBase {
     }
 
     public void voltageCalculator(double[] setpoints) {
-        SmartDashboard.putNumber("/StraightShooter/Shooter BL Setpoint", setpoints[2]);
+        SmartDashboard.putNumber("/StraightShooter/FF", feedforwardBL.calculate(setpoints[0]));
 
         double TLSpeed = io.getVelocityTL();
         double TRSpeed = io.getVelocityTR();
@@ -141,9 +142,16 @@ public class StraightShooterSubsystem extends SubsystemBase {
         }, io::stop);
     }
 
-    // voltage
-    // position
-    // velocity
+    public Command cSetAllVelocities() {
+        return runEnd(() -> {
+            double ALLSetpoints = SmartDashboard.getNumber("/StraightShooter/VelocityDrive ALL", 0);
+
+            voltageCalculator(new double[] {
+                ALLSetpoints, ALLSetpoints, ALLSetpoints, ALLSetpoints
+            });
+        }, io::stop);
+    }
+
     private final MutableMeasure<Voltage> volts = MutableMeasure.mutable(Units.Volts.of(0));
     private final MutableMeasure<Angle> rotations = MutableMeasure.mutable(Units.Rotations.of(0));
     private final MutableMeasure<Velocity<Angle>> velocity = MutableMeasure.mutable(Units.Rotations.of(0).per(Units.Minute.of(1)));
@@ -177,7 +185,9 @@ public class StraightShooterSubsystem extends SubsystemBase {
             (
                 routine.dynamic(Direction.kForward)
                 .withTimeout(5)
-            ).andThen(
+            )
+            .andThen(Commands.waitSeconds(5))
+            .andThen(
                 routine.dynamic(Direction.kReverse)
                 .withTimeout(5)
             )
