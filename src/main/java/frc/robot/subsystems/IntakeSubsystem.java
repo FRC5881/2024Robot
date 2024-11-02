@@ -10,7 +10,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+// import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -32,9 +32,9 @@ public class IntakeSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putBoolean("Ground Intake/Has Note", hasNote());
-        SmartDashboard.putNumber("Ground Intake/Sensor Voltage", irSensor.getVoltage());
-        SmartDashboard.putNumber("Ground Intake/Voltage", intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage());
+        // SmartDashboard.putBoolean("Ground Intake/Has Note", hasNote());
+        // SmartDashboard.putNumber("Ground Intake/Sensor Voltage", irSensor.getVoltage());
+        // SmartDashboard.putNumber("Ground Intake/Voltage", intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage());
     }
 
     /**

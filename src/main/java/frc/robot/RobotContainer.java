@@ -15,9 +15,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.StraightShooter.StraightShooterSubsystem;
 import frc.robot.utils.DoubleTransformer;
-import frc.robot.utils.PenningtonLEDs;
 import frc.robot.utils.SendableChooserCommand;
-import frc.robot.utils.PenningtonLEDs.RawPattern;
 
 import java.util.function.Supplier;
 
@@ -39,7 +37,6 @@ public class RobotContainer {
     private IntakeSubsystem intake = new IntakeSubsystem();
     private IndexerSubsystem indexer = new IndexerSubsystem();
     private StraightShooterSubsystem shooter = new StraightShooterSubsystem();
-    private final PenningtonLEDs leds = new PenningtonLEDs(0, intake);
 
     private final CommandPS5Controller m_driverController = new CommandPS5Controller(
             OperatorConstants.kDriverControllerPort);
@@ -55,17 +52,13 @@ public class RobotContainer {
     public RobotContainer() {
         setupSwerveDrive();
 
-        // Setup the autonomous chooser
-        autoChooser = AutoBuilder.buildAutoChooser();
-        SmartDashboard.putData("Autonomous Command", autoChooser);
-
         // Climber
         m_driverController.povUp().or(m_copilotController.povUp()).whileTrue(climber.cExtend());
         m_driverController.povDown().or(m_copilotController.povDown()).whileTrue(climber.cRetract());
 
         // Intake
         m_driverController.L1().or(m_copilotController.L1()).whileTrue(
-                intake.cRunUntilCaptured().alongWith(leds.cSetPattern(RawPattern.FAST_FLASH_GREEN)));
+                intake.cRunUntilCaptured());
 
         NamedCommands.registerCommand("INTAKE", intake.cRunUntilCaptured());
 
@@ -73,11 +66,15 @@ public class RobotContainer {
 
         // Shoot into the SPEAKER
         Command shootHigh = shooter.cRunAt(12).alongWith(
-                Commands.waitSeconds(0.5).andThen(releaseNote.get()))
-                .alongWith(leds.cChasingUp());
+                Commands.waitSeconds(0.5).andThen(releaseNote.get()));
 
         m_driverController.R2().or(m_copilotController.R2()).whileTrue(shootHigh);
-        NamedCommands.registerCommand("SPEAKER", shootHigh);
+        NamedCommands.registerCommand("SPEAKER", shooter.cRunAt(12).withTimeout(2.5).raceWith(
+                Commands.waitSeconds(0.5).andThen(releaseNote.get())));
+
+        // Setup the autonomous chooser
+        autoChooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData("Autonomous Command", autoChooser);
     }
 
     public Command getAutonomousCommand() {
@@ -99,15 +96,7 @@ public class RobotContainer {
         SmartDashboard.putNumber(OperatorConstants.kAutoTurn, 3.0);
 
         // Absolute drive commands
-        var rightX = DoubleTransformer.of(m_driverController::getRightX).negate();
-        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate();
-
-        Supplier<Rotation2d> angle = () -> {
-            return new Rotation2d(
-                    rightX.deadzone(0.75).getAsDouble(),
-                    rightY.deadzone(0.75).getAsDouble());
-        };
-
+        var rightX = DoubleTransformer.of(m_copilotController::getRightX).negate().deadzone();
         var leftX = DoubleTransformer.of(m_driverController::getLeftX).negate().deadzone();
         var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone();
 
@@ -115,24 +104,17 @@ public class RobotContainer {
             return new Translation2d(leftY.getAsDouble(), leftX.getAsDouble());
         };
 
-        Command absoluteAngle = new FieldRelativeAbsoluteAngleDrive(drive, translation, angle);
-
         // Relative Drive commands
         Command rotationRate = new FieldRelativeRotationRateDrive(drive, translation, rightX);
 
         // Robot Relative Drive
         Command robotRelative = new RobotRelativeDrive(drive, translation, rightX);
-        Command reversedRobotRelative = new RobotRelativeDrive(drive, () -> translation.get().unaryMinus(),
-                rightX.negate());
-        reversedRobotRelative.setName("ReverseRobotRelative");
 
         Command twoPlayerDrive = new TwoPlayerDriveCommand(drive, m_driverController, m_copilotController);
 
         // All Drive Commands
         drive.setDefaultCommand(
-                new SendableChooserCommand("Swerve Drive Command", twoPlayerDrive, rotationRate, robotRelative,
-                        absoluteAngle,
-                        reversedRobotRelative));
+                new SendableChooserCommand("Swerve Drive Command", twoPlayerDrive, rotationRate, robotRelative));
 
         // Reset gyro
         m_driverController.touchpad().onTrue(drive.cZeroGyro());

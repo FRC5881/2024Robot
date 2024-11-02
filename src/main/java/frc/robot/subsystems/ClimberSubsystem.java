@@ -7,7 +7,6 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CANConstants;
@@ -40,10 +39,10 @@ public class ClimberSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Climber/Height", climberMotor.getEncoder().getPosition());
-        SmartDashboard.putNumber("Climber/Voltage", climberMotor.getAppliedOutput() * climberMotor.getBusVoltage());
-        SmartDashboard.putNumber("Climber/Current", climberMotor.getOutputCurrent());
-        SmartDashboard.putNumber("Climber/Temperature", climberMotor.getMotorTemperature());
+        // SmartDashboard.putNumber("Climber/Height", climberMotor.getEncoder().getPosition());
+        // SmartDashboard.putNumber("Climber/Voltage", climberMotor.getAppliedOutput() * climberMotor.getBusVoltage());
+        // SmartDashboard.putNumber("Climber/Current", climberMotor.getOutputCurrent());
+        // SmartDashboard.putNumber("Climber/Temperature", climberMotor.getMotorTemperature());
     }
 
     /**

@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.676059981749594,
-        "y": 5.561921247299285
+        "x": 14.380309389669705,
+        "y": 5.56540380789095
       },
       "isLocked": false,
       "linkedName": null
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -179.27477570094072,
+    "rotation": -2.3482703900540765,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "RED",
+  "folder": null,
   "previewStartingState": {
-    "rotation": 180.0,
+    "rotation": -0.8897244143865943,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -7,7 +7,7 @@ import static edu.wpi.first.units.Units.Value;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+// import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IndexerConstants;
@@ -25,9 +25,6 @@ public class IndexerSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Indexer/Voltage", indexerMotor.getAppliedOutput() * indexerMotor.getBusVoltage());
-        SmartDashboard.putNumber("Indexer/Current", indexerMotor.getOutputCurrent());
-        SmartDashboard.putNumber("Indexer/Velocity", indexerMotor.getEncoder().getVelocity());
     }
 
     private void up() {

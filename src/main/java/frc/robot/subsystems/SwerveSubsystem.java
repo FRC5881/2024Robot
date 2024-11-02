@@ -55,7 +55,7 @@ public class SwerveSubsystem extends SubsystemBase {
                         new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
                         4.5,
                         m_swerveDrive.swerveDriveConfiguration.getDriveBaseRadiusMeters(),
-                        new ReplanningConfig(true, true)),
+                        new ReplanningConfig()),
                 () -> {
                     var alliance = DriverStation.getAlliance();
                     return alliance.isPresent() ? alliance.get() == DriverStation.Alliance.Red : false;
@@ -213,37 +213,37 @@ public class SwerveSubsystem extends SubsystemBase {
     
     @Override
     public void periodic() {
-        double new_max_speed = SmartDashboard.getNumber("/Pickup/Max Speed", kPickupMaxSpeed);
-        double new_max_acceleration = SmartDashboard.getNumber("/Pickup/Max Acceleration", kPickupMaxAcceleration);
-        if (new_max_speed != kPickupMaxSpeed || new_max_acceleration != kPickupMaxAcceleration) {
-            kPickupMaxSpeed = new_max_speed;
-            kPickupMaxAcceleration = new_max_acceleration;
-            m_translationProfile = new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(kPickupMaxSpeed, kPickupMaxAcceleration)
-            );
-        }
+        // double new_max_speed = SmartDashboard.getNumber("/Pickup/Max Speed", kPickupMaxSpeed);
+        // double new_max_acceleration = SmartDashboard.getNumber("/Pickup/Max Acceleration", kPickupMaxAcceleration);
+        // if (new_max_speed != kPickupMaxSpeed || new_max_acceleration != kPickupMaxAcceleration) {
+        //     kPickupMaxSpeed = new_max_speed;
+        //     kPickupMaxAcceleration = new_max_acceleration;
+        //     m_translationProfile = new TrapezoidProfile(
+        //         new TrapezoidProfile.Constraints(kPickupMaxSpeed, kPickupMaxAcceleration)
+        //     );
+        // }
 
-        double new_max_angular_speed = SmartDashboard.getNumber("/Pickup/Max Angular Speed", kPickupMaxAngularSpeed);
-        double new_max_angular_acceleration = SmartDashboard.getNumber("/Pickup/Max Angular Acceleration", kPickupMaxAngularAcceleration);
-        if (new_max_angular_speed != kPickupMaxAngularSpeed || new_max_angular_acceleration != kPickupMaxAngularAcceleration) {
-            kPickupMaxAngularSpeed = new_max_angular_speed;
-            kPickupMaxAngularAcceleration = new_max_angular_acceleration;
+        // double new_max_angular_speed = SmartDashboard.getNumber("/Pickup/Max Angular Speed", kPickupMaxAngularSpeed);
+        // double new_max_angular_acceleration = SmartDashboard.getNumber("/Pickup/Max Angular Acceleration", kPickupMaxAngularAcceleration);
+        // if (new_max_angular_speed != kPickupMaxAngularSpeed || new_max_angular_acceleration != kPickupMaxAngularAcceleration) {
+        //     kPickupMaxAngularSpeed = new_max_angular_speed;
+        //     kPickupMaxAngularAcceleration = new_max_angular_acceleration;
 
-            m_rotationProfile = new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(kPickupMaxSpeed, kPickupMaxAcceleration)
-            );
-        }
+        //     m_rotationProfile = new TrapezoidProfile(
+        //         new TrapezoidProfile.Constraints(kPickupMaxSpeed, kPickupMaxAcceleration)
+        //     );
+        // }
 
-        m_xController.setP(SmartDashboard.getNumber("/Pickup/X P", m_xController.getP()));
-        m_xController.setI(SmartDashboard.getNumber("/Pickup/X I", m_xController.getI()));
-        m_xController.setD(SmartDashboard.getNumber("/Pickup/X D", m_xController.getD()));
+        // m_xController.setP(SmartDashboard.getNumber("/Pickup/X P", m_xController.getP()));
+        // m_xController.setI(SmartDashboard.getNumber("/Pickup/X I", m_xController.getI()));
+        // m_xController.setD(SmartDashboard.getNumber("/Pickup/X D", m_xController.getD()));
 
-        m_yController.setP(SmartDashboard.getNumber("/Pickup/Y P", m_yController.getP()));
-        m_yController.setI(SmartDashboard.getNumber("/Pickup/Y I", m_yController.getI()));
-        m_yController.setD(SmartDashboard.getNumber("/Pickup/Y D", m_yController.getD()));
+        // m_yController.setP(SmartDashboard.getNumber("/Pickup/Y P", m_yController.getP()));
+        // m_yController.setI(SmartDashboard.getNumber("/Pickup/Y I", m_yController.getI()));
+        // m_yController.setD(SmartDashboard.getNumber("/Pickup/Y D", m_yController.getD()));
 
-        m_omegaController.setP(SmartDashboard.getNumber("/Pickup/Omega P", m_omegaController.getP()));
-        m_omegaController.setI(SmartDashboard.getNumber("/Pickup/Omega I", m_omegaController.getI()));
-        m_omegaController.setD(SmartDashboard.getNumber("/Pickup/Omega D", m_omegaController.getD()));
+        // m_omegaController.setP(SmartDashboard.getNumber("/Pickup/Omega P", m_omegaController.getP()));
+        // m_omegaController.setI(SmartDashboard.getNumber("/Pickup/Omega I", m_omegaController.getI()));
+        // m_omegaController.setD(SmartDashboard.getNumber("/Pickup/Omega D", m_omegaController.getD()));
     }
 }

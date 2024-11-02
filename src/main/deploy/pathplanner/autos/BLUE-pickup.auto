@@ -12,7 +12,13 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "named",
+          "data": {
+            "name": "SPEAKER"
+          }
+        },
+        {
+          "type": "race",
           "data": {
             "commands": [
               {
@@ -52,6 +58,6 @@
       ]
     }
   },
-  "folder": "BLUE",
+  "folder": null,
   "choreoAuto": false
 }
