@@ -2,35 +2,23 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.6652579045898832,
-      "y": 4.374251154173605
+      "x": 1.364453099276569,
+      "y": 5.543357259554025
     },
-    "rotation": 120.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "RED-C-SC"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "SPEAKER"
-          }
-        },
-        {
-          "type": "race",
+          "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "RED-SC-N3"
+                  "pathName": "BLUE-Bout"
                 }
               },
               {
@@ -43,20 +31,27 @@
           }
         },
         {
-          "type": "path",
+          "type": "sequential",
           "data": {
-            "pathName": "RED-N3-SC"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "SPEAKER"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BLUE-Bin"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "SPEAKER"
+                }
+              }
+            ]
           }
         }
       ]
     }
   },
-  "folder": "RED",
+  "folder": "BLUE",
   "choreoAuto": false
 }

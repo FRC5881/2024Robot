@@ -12,11 +12,11 @@ import static edu.wpi.first.units.Units.*;
 public final class Constants {
     public static class OperatorConstants {
         public static final int kDriverControllerPort = 0;
+        public static final int kCopilotControllerPort = 1;
 
-        // SmartDashboard keys
-        public static final String kDriveSensitivity = "Drive Sensitivity";
-        public static final String kTurnSensitivity = "Turn Sensitivity";
-        public static final String kAutoTurn = "Auto Turn Sensitivity";
+        public static final String kDriveSensitivity = "/Operator/Old Drive Sensitivity";
+        public static final String kTurnSensitivity = "/Operator/Old Turn Sensitivity";
+        public static final String kAutoTurn = "/Operator/Old Auto Turn Sensitivity";
 
         // Joystick dead-band
         public static final double kJoystickDeadzone = 0.05;

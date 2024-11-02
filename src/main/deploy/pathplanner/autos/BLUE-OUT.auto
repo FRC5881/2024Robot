@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.5341777099594303,
-      "y": 2.0677551129538356
+      "x": 0.5383556446125238,
+      "y": 2.071891551190509
     },
     "rotation": 0
   },
@@ -14,7 +14,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BLUE-D-L"
+            "pathName": "BLUE-OUT"
           }
         }
       ]

@@ -5,23 +5,20 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.DifferentialDrive.ArcadeDrive;
-import frc.robot.commands.DifferentialDrive.CurvatureDrive;
-import frc.robot.commands.DifferentialDrive.TankDrive;
 import frc.robot.commands.SwerveDrive.RobotRelativeDrive;
+import frc.robot.commands.SwerveDrive.TwoPlayerDriveCommand;
 import frc.robot.commands.SwerveDrive.FieldRelativeAbsoluteAngleDrive;
 import frc.robot.commands.SwerveDrive.FieldRelativeRotationRateDrive;
 import frc.robot.subsystems.ClimberSubsystem;
-import frc.robot.Robot.RobotFrame;
-import frc.robot.subsystems.DifferentialDriveSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
-import frc.robot.subsystems.GroundIntakeSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.subsystems.StraightShooter.StraightShooterSubsystem;
 import frc.robot.utils.DoubleTransformer;
+import frc.robot.utils.PenningtonLEDs;
 import frc.robot.utils.SendableChooserCommand;
+import frc.robot.utils.PenningtonLEDs.RawPattern;
 
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -37,107 +34,59 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 
 public class RobotContainer {
     // The robot's subsystems are defined here...
-    private Optional<SwerveSubsystem> m_swerveDrive = Optional.empty();
-    private Optional<DifferentialDriveSubsystem> m_differentialDrive = Optional.empty();
-    @SuppressWarnings("unused")
-    private Optional<ClimberSubsystem> m_climber = Optional.empty();
-    private Optional<GroundIntakeSubsystem> m_intake = Optional.empty();
-
-    private Optional<IndexerSubsystem> m_indexer = Optional.empty();
-    private Optional<StraightShooterSubsystem> m_shooter = Optional.empty();
+    private SwerveSubsystem drive;
+    private ClimberSubsystem climber = new ClimberSubsystem();
+    private IntakeSubsystem intake = new IntakeSubsystem();
+    private IndexerSubsystem indexer = new IndexerSubsystem();
+    private StraightShooterSubsystem shooter = new StraightShooterSubsystem();
+    private final PenningtonLEDs leds = new PenningtonLEDs(0, intake);
 
     private final CommandPS5Controller m_driverController = new CommandPS5Controller(
             OperatorConstants.kDriverControllerPort);
-
-    public RobotContainer(RobotFrame bot) {
-        // Each bot has a different set of subsystems
-        switch (bot) {
-            case COMP:
-                setupSwerveDrive(bot);
-                setupClimber();
-                setupShooter();
-                setupIndexer();
-                setupIntake();
-                break;
-            case M1C2:
-                setupSwerveDrive(bot);
-                break;
-            case DOUGHNUT:
-                setupDifferentialDrive();
-                break;
-        }
-
-        // Swerve drive and Differential drive are mutually exclusive
-        if (m_swerveDrive.isPresent() && m_differentialDrive.isPresent()) {
-            throw new RuntimeException("Cannot have both swerve and differential drive subsystems");
-        }
-
-        // Setup the autonomous chooser
-        if (bot == RobotFrame.COMP && m_shooter.isPresent() && m_swerveDrive.isPresent()) {
-            autoChooser = AutoBuilder.buildAutoChooser();
-            SmartDashboard.putData("Autonomous Command", autoChooser);
-        } else {
-            autoChooser = null;
-        }
-
-        if (m_shooter.isPresent() && m_indexer.isPresent()) {
-            var shooter = m_shooter.get();
-            var indexer = m_indexer.get();
-
-            // By default the "releaseNote" command only runs the indexer
-            Supplier<Command> releaseNote = () -> indexer.cSendShooter();
-
-            // Adding the ground intake to the "releaseNote" command is optional
-            if (m_intake.isPresent()) {
-                var intake = m_intake.get();
-                releaseNote = () -> Commands.parallel(indexer.cSendShooter(), intake.cRunLowSpeed());
-            }
-
-            final Supplier<Command> releaseNoteFinal = releaseNote;
-
-            // Shoot into the SPEAKER
-            Command shootHigh = shooter.cRunAt(12).alongWith(
-                Commands.waitSeconds(1.5).andThen(releaseNoteFinal.get())
-            );
-
-            m_driverController.R2().whileTrue(shootHigh);
-            NamedCommands.registerCommand("SPEAKER", shootHigh);
-
-            Command customVeloShot = shooter.cSetConstantVelocities(
-                1000, 5500, 1000,5500
-            ).alongWith(
-                Commands.waitSeconds(1.5).andThen(releaseNoteFinal.get())
-            );
-
-            // m_driverController.R1().whileTrue(customVeloShot);
-            // NamedCommands.registerCommand("VELOSHOT", customVeloShot);
-            
-            m_driverController.R1().whileTrue(customVeloShot);
-            NamedCommands.registerCommand("SETALL", customVeloShot);
-
-
-            if (autoChooser != null) {
-                autoChooser.addOption("Shoot!", shootHigh);
-                autoChooser.addOption("Sysid", shooter.cSysid());
-            }
-        }
-    }
+    private final CommandPS5Controller m_copilotController = new CommandPS5Controller(
+            OperatorConstants.kCopilotControllerPort);
 
     private final SendableChooser<Command> autoChooser;
 
-    public Command getAutonomousCommand() {
-        if (autoChooser == null) {
-            return Commands.none();
-        }
+    public boolean hasNote() {
+        return intake.hasNote();
+    }
 
+    public RobotContainer() {
+        setupSwerveDrive();
+
+        // Setup the autonomous chooser
+        autoChooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData("Autonomous Command", autoChooser);
+
+        // Climber
+        m_driverController.povUp().or(m_copilotController.povUp()).whileTrue(climber.cExtend());
+        m_driverController.povDown().or(m_copilotController.povDown()).whileTrue(climber.cRetract());
+
+        // Intake
+        m_driverController.L1().or(m_copilotController.L1()).whileTrue(
+                intake.cRunUntilCaptured().alongWith(leds.cSetPattern(RawPattern.FAST_FLASH_GREEN)));
+
+        NamedCommands.registerCommand("INTAKE", intake.cRunUntilCaptured());
+
+        Supplier<Command> releaseNote = () -> Commands.parallel(indexer.cSendShooter(), intake.cRunLowSpeed());
+
+        // Shoot into the SPEAKER
+        Command shootHigh = shooter.cRunAt(12).alongWith(
+                Commands.waitSeconds(0.5).andThen(releaseNote.get()))
+                .alongWith(leds.cChasingUp());
+
+        m_driverController.R2().or(m_copilotController.R2()).whileTrue(shootHigh);
+        NamedCommands.registerCommand("SPEAKER", shootHigh);
+    }
+
+    public Command getAutonomousCommand() {
         return autoChooser.getSelected();
     }
 
-    private void setupSwerveDrive(RobotFrame bot) {
-        SwerveSubsystem drive = null;
-
+    private void setupSwerveDrive() {
         try {
-            drive = new SwerveSubsystem(bot);
+            drive = new SwerveSubsystem();
         } catch (Exception e) {
             // End the robot program if we can't initialize the swerve drive.
             System.err.println("Failed to initialize swerve drive");
@@ -177,68 +126,18 @@ public class RobotContainer {
                 rightX.negate());
         reversedRobotRelative.setName("ReverseRobotRelative");
 
+        Command twoPlayerDrive = new TwoPlayerDriveCommand(drive, m_driverController, m_copilotController);
+
         // All Drive Commands
         drive.setDefaultCommand(
-                new SendableChooserCommand("Swerve Drive Command", rotationRate, robotRelative, absoluteAngle,
+                new SendableChooserCommand("Swerve Drive Command", twoPlayerDrive, rotationRate, robotRelative,
+                        absoluteAngle,
                         reversedRobotRelative));
 
         // Reset gyro
         m_driverController.touchpad().onTrue(drive.cZeroGyro());
 
         // Lock Pose
-        m_driverController.L3().whileTrue(drive.cLock());
-
-        m_swerveDrive = Optional.of(drive);
-    }
-
-    private void setupDifferentialDrive() {
-        var drive = new DifferentialDriveSubsystem();
-
-        SmartDashboard.putNumber(OperatorConstants.kDriveSensitivity, 1.0);
-        SmartDashboard.putNumber(OperatorConstants.kTurnSensitivity, 1.5);
-
-        var leftY = DoubleTransformer.of(m_driverController::getLeftY).negate().deadzone();
-        var rightY = DoubleTransformer.of(m_driverController::getRightY).negate().deadzone();
-        var rightX = DoubleTransformer.of(m_driverController::getRightX).negate().deadzone();
-
-        Command arcade = new ArcadeDrive(drive, leftY, rightX);
-        Command curvature = new CurvatureDrive(drive, leftY, rightX, m_driverController.L1());
-        Command tank = new TankDrive(drive, leftY, rightY);
-
-        drive.setDefaultCommand(new SendableChooserCommand("Differential Drive Command", arcade, curvature, tank));
-        m_differentialDrive = Optional.of(drive);
-    }
-
-    private void setupClimber() {
-        var climber = new ClimberSubsystem();
-
-        m_driverController.povUp().whileTrue(climber.cExtend());
-        m_driverController.povDown().whileTrue(climber.cRetract());
-
-        m_climber = Optional.of(climber);
-    }
-
-    private void setupIntake() {
-        var intake = new GroundIntakeSubsystem();
-
-        // Intake a note from the ground
-        m_driverController.L1().whileTrue(intake.cRunUntilCaptured().repeatedly());
-        NamedCommands.registerCommand("INTAKE", intake.cRunUntilCaptured());
-
-        m_intake = Optional.of(intake);
-    }
-
-    private void setupShooter() {
-        var shooter = new StraightShooterSubsystem();
-
-        m_driverController.L2().whileTrue(shooter.cRunAt(-6));
-
-        m_shooter = Optional.of(shooter);
-    }
-
-    private void setupIndexer() {
-        var indexer = new IndexerSubsystem();
-
-        m_indexer = Optional.of(indexer);
+        m_driverController.L3().or(m_copilotController.L3()).whileTrue(drive.cLock());
     }
 }

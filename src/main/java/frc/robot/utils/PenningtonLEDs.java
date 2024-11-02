@@ -1,16 +1,44 @@
 package frc.robot.utils;
 
 import edu.wpi.first.wpilibj.AnalogOutput;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.IntakeSubsystem;
 
 /**
  * PenningtonLEDs is the low-level interface to control our custom-made LED
  * controller.
  */
-public class PenningtonLEDs {
+public class PenningtonLEDs extends SubsystemBase {
     private AnalogOutput m_analogOutput;
+    private IntakeSubsystem intake;
+    private boolean override = false;
 
-    public PenningtonLEDs(int channel) {
+    public PenningtonLEDs(int channel, IntakeSubsystem intake) {
         m_analogOutput = new AnalogOutput(channel);
+        this.intake = intake;
+    }
+
+    @Override
+    public void periodic() {
+        if (!override) {
+            if (DriverStation.isEnabled()) {
+                if (intake.hasNote()) {
+                    setPattern(RawPattern.FAST_RAINBOW_FLASH);
+                } else {
+                    if (isBlue()) {
+                        setPattern(RawPattern.SOLID_BLUE);
+                    } else {
+                        setPattern(RawPattern.SOLID_RED);
+                    }
+                }
+            } else {
+                setPattern(RawPattern.SLOW_RAINBOW);
+            }
+        }
     }
 
     public enum RawPattern {
@@ -42,6 +70,7 @@ public class PenningtonLEDs {
         public int getId() {
             return id;
         }
+
     }
 
     /**
@@ -66,5 +95,23 @@ public class PenningtonLEDs {
      */
     public void setPattern(RawPattern pattern) {
         m_analogOutput.setVoltage(getVoltage(pattern));
+    }
+
+    public Command cSetPattern(RawPattern pattern) {
+        return Commands.startEnd(
+                () -> {
+                    override = true;
+                    setPattern(pattern);
+                },
+                () -> override = false);
+    }
+
+    private boolean isBlue() {
+        return DriverStation.getAlliance().map(a -> a == Alliance.Blue).orElse(false);
+    }
+
+    public Command cChasingUp() {
+        return Commands.deferredProxy(() -> Commands.either(cSetPattern(RawPattern.CHASING_UP_BLUE),
+                cSetPattern(RawPattern.CHASING_UP_RED), this::isBlue));
     }
 }

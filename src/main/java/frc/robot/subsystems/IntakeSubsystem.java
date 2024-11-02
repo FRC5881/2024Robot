@@ -10,8 +10,6 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.units.Dimensionless;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -19,15 +17,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.AnalogInputConstants;
 import frc.robot.Constants.GroundIntakeConstants;
-import frc.robot.utils.PenningtonLEDs;
-import frc.robot.utils.PenningtonLEDs.RawPattern;
 
-public class GroundIntakeSubsystem extends SubsystemBase {
+public class IntakeSubsystem extends SubsystemBase {
     private final CANSparkMax intakeMotor;
     private final AnalogInput irSensor = new AnalogInput(AnalogInputConstants.kIntakeSensor);
-    private final PenningtonLEDs leds = new PenningtonLEDs(0);
 
-    public GroundIntakeSubsystem() {
+    public IntakeSubsystem() {
         intakeMotor = new CANSparkMax(Constants.CANConstants.kGroundIntakeId, MotorType.kBrushless);
 
         intakeMotor.restoreFactoryDefaults();
@@ -37,26 +32,8 @@ public class GroundIntakeSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (DriverStation.isEnabled()) {
-            if (hasNote()) {
-                leds.setPattern(RawPattern.FAST_RAINBOW_FLASH);
-            } else {
-                var color = DriverStation.getAlliance();
-                if (color.isPresent()) {
-                    if (color.get() == Alliance.Blue) {
-                        leds.setPattern(RawPattern.SOLID_BLUE);
-                    } else {
-                        leds.setPattern(RawPattern.SOLID_RED);
-                    }
-                } else {
-                    leds.setPattern(RawPattern.SOLID_GREEN);
-                }
-            }
-        } else {
-            leds.setPattern(RawPattern.SLOW_RAINBOW);
-        }
-
         SmartDashboard.putBoolean("Ground Intake/Has Note", hasNote());
+        SmartDashboard.putNumber("Ground Intake/Sensor Voltage", irSensor.getVoltage());
         SmartDashboard.putNumber("Ground Intake/Voltage", intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage());
     }
 
@@ -65,7 +42,7 @@ public class GroundIntakeSubsystem extends SubsystemBase {
      * 
      * @return true if a note is detected, false otherwise.
      */
-    private boolean hasNote() {
+    public boolean hasNote() {
         return irSensor.getVoltage() > 2.5;
     }
 
